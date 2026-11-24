@@ -2383,12 +2383,11 @@
 #ge-canvas .ge-chart-side .ge-vertical-heading .ge-pane-heading{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #ge-canvas .ge-chart-side .ge-vertical-heading .ge-grading-button,#ge-canvas .ge-bilan-grading .ge-vertical-heading .ge-grading-button{flex:none;width:32px;height:32px;padding:0;display:grid;place-items:center}
 
-/* ── D1.52c · Coins : une seule règle pour tout le plan ──
-   Feuilles de données (tableaux) : angles droits, bord à bord comme une grille.
-   Panneaux et commandes qui flottent (catalogue, tests du bilan, carte, zoom, menus) : arrondis.
+/* ── D1.52c / D1.55 · Coins : une seule règle pour tout le plan ──
+   Feuilles (test et bilan) et panneaux qui flottent (catalogue, tests du bilan, carte, zoom, menus) : arrondis (--radius-card).
    Champs et listes : 10 px ; boutons d’action : pastille ; segments : 10 px / 8 px. */
-#ge-canvas .ge-points-sheet::before,#ge-canvas .ge-competencies-sheet::before{border-radius:0}
-#ge-canvas .ge-bilan-results.ge-bilan-sheet{border-radius:0}
+#ge-canvas .ge-bilan-results.ge-bilan-sheet{border-radius:var(--radius-card);overflow:clip;box-shadow:var(--sheet-shadow)}
+#ge-canvas .ge-bilan-results.ge-bilan-sheet::before{display:none}
 #ge-canvas .ge-bilan-plan .ge-bilan-table{border-radius:0}
 #ge-canvas .ge-bilan-plan .ge-segment{border-radius:10px}
 #ge-canvas .ge-bilan-plan .ge-segment button{border-radius:8px}
