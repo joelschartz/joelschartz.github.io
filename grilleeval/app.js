@@ -8,12 +8,14 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.58',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.60',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
+// D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
+const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
 const FILE_PICKER=TOP&&typeof window.showSaveFilePicker==='function'&&typeof window.showOpenFilePicker==='function';
 let restoredSaved=false,fileHandle=null,fileSaveKind='written',otherTabWarned=false;
-const COPY_PREFIX='grilleeval-copy:',COPY_LIMIT=12,TAB_ID=Math.random().toString(36).slice(2,10);
-const KEY='grilleeval-canvas-v2',PREVIOUS=KEY+'-previous',X=900,Y=700,LABEL=360,COL=100,SUM=390,COMP=130,SHEET_GAP=40,LOWER_HEAD=146,LOWER_NAMES=112;
+const COPY_PREFIX=STORE_NS+'grilleeval-copy:',COPY_LIMIT=12,TAB_ID=Math.random().toString(36).slice(2,10);
+const KEY=STORE_NS+'grilleeval-canvas-v2',PREVIOUS=KEY+'-previous',X=900,Y=700,LABEL=360,COL=100,SUM=390,COMP=130,SHEET_GAP=40,LOWER_HEAD=146,LOWER_NAMES=112;
 let DESCRIPTOR=360,EXTEND=0,descriptorAnimation=0,descriptorTarget=360;
 let fileSavedHash='',hadSavedView=false,d,view={zoom:1,x:X-28,y:Y-28},active=null,draft=null,geometry={rows:[],groups:[],width:0,height:0},worldSize={w:6000,h:5000};
 let gradeNodes=new Map(),rowNodes=new Map(),columnNodes=new Map(),totalNodes=new Map(),linkNodes=new Map(),linkCountNodes=new Map();
@@ -71,7 +73,7 @@ function writeCopy(encoded){
 }
 window.addEventListener('storage',e=>{if(!d||otherTabWarned||e.key!==COPY_PREFIX+d.evalId||!e.newValue)return;try{if(JSON.parse(e.newValue).tab!==TAB_ID){otherTabWarned=true;notice('Ce test est aussi ouvert dans un autre onglet. Gardez un seul onglet ouvert pour ce test.',true);}}catch{}});
 // D1.57 · Bilan : copie de secours automatique (dernier bilan) et fichier .json à enregistrer / rouvrir.
-const BILAN_KEY='grilleeval-bilan-v2';let bilanAutosaveTimer=null,bilanHandle=null;
+const BILAN_KEY=STORE_NS+'grilleeval-bilan-v2';let bilanAutosaveTimer=null,bilanHandle=null;
 function readBilanAutosave(){try{const raw=localStorage.getItem(BILAN_KEY);return raw?JSON.parse(raw):null;}catch{return null;}}
 function queueBilanAutosave(){clearTimeout(bilanAutosaveTimer);bilanAutosaveTimer=setTimeout(persistBilan,500);}
 function persistBilan(){clearTimeout(bilanAutosaveTimer);if(!bilanPane)return;try{if(!bilanPane.testCount()){localStorage.removeItem(BILAN_KEY);return;}localStorage.setItem(BILAN_KEY,JSON.stringify({data:bilanPane.exportBilan(),saved:!bilanPane.isDirty()}));}catch{}}
@@ -1249,7 +1251,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
-{const v=$('[data-app-version]');if(v)v.textContent='GrilleÉval · version '+APP_VERSION;const sa=$('[data-action="save-as"]');if(sa)sa.hidden=!FILE_PICKER;}codeInput.value=d.title;renderBoard();
+{const v=$('[data-app-version]');if(v)v.textContent='GrilleÉval · version '+APP_VERSION+(DEV?' · développement':'');for(const sa of root.querySelectorAll('[data-action="save-as"],[data-action="bilan-save-as"]'))sa.hidden=!FILE_PICKER;}codeInput.value=d.title;renderBoard();
 requestAnimationFrame(()=>{measure();if(needsSetup())startSetup();else{updateScale();vp.scrollLeft=view.x*view.zoom;vp.scrollTop=view.y*view.zoom;}updatePins();updateMap();showSave();if(!lastSavedDoc)queueSave();root.dataset.ready='true';});
 
 if(document.fonts?.ready)document.fonts.ready.then(()=>{descriptorMeasureCache.clear();resizeDescriptors(false);});
@@ -1481,6 +1483,8 @@ function syncBilanHeader() {
   const set = (action, enabled) => { const item = $(`[data-action="${action}"]`); if (item) item.disabled = !enabled; };
   set('bilan-csv', Boolean(bilanPane?.canExport()));
   set('bilan-save', Boolean(bilanPane?.testCount()));
+  set('bilan-save-as', Boolean(bilanPane?.testCount()));
+  set('bilan-new', Boolean(bilanPane?.testCount()));
   set('bilan-report', Boolean(bilanPane?.canExport()));
 }
 async function bilanAction(action) {
@@ -1488,6 +1492,8 @@ async function bilanAction(action) {
   if (action === 'bilan-add' || action === 'bilan-open') { bilanFiles.click(); return; }
   const workspace = await loadBilan();
   if (action === 'bilan-save') await saveBilan(workspace);
+  if (action === 'bilan-save-as') await saveBilan(workspace, true);
+  if (action === 'bilan-new') { if (workspace.newBilan()) { bilanHandle = null; persistBilan(); notice('Nouveau bilan · annulation possible.'); } }
   if (action === 'bilan-report') await bilanReports(workspace);
   if (action === 'bilan-csv' && !workspace.exportCSV()) notice('Aucune compétence à exporter.');
   updateHistory();

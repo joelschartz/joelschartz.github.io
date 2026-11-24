@@ -4,10 +4,12 @@
 // sonst bleibt die alte Version aktiv; alte Caches werden erst nach der Aktivierung gelöscht.
 // Testdaten berührt er nie: Er speichert nur die Dateien der App selbst.
 const VERSION=new URL(self.location.href).searchParams.get('v')||'dev';
-const CACHE='grilleeval-'+VERSION;
+// D1.59 · Le nom du cache contient le dossier (/grilleeval/ ou /grilleeval-dev/) : les deux versions ne s’effacent pas.
+const SCOPE=new URL(self.registration.scope).pathname.replace(/[^a-z0-9-]+/gi,'');
+const PREFIX='grilleeval-'+SCOPE+'-',CACHE=PREFIX+VERSION;
 const CORE=['./','index.html','app.js','styles.css','model.mjs','analysis.mjs','auto-results.mjs','bilan.mjs','bilan-view.mjs','catalogue.mjs','curriculum.mjs','descriptor-layout.mjs','pages-garde.mjs','overview-pdf.mjs','report-pdf.mjs','plan-links.mjs','vendor/jspdf.umd.min.js','vendor/ge-sans-Regular.ttf','vendor/ge-sans-Bold.ttf','assets/schullogo.png','assets/icon-192.png','manifest.json'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('grilleeval-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith(PREFIX)||/^grilleeval-D[0-9.]+$/.test(k))&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{
   const r=e.request,u=new URL(r.url);
   if(r.method!=='GET'||u.origin!==location.origin)return;
