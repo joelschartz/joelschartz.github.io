@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.53',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.54',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 const FILE_PICKER=TOP&&typeof window.showSaveFilePicker==='function'&&typeof window.showOpenFilePicker==='function';
 let fileHandle=null;
@@ -1168,7 +1168,8 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{const link=document.createElement('link');link.rel='manifest';link.href='manifest.json';document.head.append(link);
   const touch=document.createElement('link');touch.rel='apple-touch-icon';touch.href='assets/icon-180.png';document.head.append(touch);}catch{}
  try{navigator.serviceWorker?.register('sw.js').catch(()=>{});}catch{}
- try{navigator.storage?.persist?.().catch(()=>{});}catch{}
+ // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
+ try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
 {const v=$('[data-app-version]');if(v)v.textContent='GrilleÉval · version '+APP_VERSION;const sa=$('[data-action="save-as"]');if(sa)sa.hidden=!FILE_PICKER;}codeInput.value=d.title;renderBoard();
 requestAnimationFrame(()=>{measure();if(needsSetup())startSetup();else{updateScale();vp.scrollLeft=view.x*view.zoom;vp.scrollTop=view.y*view.zoom;}updatePins();updateMap();showSave();if(!lastSavedDoc)queueSave();root.dataset.ready='true';});
