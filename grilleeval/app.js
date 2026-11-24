@@ -1,5 +1,5 @@
 import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal} from './pages-garde.mjs';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs';
 import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs';
 
 const root=document.getElementById('ge-canvas');
@@ -8,10 +8,11 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.55',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.58',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 const FILE_PICKER=TOP&&typeof window.showSaveFilePicker==='function'&&typeof window.showOpenFilePicker==='function';
-let fileHandle=null;
+let restoredSaved=false,fileHandle=null,fileSaveKind='written',otherTabWarned=false;
+const COPY_PREFIX='grilleeval-copy:',COPY_LIMIT=12,TAB_ID=Math.random().toString(36).slice(2,10);
 const KEY='grilleeval-canvas-v2',PREVIOUS=KEY+'-previous',X=900,Y=700,LABEL=360,COL=100,SUM=390,COMP=130,SHEET_GAP=40,LOWER_HEAD=146,LOWER_NAMES=112;
 let DESCRIPTOR=360,EXTEND=0,descriptorAnimation=0,descriptorTarget=360;
 let fileSavedHash='',hadSavedView=false,d,view={zoom:1,x:X-28,y:Y-28},active=null,draft=null,geometry={rows:[],groups:[],width:0,height:0},worldSize={w:6000,h:5000};
@@ -44,18 +45,66 @@ function notice(message,error=false){clearTimeout(noticeTimer);$('[data-message]
 // D1.53 · L’indicateur parle du fichier, pas du navigateur : point vert = test enregistré, « Non enregistré » = à enregistrer (clic).
 function showSave(pending=false){const node=$('[data-save]');if(!node)return;
  if(!d)return;const unsaved=Boolean(draft?.dirty)||isUnsaved(),local=storageState==='ok';
- node.classList.toggle('ge-unsaved',unsaved);node.disabled=!unsaved;node.textContent=unsaved?'Non enregistré':'';
  const nothing=!unsaved&&(!(d.students.length||d.tasks.length||d.competencies.length)||untouchedDemo());
- const label=unsaved?'Modifications pas encore enregistrées dans un fichier · cliquer pour enregistrer (⌘S / Ctrl+S)':nothing?'Rien à enregistrer pour l’instant':'Test enregistré dans un fichier';
- node.title=label+(local?' · copie de secours sur cet appareil':' · ce navigateur ne garde pas de copie');node.setAttribute('aria-label',node.title);}
+ node.classList.toggle('ge-unsaved',unsaved);node.disabled=false;node.setAttribute('aria-disabled',String(!unsaved));if(unsaved)node.dataset.action='save';else delete node.dataset.action;node.textContent=unsaved?'Non enregistré':'';
+ // D1.58 · Au survol : à quoi sert ce point (bulle immédiate, pas seulement le title du navigateur).
+ const state=unsaved?'Des modifications ne sont pas encore dans un fichier. Cliquer pour enregistrer (⌘S / Ctrl+S).':'Ce point montre si le test est enregistré. '+(nothing?'Pour l’instant, il n’y a rien à enregistrer.':fileSaveKind==='exported'?'Vert : le test est téléchargé dans un fichier (dossier Téléchargements).':'Vert : le test est enregistré dans un fichier.');
+ const rule=unsaved?'':' Dès qu’une modification n’est pas encore enregistrée, il devient « Non enregistré ».';
+ const backup=local?' Une copie de secours est aussi gardée sur cet appareil (Fichier → Copies de secours).':' Ce navigateur ne garde pas de copie de secours : enregistrez souvent.';
+ node.dataset.tip=state+rule+backup;node.removeAttribute('title');node.setAttribute('aria-label',node.dataset.tip);}
 function storageRead(){
  // D1.48 · L’ancienne liste « Mes évaluations » (D1.43–47) n’est plus utilisée.
  try{localStorage.removeItem?.('grilleeval-library-v1');localStorage.removeItem?.('grilleeval-bilan-v1');}catch{}
- try {const raw=localStorage.getItem(KEY);if(raw){try{const pack=JSON.parse(raw);d=validate(pack.document||pack);if(pack.view&&Number.isFinite(pack.view.zoom)&&Number.isFinite(pack.view.x)&&Number.isFinite(pack.view.y))hadSavedView=true,view={zoom:Math.max(.02,Math.min(1.8,pack.view.zoom)),x:Math.max(0,pack.view.x),y:Math.max(0,pack.view.y)};transposed=pack.ui?.transposed===true;catalogueUsedOnly=preferredUsedOnly=pack.ui?.retainedOnly===true;appearance=['light','dark'].includes(pack.ui?.theme)?pack.ui.theme:'system';fileSavedHash=typeof pack.ui?.saved==='string'?pack.ui.saved:'';lastSavedDoc=encodeDocument(d);}catch(error){const previous=localStorage.getItem(PREVIOUS);if(!previous)throw error;const p=JSON.parse(previous);d=validate(p.document||p);notice('Le précédent enregistrement valide a été récupéré. Exportez un fichier JSON.');}}}
+ try {const raw=localStorage.getItem(KEY);if(raw){try{const pack=JSON.parse(raw);d=validate(pack.document||pack);if(pack.view&&Number.isFinite(pack.view.zoom)&&Number.isFinite(pack.view.x)&&Number.isFinite(pack.view.y))hadSavedView=true,view={zoom:Math.max(.02,Math.min(1.8,pack.view.zoom)),x:Math.max(0,pack.view.x),y:Math.max(0,pack.view.y)};transposed=pack.ui?.transposed===true;catalogueUsedOnly=preferredUsedOnly=pack.ui?.retainedOnly===true;appearance=['light','dark'].includes(pack.ui?.theme)?pack.ui.theme:'system';fileSavedHash=typeof pack.ui?.saved==='string'?pack.ui.saved:'';restoredSaved=Boolean(fileSavedHash)&&docHash(JSON.stringify(pack.document))===fileSavedHash;lastSavedDoc=encodeDocument(d);}catch(error){const previous=localStorage.getItem(PREVIOUS);if(!previous)throw error;const p=JSON.parse(previous);d=validate(p.document||p);notice('Le précédent enregistrement valide a été récupéré. Exportez un fichier JSON.');}}}
  catch(error){storageState='blocked';if(!d)notice('Le stockage local est indisponible. L’export JSON permet de conserver cette session.',true);}
- if(d){const previous=d;d=refreshDefaultDemo(d);if(d!==previous){view={zoom:1,x:X-28,y:Y-28};lastSavedDoc='';}}if(!d)d=mathDemo();upgradeCatalogue(d);if(lastSavedDoc){const canonical=encodeDocument(d);if(canonical===lastSavedDoc){savedRevision=revision;savedDocumentObject=JSON.parse(canonical);}}applyAppearance();
+ if(d){const previous=d;d=refreshDefaultDemo(d);if(d!==previous){view={zoom:1,x:X-28,y:Y-28};lastSavedDoc='';}}if(!d)d=mathDemo();upgradeCatalogue(d);if(restoredSaved)fileSavedHash=docHash(encodeDocument(d));if(lastSavedDoc){const canonical=encodeDocument(d);if(canonical===lastSavedDoc){savedRevision=revision;savedDocumentObject=JSON.parse(canonical);}}applyAppearance();
 }
-function persist(){clearTimeout(saveTimer);clearTimeout(viewTimer);try{if(!d.evalId)d.evalId=newId('e');const encoded=encodeDocument(d);const pack=JSON.stringify({document:JSON.parse(encoded),view:bilanOrigin?.camera??view,ui:{transposed,retainedOnly:preferredUsedOnly,theme:appearance,saved:fileSavedHash}});if(encoded!==lastSavedDoc){const previous=localStorage.getItem(KEY);if(previous){try{validate(JSON.parse(previous).document);localStorage.setItem(PREVIOUS,previous);}catch{}}}localStorage.setItem(KEY,pack);lastSavedDoc=encoded;savedRevision=revision;savedDocumentObject=JSON.parse(encoded);storageState='ok';}catch(error){storageState=error?.name==='QuotaExceededError'?'failed':'blocked';}showSave();}
+function persist(){clearTimeout(saveTimer);clearTimeout(viewTimer);try{if(!d.evalId)d.evalId=newId('e');const encoded=encodeDocument(d);const pack=JSON.stringify({document:JSON.parse(encoded),view:bilanOrigin?.camera??view,ui:{transposed,retainedOnly:preferredUsedOnly,theme:appearance,saved:fileSavedHash}});if(encoded!==lastSavedDoc){const previous=localStorage.getItem(KEY);if(previous){try{validate(JSON.parse(previous).document);localStorage.setItem(PREVIOUS,previous);}catch{}}}localStorage.setItem(KEY,pack);writeCopy(encoded);lastSavedDoc=encoded;savedRevision=revision;savedDocumentObject=JSON.parse(encoded);storageState='ok';}catch(error){storageState=error?.name==='QuotaExceededError'?'failed':'blocked';}showSave();}
+// D1.57 · Une copie de secours par test (clé = evalId) : deux onglets ou deux tests ne s’écrasent plus.
+function copyKeys(){const keys=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(COPY_PREFIX))keys.push(k);}}catch{}return keys;}
+function readCopies(){return copyKeys().map(k=>{try{const p=JSON.parse(localStorage.getItem(k));return p&&p.document?{key:k,...p}:null;}catch{return null;}}).filter(Boolean).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));}
+function writeCopy(encoded){
+ const key=COPY_PREFIX+d.evalId,value=JSON.stringify({document:JSON.parse(encoded),hash:docHash(encoded),savedAt:Date.now(),saved:fileSavedHash,tab:TAB_ID});
+ const prune=keep=>{const old=readCopies().filter(c=>c.key!==key);for(const c of old.slice(keep))localStorage.removeItem(c.key);};
+ try{localStorage.setItem(key,value);prune(COPY_LIMIT-1);}
+ catch(error){if(error?.name!=='QuotaExceededError')throw error;prune(2);localStorage.setItem(key,value);}
+}
+window.addEventListener('storage',e=>{if(!d||otherTabWarned||e.key!==COPY_PREFIX+d.evalId||!e.newValue)return;try{if(JSON.parse(e.newValue).tab!==TAB_ID){otherTabWarned=true;notice('Ce test est aussi ouvert dans un autre onglet. Gardez un seul onglet ouvert pour ce test.',true);}}catch{}});
+// D1.57 · Bilan : copie de secours automatique (dernier bilan) et fichier .json à enregistrer / rouvrir.
+const BILAN_KEY='grilleeval-bilan-v2';let bilanAutosaveTimer=null,bilanHandle=null;
+function readBilanAutosave(){try{const raw=localStorage.getItem(BILAN_KEY);return raw?JSON.parse(raw):null;}catch{return null;}}
+function queueBilanAutosave(){clearTimeout(bilanAutosaveTimer);bilanAutosaveTimer=setTimeout(persistBilan,500);}
+function persistBilan(){clearTimeout(bilanAutosaveTimer);if(!bilanPane)return;try{if(!bilanPane.testCount()){localStorage.removeItem(BILAN_KEY);return;}localStorage.setItem(BILAN_KEY,JSON.stringify({data:bilanPane.exportBilan(),saved:!bilanPane.isDirty()}));}catch{}}
+// D1.57 · Bilans individuels (PDF) : l’élève choisi dans le bilan, sinon toute la classe.
+async function bilanReports(workspace){
+ const data=workspace.reportData();if(!data?.pupils.length){notice('Ajoutez d’abord des tests au bilan.',true);return;}
+ const pupils=data.pupil?data.pupils.filter(p=>p.key===data.pupil):data.pupils;
+ try{const [jsPDF,{buildReportPDF,reportFileName,needsUnicodeReport}]=await Promise.all([loadJsPDF(),import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION))]);
+  const fonts=needsUnicodeReport(data,pupils)?await loadUnicodeFonts():null;
+  const ok=await exportFile(buildReportPDF(jsPDF,data,pupils,{fonts}),reportFileName(pupils),'application/pdf');
+  if(ok)notice(pupils.length===1?`Bilan individuel de ${pupils[0].name} enregistré (PDF).`:`${pupils.length} bilans individuels enregistrés (PDF).`);}
+ catch(error){notice('Les bilans individuels n’ont pas pu être créés : '+error.message,true);}
+}
+async function saveBilan(workspace,saveAs=false){
+ if(!workspace.testCount()){notice('Ajoutez d’abord des tests au bilan.',true);return;}
+ const name=`${new Date().toISOString().slice(0,10)} Bilan des compétences.json`,text=JSON.stringify(workspace.exportBilan(),null,1);let result;
+ if(FILE_PICKER){try{if(!bilanHandle||saveAs)bilanHandle=await window.showSaveFilePicker({suggestedName:name,types:[{description:'Bilan GrilleÉval',accept:{'application/json':['.json']}}]});const w=await bilanHandle.createWritable();await w.write(new Blob([text],{type:'application/json'}));await w.close();result={written:bilanHandle.name||name};}catch(error){if(error?.name==='AbortError'){notice('Enregistrement annulé.');return;}bilanHandle=null;result=await download(text,name,'application/json');}}
+ else result=await download(text,name,'application/json');
+ if(!result)return;workspace.markSaved();persistBilan();notice(result==='exported'?`Bilan téléchargé : « ${name} ».`:`Bilan enregistré${result.written?` dans « ${result.written} »`:''}.`);
+}
+function newEvaluation(message='Nouvelle évaluation · annulation possible.'){fileHandle=null;fileSaveKind='written';if(overview)leaveOverview();mutation(()=>{const prev=d;d=emptyDocument('Nouvelle évaluation');d.cycle=prev.cycle;d.grading=clone(prev.grading);d.catalogue=clone(prev.catalogue);if(prev.teacher)d.teacher=prev.teacher;if(prev.school)d.school=prev.school;active=null;transposed=false;resetCatalogueContext();catalogueUsedOnly=false;},message,{shape:true});requestAnimationFrame(()=>frameStart());}
+// D1.57 · « Copies de secours… » : les tests gardés sur cet appareil ; en rouvrir un, ou tout effacer (ordinateur partagé).
+function openCopies(){
+ const copies=readCopies(),when=t=>t?new Date(t).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+ const rows=copies.map((c,i)=>{const doc=c.document;let saved=false,ok=true;try{validate(doc);saved=Boolean(c.hash)&&c.hash===c.saved;}catch{ok=false;}
+  const open=doc.evalId&&doc.evalId===d.evalId;const pupils=Array.isArray(doc.students)?doc.students.length:0;
+  return `<li class="ge-copy"><div class="ge-copy-text"><strong>${esc(doc.title||'Sans titre')}</strong><small>${esc([doc.date?euroDate(doc.date):'',pupils?`${pupils} élève${pupils>1?'s':''}`:'',`copie du ${when(c.savedAt)}`].filter(Boolean).join(' · '))}</small><small class="${saved?'':'ge-copy-unsaved'}">${ok?(saved?'Enregistré dans un fichier':'Pas encore enregistré dans un fichier'):'Copie illisible'}</small></div>${open?'<span class="ge-copy-open">Ouvert</span>':ok?`<button type="button" class="ge-button" data-copy-open="${i}">Ouvrir</button>`:''}</li>`;}).join('');
+ modal({title:'Copies de secours',note:'Gardées dans ce navigateur, sur cet appareil.',content:copies.length?`<ul class="ge-copies">${rows}</ul>`:'<p class="ge-dialog-note">Aucune copie pour l’instant.</p>',cancel:'Fermer',after:copies.length?'<button type="button" class="ge-button ge-quiet ge-copies-clear" data-copies-clear>Tout effacer…</button>':''});
+ const clear=dialog.querySelector('[data-copies-clear]');if(clear){dialog.querySelector('.ge-dialog-actions')?.prepend(clear);clear.addEventListener('click',()=>{if(clear.dataset.confirm!=='true'){clear.dataset.confirm='true';clear.textContent='Confirmer : tout effacer';clear.classList.add('ge-remove');return;}afterDialog=()=>guardUnsaved(()=>clearLocalData());dialog.dataset.proceed='true';dialog.close();});}
+ for(const button of dialog.querySelectorAll('[data-copy-open]'))button.addEventListener('click',()=>{const c=copies[Number(button.dataset.copyOpen)];afterDialog=()=>guardUnsaved(()=>restoreCopy(c));dialog.dataset.proceed='true';dialog.close();});
+}
+function restoreCopy(c){try{const next=validate(c.document);upgradeCatalogue(next);mutation(()=>{d=next;active=null;transposed=false;resetCatalogueContext();},`Copie rouverte : ${next.title}.`,{shape:true});fileSavedHash=c.hash&&c.hash===c.saved?docHash(encodeDocument(d)):'';fileHandle=null;fileSaveKind='written';showSave();requestAnimationFrame(()=>frameStart());}catch(error){notice('Cette copie ne peut pas être ouverte : '+error.message,true);}}
+function clearLocalData(){for(const k of copyKeys())try{localStorage.removeItem(k);}catch{}try{localStorage.removeItem(KEY);localStorage.removeItem(PREVIOUS);}catch{}newEvaluation('Copies effacées de cet appareil.');history=[];future=[];updateHistory();}
 function queueSave(){clearTimeout(saveTimer);showSave(true);saveTimer=setTimeout(persist,300);}
 function persistCamera(){if(savedRevision!==revision||!savedDocumentObject){persist();return;}try{localStorage.setItem(KEY,JSON.stringify({document:savedDocumentObject,view:bilanOrigin?.camera??view,ui:{transposed,retainedOnly:preferredUsedOnly,theme:appearance,saved:fileSavedHash}}));}catch(error){storageState=error?.name==='QuotaExceededError'?'failed':'blocked';showSave();}}
 function queueViewSave(){clearTimeout(viewTimer);viewTimer=setTimeout(persistCamera,600);}
@@ -64,6 +113,8 @@ function saveHistory(){history.push(encodeDocument(d));if(history.length>60)hist
 function mutation(fn,message,{render=true,shape=false,scoreChange=null}={}){saveHistory();fn();revision++;normalizeActive();if(render)renderBoard();else{syncCounts();updateHistory();updateResults(scoreChange);mark();}if(shape)codeInput.value=d.title;queueSave();if(message)notice(message);}
 function updateHistory(){const report=bilanOrigin?bilanPane:null;$('[data-action="undo"]').disabled=bilanOrigin?!report?.canUndo():!history.length;$('[data-action="redo"]').disabled=bilanOrigin?!report?.canRedo():!future.length;}
 function undo(redo=false){if(bilanOrigin){if(bilanPane&&(redo?bilanPane.redo():bilanPane.undo()))updateHistory();return;}if(!commitDraft())return;const from=redo?future:history,to=redo?history:future;if(!from.length)return;to.push(encodeDocument(d));d=validate(from.pop());revision++;active=null;draft=null;codeInput.value=d.title;renderBoard();queueSave();notice(redo?'Modification rétablie.':'Dernière modification annulée.');}
+// D1.57 · Identifiant durable d’un élève : il suit l’élève d’un test à l’autre (copie d’un test, liste de classe).
+function newUid(){try{return crypto.randomUUID();}catch{return 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,12);}}
 function newId(prefix){const known=new Set([...d.students,...d.tasks,...d.competencies].map(x=>x.id));let id;do{id=`${prefix}-${Date.now()}-${++uid}`;}while(known.has(id));return id;}
 // D1.35 · Une grille vide garde sa forme : exercices et élèves fantômes en gris montrent où va quoi.
 const GHOST_TASKS=3,GHOST_PUPILS=6;
@@ -84,14 +135,14 @@ function primaryHeads(){return transposed?d.students.map((p,i)=>pupilHead(p,i)).
 function associationHeaders(){const cols=transposed?layout().secondary:layout().primary;return `<div class="ge-association-head-group ge-lower-head-group" data-task-head-group style="width:${cols*COL}px"><div class="ge-assessment-title">${paneHeading('associations','Exercices associés',null,d.tasks.length<3?'Liens':'Exercices associés')}<button type="button" class="ge-link-button ge-pane-link" data-jump="assessment" aria-label="Voir les compétences par élève" title="Rejoindre les compétences par élève sans changer le zoom">Voir par élève</button></div><div class="ge-association-names">${d.tasks.map((t,i)=>taskHead(t,i)).join('')||(transposed?'<span class="ge-no-tasks">Aucun exercice</span>':Array.from({length:GHOST_TASKS},(_,i)=>ghostTaskHead(i)).join(''))}</div></div>`;}
 function lowerHeads(){return transposed?assessmentHeaders()+associationHeaders():associationHeaders()+assessmentHeaders();}
 
-function scoreCell(p,t){return `<td data-column="${esc(t.id)}" data-pupil-column="${esc(p.id)}" data-grade-cell="${esc(key(p.id,t.id))}"><input class="ge-grade" type="text" inputmode="decimal" data-p="${esc(p.id)}" data-t="${esc(t.id)}" value="${format(d.scores[p.id]?.[t.id])}" placeholder="·" autocomplete="off" aria-label="${esc(p.name+' · '+t.title+' / '+format(t.maxPoints))}"></td>`;}
+function scoreCell(p,t){return `<td data-column="${esc(t.id)}" data-pupil-column="${esc(p.id)}" data-grade-cell="${esc(key(p.id,t.id))}"><input class="ge-grade${d.scores[p.id]?.[t.id]==='D'?' ge-dispensed':''}" type="text" inputmode="decimal" data-p="${esc(p.id)}" data-t="${esc(t.id)}" value="${format(d.scores[p.id]?.[t.id])}" placeholder="·" autocomplete="off" aria-label="${esc(p.name+' · '+t.title+' / '+format(t.maxPoints))}"></td>`;}
 // Before both axes exist, the canvas shows a useful preparation sheet instead
 // of squeezed, empty matrices. The established grid takes over automatically.
 function needsSetup(){return false;}
 function setupSheet(){
  if(!needsSetup())return '';
  const cards=[{kind:'student',title:'Élèves',list:d.students,help:'Collez toute votre liste de noms en une seule fois.',button:'+ Élèves'},{kind:'task',title:'Exercices',list:d.tasks,help:'Donnez un titre et un nombre de points à chaque exercice.',button:'+ Exercice'}];
- return `<section class="ge-setup-sheet" data-setup-sheet style="margin-left:${EXTEND}px" aria-labelledby="ge-setup-title"><header class="ge-setup-intro"><h1 id="ge-setup-title">Préparer l’évaluation</h1></header><div class="ge-setup-cards">${cards.map(c=>`<section class="ge-setup-card ${c.list.length?'ge-setup-done':''}" aria-label="Préparer les ${c.title.toLowerCase()}"><header><div><h2>${c.title}</h2><span>${c.list.length?c.list.length+' '+(c.kind==='student'?'élève':'exercice')+(c.list.length>1?'s':'')+' ajouté'+(c.list.length>1?'s':''):'À ajouter'}</span></div><span class="ge-setup-actions">${c.kind==='student'?'<button type="button" class="ge-button ge-quiet" data-import-csv>CSV</button>':''}<button type="button" class="ge-button ${!c.list.length&&(c.kind==='student'||d.students.length)?'ge-primary':''}" data-add="${c.kind}">${c.button}</button></span></header>${c.list.length?`<div class="ge-setup-list" aria-label="${esc(c.title+' ajoutés')}">${c.list.map(item=>`<button type="button" class="ge-setup-item" data-edit-${c.kind}="${esc(item.id)}"><span>${esc(c.kind==='student'?item.name:item.title)}</span>${c.kind==='task'?`<small>${format(item.maxPoints)} pts</small>`:icon('pencil')}</button>`).join('')}</div>`:''}</section>`).join('')}</div><section class="ge-setup-competencies"><div><h2>Compétences <small data-setup-competency-count>${d.competencies.length?d.competencies.length+' retenue'+(d.competencies.length>1?'s':''):'Facultatif'}</small></h2></div><div class="ge-setup-competency-actions"><button type="button" class="ge-button" data-open-setup-catalogue>Choisir dans le catalogue</button><button type="button" class="ge-button ge-quiet" data-add="competency">Écrire une compétence</button></div></section><footer class="ge-setup-footer"><span>Barème · ${d.grading.labels.length} niveaux</span><button type="button" class="ge-button ge-quiet" data-edit-grading data-direct-control>Configurer le barème</button></footer></section><div class="ge-setup-catalogue-bar" data-setup-catalogue-bar hidden><strong>Choisir les compétences</strong><button type="button" class="ge-button" data-close-setup-catalogue>Revenir à la préparation</button></div>`;
+ return `<section class="ge-setup-sheet" data-setup-sheet style="margin-left:${EXTEND}px" aria-labelledby="ge-setup-title"><header class="ge-setup-intro"><h1 id="ge-setup-title">Préparer l’évaluation</h1></header><div class="ge-setup-cards">${cards.map(c=>`<section class="ge-setup-card ${c.list.length?'ge-setup-done':''}" aria-label="Préparer les ${c.title.toLowerCase()}"><header><div><h2>${c.title}</h2><span>${c.list.length?c.list.length+' '+(c.kind==='student'?'élève':'exercice')+(c.list.length>1?'s':'')+' ajouté'+(c.list.length>1?'s':''):'À ajouter'}</span></div><span class="ge-setup-actions">${c.kind==='student'?'<button type="button" class="ge-button ge-quiet" data-import-csv>Depuis un fichier…</button>':''}<button type="button" class="ge-button ${!c.list.length&&(c.kind==='student'||d.students.length)?'ge-primary':''}" data-add="${c.kind}">${c.button}</button></span></header>${c.list.length?`<div class="ge-setup-list" aria-label="${esc(c.title+' ajoutés')}">${c.list.map(item=>`<button type="button" class="ge-setup-item" data-edit-${c.kind}="${esc(item.id)}"><span>${esc(c.kind==='student'?item.name:item.title)}</span>${c.kind==='task'?`<small>${format(item.maxPoints)} pts</small>`:icon('pencil')}</button>`).join('')}</div>`:''}</section>`).join('')}</div><section class="ge-setup-competencies"><div><h2>Compétences <small data-setup-competency-count>${d.competencies.length?d.competencies.length+' retenue'+(d.competencies.length>1?'s':''):'Facultatif'}</small></h2></div><div class="ge-setup-competency-actions"><button type="button" class="ge-button" data-open-setup-catalogue>Choisir dans le catalogue</button><button type="button" class="ge-button ge-quiet" data-add="competency">Écrire une compétence</button></div></section><footer class="ge-setup-footer"><span>Barème · ${d.grading.labels.length} niveaux</span><button type="button" class="ge-button ge-quiet" data-edit-grading data-direct-control>Configurer le barème</button></footer></section><div class="ge-setup-catalogue-bar" data-setup-catalogue-bar hidden><strong>Choisir les compétences</strong><button type="button" class="ge-button" data-close-setup-catalogue>Revenir à la préparation</button></div>`;
 }
 function syncSetup(){
  const setup=needsSetup(),catalogue=setup&&setupCatalogueOpen;root.dataset.setup=String(setup);root.dataset.setupCatalogue=String(catalogue);
@@ -113,7 +164,7 @@ function euroDate(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');return 
 function isoDate(value){const v=String(value||'').trim();if(!v)return '';let m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(v),y,mo,da;if(m)[,y,mo,da]=m;else{m=/^(\d{1,2})[.\/\-\s](\d{1,2})[.\/\-\s](\d{2}|\d{4})$/.exec(v);if(!m)throw new Error('Date : JJ.MM.AAAA, par exemple 12.10.2026.');[,da,mo,y]=m;if(y.length===2)y='20'+y;}
  const date=new Date(Date.UTC(Number(y),Number(mo)-1,Number(da)));if(date.getUTCFullYear()!==Number(y)||date.getUTCMonth()!==Number(mo)-1||date.getUTCDate()!==Number(da))throw new Error('Date invalide : JJ.MM.AAAA.');
  return `${y}-${String(mo).padStart(2,'0')}-${String(da).padStart(2,'0')}`;}
-function syncCounts(){const c=counts(d);codeInput.value=d.title;$('[data-document-title-text]').textContent=d.title;$('[data-document-meta]').textContent=[d.subject,'Cycle '+d.cycle,euroDate(d.date),d.duration].filter(Boolean).join(' · ');root.dataset.students=String(c[0]);root.dataset.tasks=String(c[1]);root.dataset.competencies=String(c[2]);root.dataset.revision=String(revision);document.title=`${d.title} · GrilleÉval`;}
+function syncCounts(){const c=counts(d);codeInput.value=d.title;$('[data-document-title-text]').textContent=d.title;root.dataset.demo=String(Boolean(d.demoId));$('[data-document-meta]').textContent=[d.subject,'Cycle '+d.cycle,euroDate(d.date),d.duration].filter(Boolean).join(' · ');root.dataset.students=String(c[0]);root.dataset.tasks=String(c[1]);root.dataset.competencies=String(c[2]);root.dataset.revision=String(revision);document.title=`${d.title} · GrilleÉval`;}
 
 let textContext=null,descriptorFont='14px system-ui';const descriptorMeasureCache=new Map();
 let descriptorMeasure=text=>{
@@ -459,11 +510,11 @@ function updateContext(){}
 function reveal(node){if(bilanOrigin||!node||!node.isConnected)return;updatePins();const r=node.getBoundingClientRect(),v=vp.getBoundingClientRect(),lower=Boolean(node.closest('.ge-competencies-sheet'));const left=v.left+((lower?lastPinned.showLabels:lastPinned.upperLabels)?(lastPinned.edge||pinnedWidth()*view.zoom):0)+10,top=v.top+(lastPinned.showHeader?(lastPinned.group?.kind==='students'?geometry.studentHeaderHeight+34:LOWER_HEAD)*view.zoom:0)+10;let dx=0,dy=0;if(r.left<left)dx=r.left-left;else{const right=v.left+vp.clientWidth-0-15;if(r.right>right)dx=r.right-right;}if(r.top<top)dy=r.top-top;else if(r.bottom>v.top+vp.clientHeight-15)dy=r.bottom-(v.top+vp.clientHeight-15);for(const overlay of [$('[data-map]'),$('.ge-zoom')]){if(!overlay||overlay.hasAttribute('data-map')&&$('[data-map-navigate]').hidden)continue;const q=overlay.getBoundingClientRect();if(q.width>0&&q.height>0&&r.right>q.left&&r.bottom>q.top&&r.left<q.right&&r.top<q.bottom)dy=Math.max(dy,r.bottom-q.top+14);}vp.scrollLeft+=dx;vp.scrollTop+=dy;rememberCamera();schedule();}
 function focusGrade(p,t){const e=gradeNodes.get(key(p,t));if(!e)return;if(draft?.node!==e&&!commitDraft())return;if(view.zoom<.55)zoomTo(1);e.focus({preventScroll:true});if(!draft||draft.node!==e)beginGrade(e);e.select();schedule();requestAnimationFrame(()=>{updatePins();reveal(e);});}
 function beginGrade(e){if(draft?.node!==e&&!commitDraft())return false;active={p:e.dataset.p,t:e.dataset.t};if(draft?.node!==e)draft={node:e,p:e.dataset.p,t:e.dataset.t,dirty:false};e.classList.add('ge-editing');selectAllNode=e;e.select();if(view.zoom<.55&&!restoringGridCell){zoomTo(1);requestAnimationFrame(()=>reveal(e));}mark();return true;}
-function updateTotal(pid,preview){const node=totalNodes.get(pid);if(!node)return;let n=total(d,pid),complete=filled(d,pid)===d.tasks.length;if(preview){n=n-(d.scores[pid]?.[preview.t]??0)+(preview.value??0);complete=d.tasks.every(t=>t.id===preview.t?preview.value!==null:d.scores[pid]?.[t.id]!=null);}node.textContent=format(n)+(complete?'':'*');}
+function updateTotal(pid,preview){const node=totalNodes.get(pid);if(!node)return;let n=total(d,pid),complete=filled(d,pid)===d.tasks.length;if(preview){const num=v=>typeof v==='number'?v:0;n=n-num(d.scores[pid]?.[preview.t])+num(preview.value);complete=d.tasks.every(t=>t.id===preview.t?preview.value!==null:d.scores[pid]?.[t.id]!=null);}node.textContent=format(n)+(complete?'':'*');}
 function commitDraft(){
  if(!draft)return true;const edit=draft,node=edit.node;if(!node.isConnected){draft=null;return true;}
  let value;try{value=points(node.value,task(edit.t).maxPoints);}catch(error){node.classList.add('ge-invalid');node.setAttribute('aria-invalid','true');node.setCustomValidity(error.message);node.focus({preventScroll:true});reveal(node);notice(error.message,true);return false;}
- node.classList.remove('ge-invalid');node.setAttribute('aria-invalid','false');node.setCustomValidity('');node.value=format(value);node.classList.remove('ge-editing');draft=null;
+ node.classList.remove('ge-invalid');node.setAttribute('aria-invalid','false');node.setCustomValidity('');node.value=format(value);node.classList.remove('ge-editing');node.classList.toggle('ge-dispensed',value==='D');draft=null;
  if(d.scores[edit.p][edit.t]!==value)mutation(()=>{d.scores[edit.p][edit.t]=value;},null,{render:false,scoreChange:edit});updateTotal(edit.p);showSave(Boolean(saveTimer));return true;
 }
 function cancelDraft(){if(!draft)return;const e=draft;draft=null;e.node.value=format(d.scores[e.p][e.t]);e.node.classList.remove('ge-invalid','ge-editing');e.node.setAttribute('aria-invalid','false');e.node.setCustomValidity('');updateTotal(e.p);showSave(Boolean(saveTimer));}
@@ -494,7 +545,7 @@ function modal({title,fields=[],note='',submit='Enregistrer',onSubmit,remove,con
  dialog.addEventListener('close',()=>{dialogControls?.abort();dialogControls=null;dialog.style.translate='';const follow=afterDialog,proceed=dialog.dataset.proceed==='true';afterDialog=null;delete dialog.dataset.proceed;requestAnimationFrame(()=>{if(dialog.open)return;if((submitted||proceed)&&follow){follow();return;}if(!submitted&&trigger?.isConnected)trigger.focus({preventScroll:true});if(dialogMoved){rememberCamera();schedule(true);return;}view={...cameraBefore};updateScale();vp.scrollLeft=view.x*view.zoom;vp.scrollTop=view.y*view.zoom;active=selectionBefore;normalizeActive();mark();schedule(true);});},{once:true});dialog.showModal();anchorDialog(trigger);freeDialog();const first=dialog.querySelector('input,textarea');if(first){first.focus();if(first.tagName==='INPUT')first.select();}
 }
 function add(kind){if(kind==='competency')return jumpCatalogue(true);const c=counts(d);capacity(c[0]+(kind==='student'?1:0),c[1]+(kind==='task'?1:0),c[2]+(kind==='competency'?1:0));
- if(kind==='student')modal({title:'Ajouter des élèves',after:'<div class="ge-import-row"><button type="button" class="ge-button" data-import-csv>Fichier CSV…</button></div>',fields:[{name:'names',label:'Noms et prénoms (un par ligne)',multiline:true,required:true,rows:6}],submit:'Ajouter',onSubmit:v=>{const names=v.names.split(/\r?\n/).map(n=>n.trim()).filter(Boolean).map(n=>text(n,'Nom'));if(!names.length)throw new Error('Saisir au moins un nom.');checkPupilNames(names);capacity(d.students.length+names.length,d.tasks.length,d.competencies.length);let first;mutation(()=>{for(const name of names){const p={id:newId('s'),name};first||=p.id;d.students.push(p);d.scores[p.id]=Object.fromEntries(d.tasks.map(t=>[t.id,null]));}},`${names.length} élève(s) ajouté(s).`,{shape:true});afterDialog=()=>{if(d.tasks.length)focusGrade(first,d.tasks[0].id);else jump('students');};}});
+ if(kind==='student')modal({title:'Ajouter des élèves',after:'<div class="ge-import-row"><button type="button" class="ge-button" data-import-csv title="Une liste CSV, ou un test GrilleÉval déjà enregistré pour reprendre ses élèves">Depuis un fichier…</button></div>',fields:[{name:'names',label:'Noms et prénoms (un par ligne)',multiline:true,required:true,rows:6}],submit:'Ajouter',onSubmit:v=>{const names=v.names.split(/\r?\n/).map(n=>n.trim()).filter(Boolean).map(n=>text(n,'Nom'));if(!names.length)throw new Error('Saisir au moins un nom.');checkPupilNames(names);capacity(d.students.length+names.length,d.tasks.length,d.competencies.length);let first;mutation(()=>{for(const name of names){const p={id:newId('s'),uid:newUid(),name};first||=p.id;d.students.push(p);d.scores[p.id]=Object.fromEntries(d.tasks.map(t=>[t.id,null]));}},`${names.length} élève(s) ajouté(s).`,{shape:true});afterDialog=()=>{if(d.tasks.length)focusGrade(first,d.tasks[0].id);else jump('students');};}});
  if(kind==='task')addTasks();
 
 }
@@ -541,6 +592,21 @@ function shrinkLogo(file){return new Promise((ok,fail)=>{const r=new FileReader(
  const g=c.getContext('2d');const png=file.type==='image/png';if(!png){g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);}g.drawImage(img,0,0,c.width,c.height);ok(c.toDataURL(png?'image/png':'image/jpeg',.9));};img.src=r.result;};r.readAsDataURL(file);});}
 let schoolLogo=null;
 function loadSchoolLogo(){return schoolLogo||(schoolLogo=fetch(new URL('./assets/schullogo.png',import.meta.url)).then(r=>r.ok?r.blob():null).then(b=>b&&new Promise(ok=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>ok(null);f.readAsDataURL(b);})).catch(()=>null));}
+// D1.57 · Police Unicode (sous-ensemble de Liberation Sans, SIL OFL) chargée seulement si un nom en a besoin.
+let unicodeFonts=null;
+function loadUnicodeFonts(){
+ const b64=buf=>{const bytes=new Uint8Array(buf);let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(bin);};
+ const get=name=>fetch(new URL('./vendor/'+name,import.meta.url)).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer();}).then(b64);
+ return unicodeFonts||(unicodeFonts=Promise.all([get('ge-sans-Regular.ttf'),get('ge-sans-Bold.ttf')]).then(([regular,bold])=>({regular,bold})).catch(()=>{unicodeFonts=null;notice('Police des noms indisponible : certains signes seront simplifiés dans le PDF.',true);return null;}));
+}
+// D1.57 · Vue d’ensemble imprimable (A4 paysage) : points de la classe et compétences par élève.
+async function overviewPDF(){
+ if(!commitDraft())return;closeMenus();
+ try{const [jsPDF,{buildOverviewPDF,overviewFileName}]=await Promise.all([loadJsPDF(),import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))]);
+  const fonts=needsUnicode(d)?await loadUnicodeFonts():null;
+  const blob=buildOverviewPDF(jsPDF,d,{fonts});const ok=await exportFile(blob,overviewFileName(d),'application/pdf');if(ok)notice('Vue d’ensemble enregistrée (PDF).');}
+ catch(error){notice('La vue d’ensemble n’a pas pu être créée : '+error.message,true);}
+}
 async function pagesDeGarde(){
  if(!commitDraft())return;closeMenus();
  let jsPDF;try{jsPDF=await loadJsPDF();}catch(error){notice(error.message,true);return;}
@@ -549,7 +615,8 @@ async function pagesDeGarde(){
  // D1.43 · Attitude et écriture valent A tant qu’on n’a rien choisi.
  const gardeLetter=(p,key)=>p[key]||'A',withLetters=p=>({...p,attitude:gardeLetter(p,'attitude'),ecriture:gardeLetter(p,'ecriture')});
  const sheet=()=>({...d,students:d.students.map(withLetters),logo:d.logo==='none'?'':d.logo||defaultLogo||''});
- const m=new jsPDF({unit:'pt',format:'a4'}),picked=new Set(d.students.filter(p=>!p.absent).map(p=>p.id));
+ const fonts=needsUnicode(d)?await loadUnicodeFonts():null;
+ const m=useUnicodeFont(new jsPDF({unit:'pt',format:'a4'}),fonts),picked=new Set(d.students.filter(p=>!p.absent).map(p=>p.id));
  const pick=(p,key)=>`<span class="ge-garde-letters" role="group" aria-label="${key==='attitude'?'Attitude au travail':'Écriture et propreté'} · ${esc(p.name)}">${['A','B','C','D'].map(L=>`<button type="button" data-garde-set="${key}" data-garde-who="${esc(p.id)}" data-letter="${L}" aria-pressed="${gardeLetter(p,key)===L}" title="${L} · Alt-clic : pour tous les élèves cochés">${L}</button>`).join('')}</span>`;
  const row=p=>{const r=gardeProposal(d,p.id);const note=p.absent?'<small>absent</small>':d.tasks.length&&!r.complete?'<small>incomplet</small>':'';
   return `<div class="ge-garde-pupil" data-garde-pupil="${esc(p.id)}"><label><input type="checkbox" ${picked.has(p.id)?'checked':''} data-garde-check="${esc(p.id)}"><span>${esc(p.name)}</span>${note}</label>${pick(p,'attitude')}${pick(p,'ecriture')}</div>`;};
@@ -561,8 +628,8 @@ async function pagesDeGarde(){
   `<figure class="ge-garde-preview" data-garde-preview aria-label="Aperçu de la page de garde"></figure></div>`;
  modal({title:'Pages de garde',content,submit:'Créer le PDF',onSubmit:()=>{
   const ids=d.students.filter(p=>picked.has(p.id)).map(p=>p.id);if(!ids.length)throw new Error('Choisir au moins un élève.');
-  const blob=buildGardePDF(jsPDF,sheet(),ids),many=ids.length>1;
-  afterDialog=()=>download(blob,gardeFileName(d),'application/pdf').then(ok=>{if(ok)notice(many?`${ids.length} pages de garde enregistrées.`:'Page de garde enregistrée.');});}});
+  const blob=buildGardePDF(jsPDF,sheet(),ids,fonts),many=ids.length>1;
+  afterDialog=()=>exportFile(blob,gardeFileName(d),'application/pdf').then(ok=>{if(ok)notice(many?`${ids.length} pages de garde enregistrées.`:'Page de garde enregistrée.');});}});
  const box=dialog.querySelector('[data-garde]');if(!box)return;
  const submit=dialog.querySelector('button[type="submit"]'),count=box.querySelector('[data-garde-count]'),preview=box.querySelector('[data-garde-preview]');
  const measure=it=>{m.setFont('helvetica',it.bold?'bold':'normal');m.setFontSize(it.size);return m.getTextWidth(it.s)+(it.space||0)*Math.max(0,it.s.length-1);};
@@ -595,19 +662,26 @@ async function pagesDeGarde(){
   try{const url=await shrinkLogo(f);mutation(()=>{d.logo=url;},'Logo enregistré.',{render:false});tools.innerHTML=logoTools();shown=null;rest();}catch(error){notice(error.message,true);}});
  sync();rest();
 }
-async function download(contents,name,type){const blob=contents instanceof Blob?contents:new Blob([contents],{type});const saver=window.claude?.use?await window.claude.use('downloads').catch(()=>null):null;if(saver){try{await saver.save({filename:name,data:blob});return true;}catch(error){if(error?.code==='declined')notice('Enregistrement annulé.');else if(error?.code==='rate_limited')notice('Une demande d’enregistrement est déjà ouverte.',true);else notice('Le fichier n’a pas pu être enregistré ici.',true);return false;}}const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;(dialog.open?dialog:document.body).append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);return true;}
+async function download(contents,name,type){const blob=contents instanceof Blob?contents:new Blob([contents],{type});const saver=window.claude?.use?await window.claude.use('downloads').catch(()=>null):null;if(saver){try{await saver.save({filename:name,data:blob});return true;}catch(error){if(error?.code==='declined')notice('Enregistrement annulé.');else if(error?.code==='rate_limited')notice('Une demande d’enregistrement est déjà ouverte.',true);else notice('Le fichier n’a pas pu être enregistré ici.',true);return false;}}const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;(dialog.open?dialog:document.body).append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);return 'exported';}
 function testFileName(){const day=d.date&&/^\d{4}-\d{2}-\d{2}$/.test(d.date)?d.date:new Date().toISOString().slice(0,10);return `${day} ${d.title}`.replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim().slice(0,120)+'.json';}
 // D1.48 · « Enregistrer le test » : un fichier par test ; on retient l’empreinte du dernier fichier enregistré.
 function docHash(text){let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+':'+text.length;}
 function untouchedDemo(){if(!d.demoId)return false;const m=mathDemo(),pick=x=>JSON.stringify([x.title,x.students,x.tasks,x.scores,x.links,x.competencies.map(c=>c.catalogueId||c.text)]);return pick(d)===pick(m);}
 function isUnsaved(){if(!(d.students.length||d.tasks.length||d.competencies.length)||untouchedDemo())return false;return docHash(encodeDocument(d))!==fileSavedHash;}
-function exportJSON(after=null,saveAs=false){if(!commitDraft())return;persist();const hash=docHash(encodeDocument(d));saveTestFile(JSON.stringify(d,null,2),testFileName(),saveAs).then(name=>{if(name){fileSavedHash=hash;persistCamera();showSave();notice(typeof name==='string'?`Test enregistré dans « ${name} ».`:'Test enregistré.');after?.();}});}
+function exportJSON(after=null,saveAs=false){if(!commitDraft())return;persist();const hash=docHash(encodeDocument(d));const fileName=testFileName();saveTestFile(JSON.stringify(d,null,2),fileName,saveAs).then(result=>{if(!result)return;fileSavedHash=hash;fileSaveKind=result==='exported'?'exported':'written';persist();showSave();notice(result==='exported'?`Fichier téléchargé : « ${fileName} ».`:result.written?`Test enregistré dans « ${result.written} ».`:'Test enregistré.');after?.();});}
 // D1.53 · Sur un hébergement propre (Chrome, Edge), « Enregistrer » réécrit le même fichier ; ailleurs, un fichier est téléchargé.
+// D1.58 · Chrome / Edge : chaque export demande où l’enregistrer (comme un programme). Ailleurs, le navigateur décide (Téléchargements).
+async function exportFile(contents,name,type){
+ if(!FILE_PICKER)return download(contents,name,type);
+ const ext=(name.match(/\.[a-z0-9]+$/i)||['.pdf'])[0].toLowerCase(),label=ext==='.pdf'?'Document PDF':'Fichier GrilleÉval';
+ try{const handle=await window.showSaveFilePicker({suggestedName:name,types:[{description:label,accept:{[type]:[ext]}}]});const w=await handle.createWritable();await w.write(contents instanceof Blob?contents:new Blob([contents],{type}));await w.close();return {written:handle.name||name};}
+ catch(error){if(error?.name==='AbortError'){notice('Enregistrement annulé.');return false;}return download(contents,name,type);}
+}
 async function saveTestFile(text,name,saveAs=false){
  if(!FILE_PICKER)return download(text,name,'application/json');
  try{
   if(!fileHandle||saveAs)fileHandle=await window.showSaveFilePicker({suggestedName:name,types:[{description:'Test GrilleÉval',accept:{'application/json':['.json']}}]});
-  const w=await fileHandle.createWritable();await w.write(new Blob([text],{type:'application/json'}));await w.close();return fileHandle.name||true;
+  const w=await fileHandle.createWritable();await w.write(new Blob([text],{type:'application/json'}));await w.close();return {written:fileHandle.name||name};
  }catch(error){if(error?.name==='AbortError'){notice('Enregistrement annulé.');return false;}fileHandle=null;return download(text,name,'application/json');}
 }
 async function pickTestFile(){
@@ -653,16 +727,18 @@ root.addEventListener('click',event=>{
  if(a==='import-csv')pickStudentCsv();
  if(a==='import-eb')openEbImport();
  if(a==='metadata')modal({title:'Informations de l’évaluation',fields:[{name:'title',label:'Titre',value:d.title,required:true},{name:'date',label:'Date (JJ.MM.AAAA)',value:euroDate(d.date)},{name:'subject',label:'Matière',value:d.subject,required:true},{name:'cycle',label:'Cycle',value:d.cycle,required:true},{name:'duration',label:'Durée',value:d.duration||''},{name:'teacher',label:'Instituteur / institutrice (pages de garde)',value:d.teacher||''},{name:'school',label:'École (pages de garde)',value:d.school||''},{name:'observation',label:'Observations et remarques (pages de garde)',value:d.observation||'',multiline:true,rows:3}],onSubmit:v=>{if(/^c\d/i.test(v.title.trim())){const code=v.title.trim();afterDialog=()=>fillExample(code);return;}const values={title:text(v.title,'Titre'),subject:text(v.subject,'Matière'),cycle:text(v.cycle,'Cycle'),date:isoDate(v.date),duration:v.duration.trim(),teacher:v.teacher.trim().slice(0,200),school:v.school.trim().slice(0,200),observation:String(v.observation||'').trim().slice(0,600)};mutation(()=>{const contextChanged=d.subject!==values.subject||d.cycle!==values.cycle;Object.assign(d,values);if(contextChanged)resetCatalogueContext();},'Informations modifiées.');}});{const form=dialog.querySelector('form'),obs=form?.querySelector('[name="observation"]');if(obs){form.classList.add('ge-dialog-split');obs.closest('label').classList.add('ge-observation-field');}}enhanceDateField(dialog.querySelector('input[name="date"]'));
- if(a==='new'){if(!commitDraft())return;guardUnsaved(()=>{fileHandle=null;if(overview)leaveOverview();mutation(()=>{const prev=d;d=emptyDocument('Nouvelle évaluation');d.cycle=prev.cycle;d.grading=clone(prev.grading);d.catalogue=clone(prev.catalogue);if(prev.teacher)d.teacher=prev.teacher;if(prev.school)d.school=prev.school;active=null;transposed=false;resetCatalogueContext();catalogueUsedOnly=false;},'Nouvelle évaluation · annulation possible.',{shape:true});requestAnimationFrame(()=>frameStart());});}
+ if(a==='new'){if(!commitDraft())return;guardUnsaved(()=>newEvaluation());}
+ if(a==='copies')openCopies();
  if(a==='fullscreen'){if(document.fullscreenElement)document.exitFullscreen?.();else document.documentElement.requestFullscreen?.({navigationUI:'hide'}).catch(()=>{b.hidden=true;notice('Plein écran refusé dans cette fenêtre. Sur Mac : ⌃⌘F dans le navigateur.',true);});}
  if(a==='pages-garde')pagesDeGarde();
+ if(a==='overview')overviewPDF();
  if(a==='help')help();if(a==='map'){toggleMap();}
  }catch(error){notice(error.message,true);}
 });
 fileInput.addEventListener('change',()=>{const file=fileInput.files?.[0];fileInput.value='';if(file)openTestFile(file);});
 async function openTestFile(file,handle=null){
  try{if(file.size>8*1024*1024)throw new Error('Ce fichier dépasse 8 Mo.');const next=validate(await file.text());upgradeCatalogue(next);const hash=docHash(encodeDocument(next));
-  mutation(()=>{d=next;active=null;transposed=false;resetCatalogueContext();},`Test ouvert : ${next.title}.`,{shape:true});fileSavedHash=hash;fileHandle=handle;showSave();queueViewSave();requestAnimationFrame(()=>frameStart());}
+  mutation(()=>{d=next;active=null;transposed=false;resetCatalogueContext();},`Test ouvert : ${next.title}.`,{shape:true});fileSavedHash=hash;fileHandle=handle;fileSaveKind='written';showSave();queueViewSave();requestAnimationFrame(()=>frameStart());}
  catch(error){notice('Ce fichier ne peut pas être ouvert : '+error.message,true);}}
 board.addEventListener('focusin',event=>{
  const field=event.target;
@@ -918,7 +994,7 @@ function bindInlineCatalogue(){
   if(suppressClick&&e.detail!==0)return;const b=e.target.closest('button');if(!b)return;
   try{if(b.hasAttribute('data-toggle-retained')){removeRetained(b.dataset.toggleRetained);return;}if(b.hasAttribute('data-show-search')&&commitDraft()){for(const g of catalogueGroups())groupOpen.set(g.key,true);refreshCatalogue();board.querySelector('[data-catalogue-group]')?.focus({preventScroll:true});return;}if(b.hasAttribute('data-reset-catalogue')&&commitDraft()){catalogueFilter={subject:subjectName(d.subject),cycle:cycleRoot(d.cycle),section:'',search:'',kind:'',pathway:''};groupOpen.clear();groupLimits.clear();filterPanel.innerHTML=catalogueTools();refreshCatalogue(true);return;}if(b.hasAttribute('data-catalogue-group')&&commitDraft()){visibleGroups().set(b.dataset.catalogueGroup,b.getAttribute('aria-expanded')!=='true');refreshCatalogue();return;}if(b.hasAttribute('data-group-more')&&commitDraft()){const k=b.dataset.groupMore;groupLimits.set(k,(groupLimits.get(k)||40)+40);refreshCatalogue();return;}if(b.hasAttribute('data-catalogue-adopt'))adoptCatalogue(b.dataset.catalogueAdopt);
    if(b.hasAttribute('data-catalogue-import')&&commitDraft())$('[data-catalogue-file]').click();
-   if(b.hasAttribute('data-catalogue-template')&&commitDraft())download(JSON.stringify({catalogue:d.catalogue},null,2),'grilleeval-catalogue.json','application/json');
+   if(b.hasAttribute('data-catalogue-template')&&commitDraft())exportFile(JSON.stringify({catalogue:d.catalogue},null,2),'grilleeval-catalogue.json','application/json');
    if(b.hasAttribute('data-catalogue-more')&&commitDraft()){catalogueLimit+=80;refreshCatalogue();}
    if(b.hasAttribute('data-free-cancel')){freeOpen=false;freeDraft='';refreshCatalogue();}
   }catch(error){notice(error.message,true);}
@@ -1159,15 +1235,17 @@ surface.addEventListener('gestureend',event=>{event.preventDefault();gestureZoom
 for(const control of root.querySelectorAll('button[aria-label],summary[aria-label]'))if(!control.title&&!control.hasAttribute('data-mode-help'))control.title=control.getAttribute('aria-label');
 storageRead();mountWorkspace();
 // D1.53 · Quitter la page : la copie de secours est écrite tout de suite, et le navigateur avertit s’il reste des modifications hors fichier.
-window.addEventListener('beforeunload',e=>{try{persist();}catch{}if(d&&(draft?.dirty||isUnsaved())){e.preventDefault();e.returnValue='';}});
-window.addEventListener('pagehide',()=>{try{persist();}catch{}});
-document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&!e.altKey&&e.key.toLowerCase()==='s'){e.preventDefault();if(!bilanOrigin&&!dialog.open)exportJSON(null,e.shiftKey);}});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')try{persist();}catch{}});
+// La saisie en cours (valeur valide) est validée avant la copie de secours.
+function flushDraft(){if(draft?.node?.isConnected){try{points(draft.node.value,task(draft.t).maxPoints);commitDraft();}catch{}}try{persist();}catch{}}
+window.addEventListener('beforeunload',e=>{flushDraft();persistBilan();if(d&&(draft?.dirty||isUnsaved())||bilanPane?.isDirty()){e.preventDefault();e.returnValue='';}});
+window.addEventListener('pagehide',flushDraft);
+document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&!e.altKey&&e.key.toLowerCase()==='s'){e.preventDefault();if(dialog.open)return;if(bilanOrigin){if(bilanPane)saveBilan(bilanPane,e.shiftKey);}else exportJSON(null,e.shiftKey);}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushDraft();});
 // D1.53 · Hébergement propre seulement (pas dans le cadre de claude.ai) : application installable, hors ligne, stockage durable.
 if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||TOP&&new URLSearchParams(location.search).has('pwa')){
  try{const link=document.createElement('link');link.rel='manifest';link.href='manifest.json';document.head.append(link);
   const touch=document.createElement('link');touch.rel='apple-touch-icon';touch.href='assets/icon-180.png';document.head.append(touch);}catch{}
- try{navigator.serviceWorker?.register('sw.js').catch(()=>{});}catch{}
+ try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1269,23 +1347,39 @@ function studentNamesFromCsv(source){
  return names;}
 let csvInput=null;
 function pickStudentCsv(){if(!commitDraft())return;
- if(!csvInput){csvInput=document.createElement('input');csvInput.type='file';csvInput.accept='.csv,.txt,text/csv,text/plain';csvInput.hidden=true;root.append(csvInput);
+ if(!csvInput){csvInput=document.createElement('input');csvInput.type='file';csvInput.accept='.csv,.txt,.json,text/csv,text/plain,application/json';csvInput.hidden=true;root.append(csvInput);
   csvInput.addEventListener('change',async()=>{const file=csvInput.files?.[0];csvInput.value='';if(!file)return;
+   // D1.58 · Un test GrilleÉval (.json) donne ses élèves avec leur identifiant : le bilan les reconnaît ensuite à coup sûr.
+   if(/\.json$/i.test(file.name)){try{if(file.size>32*1024*1024)throw new Error('Fichier trop volumineux.');const raw=JSON.parse(await file.text());const list=raw?.type==='grilleeval.classe'&&Array.isArray(raw.students)?raw.students:validate(raw).students;
+     const entries=list.map(s=>({name:String(s?.name||'').replace(/\s+/g,' ').trim().slice(0,120),uid:typeof s?.uid==='string'&&/^[A-Za-z0-9-]{8,40}$/.test(s.uid)?s.uid:''})).filter(s=>s.name);
+     if(!entries.length){notice('Aucun élève dans ce fichier.');return;}if(dialog.open)dialog.close();requestAnimationFrame(()=>importClass(entries));}
+    catch(error){notice('Ce fichier ne peut pas être lu : '+error.message,true);}return;}
    try{const bytes=await file.arrayBuffer();let textValue=new TextDecoder('utf-8').decode(bytes);if(textValue.includes('�'))textValue=new TextDecoder('windows-1252').decode(bytes);
     const names=studentNamesFromCsv(textValue);if(!names.length){notice('Aucun nom d’élève trouvé dans ce fichier.');return;}
     if(dialog.open)dialog.close();requestAnimationFrame(()=>importStudents(names,'CSV'));}
    catch{notice('Le fichier n’a pas pu être lu.');}});}
  csvInput.click();}
+// D1.57 · Liste de classe : un petit fichier .json (type grilleeval.classe) avec les noms et l’identifiant durable de chaque élève.
+// Ouvrir une liste (ou un test enregistré) reprend ces élèves : déjà présents → reconnus, sinon ajoutés. Le bilan les relie ensuite par identifiant.
+function importClass(entries){
+ const seen=new Set(),unique=entries.filter(e=>{const k=e.uid||'n:'+foldName(e.name);if(seen.has(k))return false;seen.add(k);return true;});
+ const plan=unique.map(e=>({e,match:d.students.find(p=>e.uid&&p.uid===e.uid)||d.students.find(p=>(!p.uid||!e.uid||p.uid===e.uid)&&studentNamesMatch(p.name,e.name))}));
+ const added=plan.filter(x=>!x.match),known=plan.length-added.length;
+ capacity(d.students.length+added.length,d.tasks.length,d.competencies.length);
+ const label=n=>n+' élève'+(n>1?'s':'');
+ mutation(()=>{for(const {e,match} of plan){if(match){if(!match.uid&&e.uid)match.uid=e.uid;continue;}const p={id:newId('s'),uid:e.uid||newUid(),name:e.name};d.students.push(p);d.scores[p.id]=Object.fromEntries(d.tasks.map(t=>[t.id,null]));}},
+  added.length?`${label(added.length)} ajouté${added.length>1?'s':''}${known?` · ${label(known)} déjà dans la liste`:''}.`:`Les ${label(known)} de la liste sont déjà dans le test.`,{shape:true});
+}
 function importStudents(names,source){
  names=names.filter((n,i)=>!names.slice(0,i).some(m=>studentNamesMatch(m,n)));
  const missing=names.filter(n=>!d.students.some(p=>studentNamesMatch(p.name,n))),label=n=>n+' élève'+(n>1?'s':'');
- const addMissing=()=>{if(!missing.length){notice(`Les ${label(names.length)} de l’import figurent déjà dans la liste.`);return;}capacity(d.students.length+missing.length,d.tasks.length,d.competencies.length);mutation(()=>{for(const name of missing){const p={id:newId('s'),name};d.students.push(p);d.scores[p.id]=Object.fromEntries(d.tasks.map(t=>[t.id,null]));}},`${label(missing.length)} ajouté${missing.length>1?'s':''} (${source}).`,{shape:true});};
+ const addMissing=()=>{if(!missing.length){notice(`Les ${label(names.length)} de l’import figurent déjà dans la liste.`);return;}capacity(d.students.length+missing.length,d.tasks.length,d.competencies.length);mutation(()=>{for(const name of missing){const p={id:newId('s'),uid:newUid(),name};d.students.push(p);d.scores[p.id]=Object.fromEntries(d.tasks.map(t=>[t.id,null]));}},`${label(missing.length)} ajouté${missing.length>1?'s':''} (${source}).`,{shape:true});};
  const allKnown=d.students.every(p=>names.some(n=>studentNamesMatch(p.name,n)));
  if(!d.students.length||allKnown){addMissing();return;}
  modal({title:`Importer ${label(names.length)} (${source})`,note:`La liste contient déjà ${label(d.students.length)}.`,content:`<p class="ge-import-choice">${missing.length?`« Ajouter » garde la liste et y ajoute ${label(missing.length)}.`:'Tous les noms de l’import figurent déjà dans la liste.'}<br>« Remplacer » reprend la liste de l’import et efface les points déjà saisis.</p>`,submit:missing.length?`Ajouter ${missing.length}`:'Fermer',cancel:'Annuler',onSubmit:()=>{addMissing();}});
  if(!dialog.open)return;
  const actions=dialog.querySelector('.ge-dialog-actions'),replace=document.createElement('button');replace.type='button';replace.className='ge-button ge-remove';replace.textContent='Remplacer la liste';actions.prepend(replace);
- replace.addEventListener('click',()=>{capacity(names.length,d.tasks.length,d.competencies.length);mutation(()=>{d.students=names.map(name=>({id:newId('s'),name}));d.scores=Object.fromEntries(d.students.map(p=>[p.id,Object.fromEntries(d.tasks.map(t=>[t.id,null]))]));},`Liste remplacée : ${label(names.length)} (${source}). Annulation possible.`,{shape:true});dialog.close();});
+ replace.addEventListener('click',()=>{capacity(names.length,d.tasks.length,d.competencies.length);mutation(()=>{d.students=names.map(name=>({id:newId('s'),uid:newUid(),name}));d.scores=Object.fromEntries(d.students.map(p=>[p.id,Object.fromEntries(d.tasks.map(t=>[t.id,null]))]));},`Liste remplacée : ${label(names.length)} (${source}). Annulation possible.`,{shape:true});dialog.close();});
 }
 root.addEventListener('click',e=>{if(e.target.closest('[data-import-csv]')){e.preventDefault();pickStudentCsv();}});
 
@@ -1348,7 +1442,8 @@ function loadBilan() {
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
         onLayout:()=>{if (bilanOrigin) { schedule(true); syncBilanHeader(); }}, onSelection:revealBilanResults,
-        onHistory:()=>{if (bilanOrigin) updateHistory();}
+        onHistory:()=>{if (bilanOrigin) updateHistory();},
+        onChange:()=>queueBilanAutosave(), initial:readBilanAutosave()
       });
       return bilanPane;
     }).catch(error => { bilanLoading = null; throw error; });
@@ -1385,11 +1480,15 @@ function syncBilanHeader() {
   $('[data-bilan-meta]').textContent = tests ? [tests + (tests > 1 ? ' tests' : ' test'), pupils + (pupils > 1 ? ' élèves' : ' élève')].join(' · ') : 'Aucun test choisi';
   const set = (action, enabled) => { const item = $(`[data-action="${action}"]`); if (item) item.disabled = !enabled; };
   set('bilan-csv', Boolean(bilanPane?.canExport()));
+  set('bilan-save', Boolean(bilanPane?.testCount()));
+  set('bilan-report', Boolean(bilanPane?.canExport()));
 }
 async function bilanAction(action) {
   if (!bilanOrigin) return;
-  if (action === 'bilan-add') { bilanFiles.click(); return; }
+  if (action === 'bilan-add' || action === 'bilan-open') { bilanFiles.click(); return; }
   const workspace = await loadBilan();
+  if (action === 'bilan-save') await saveBilan(workspace);
+  if (action === 'bilan-report') await bilanReports(workspace);
   if (action === 'bilan-csv' && !workspace.exportCSV()) notice('Aucune compétence à exporter.');
   updateHistory();
   syncBilanHeader();

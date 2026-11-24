@@ -70,23 +70,26 @@ export function validateCatalogue(raw,fallbackCycle='4.2'){
 // ergeben im Rechner 49,999999999999986 %, angezeigt werden « 50 % », eingestuft würde darunter.
 export const roundForThreshold=value=>Math.round(value*100)/100;
 export function levelFor(value,grading=DEFAULT_GRADING){if(value==null||!Number.isFinite(value))return null;const v=roundForThreshold(value);return grading.thresholds.reduce((level,n)=>level+(v>=n?1:0),0);}
+// D1.57 · Exercice dispensé (« D ») : saisi, mais retiré des points et du maximum de l’élève.
+function tally(d,pid,tasks){
+ let possible=0,points=0,filled=0,dispensed=0;
+ for(const t of tasks){const v=d.scores[pid]?.[t.id];if(v==null){possible+=t.maxPoints;continue;}filled++;if(v==='D'){dispensed++;continue;}possible+=t.maxPoints;points+=v;}
+ return {possible,points,filled,dispensed};
+}
 export function pupilResult(d,pid){
  if(d.students.find(s=>s.id===pid)?.absent){const possible=d.tasks.reduce((sum,t)=>sum+t.maxPoints,0);return {points:0,possible,filled:0,total:d.tasks.length,complete:false,percent:null,level:null,absent:true};}
- const possible=d.tasks.reduce((sum,t)=>sum+t.maxPoints,0);
- const filled=d.tasks.filter(t=>d.scores[pid]?.[t.id]!=null).length;
- const points=d.tasks.reduce((sum,t)=>sum+(d.scores[pid]?.[t.id]??0),0);
- const complete=d.tasks.length>0&&filled===d.tasks.length;
- const percent=possible>0&&filled>0?points/possible*100:null;
- return {points,possible,filled,total:d.tasks.length,complete,percent,level:complete?levelFor(percent,d.grading):null};
+ const {possible,points,filled,dispensed}=tally(d,pid,d.tasks);
+ const complete=d.tasks.length>0&&filled===d.tasks.length&&possible>0;
+ const percent=possible>0&&filled>dispensed?points/possible*100:null;
+ return {points,possible,filled,total:d.tasks.length,complete,percent,level:complete?levelFor(percent,d.grading):null,dispensed,allDispensed:d.tasks.length>0&&dispensed===d.tasks.length};
 }
 export function competencyResult(d,pid,cid){
  const tasks=d.tasks.filter(t=>d.links[cid]?.includes(t.id));
  if(d.students.find(s=>s.id===pid)?.absent){const possible=tasks.reduce((n,t)=>n+t.maxPoints,0);return {points:0,possible,filled:0,total:tasks.length,percent:null,complete:false,level:null,absent:true};}
- const possible=tasks.reduce((n,t)=>n+t.maxPoints,0),filled=tasks.filter(t=>d.scores[pid]?.[t.id]!=null).length;
- const points=tasks.reduce((n,t)=>n+(d.scores[pid]?.[t.id]??0),0);
- const complete=tasks.length>0&&filled===tasks.length;
- const percent=possible>0&&filled>0?points/possible*100:null;
- return {points,possible,filled,total:tasks.length,percent,complete,level:complete?levelFor(percent,d.grading):null};
+ const {possible,points,filled,dispensed}=tally(d,pid,tasks);
+ const complete=tasks.length>0&&filled===tasks.length&&possible>0;
+ const percent=possible>0&&filled>dispensed?points/possible*100:null;
+ return {points,possible,filled,total:tasks.length,percent,complete,level:complete?levelFor(percent,d.grading):null,dispensed,allDispensed:tasks.length>0&&dispensed===tasks.length};
 }
 export function resultStats(d){
  const pupils=d.students.map(p=>({id:p.id,name:p.name,...pupilResult(d,p.id)}));

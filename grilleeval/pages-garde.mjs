@@ -61,10 +61,11 @@ function mix(hex,keep=.22){const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,
 /** Mise en page d'une page. `m` : un document jsPDF qui sert uniquement à mesurer. */
 export function layoutPage(d,pupil,m){
  const items=[],W=A4.w-2*RAND,labels=d.grading.labels,N=labels.length,STEP=Math.min(STUFE,(W-250)/N),TEXT=W-N*STEP,colours=labels.map((_,i)=>levelColour(d.grading,i));
- const font=(size,bold)=>{m.setFont('helvetica',bold?'bold':'normal');m.setFontSize(size);};
- const width=(s,size,bold,space=0)=>{font(size,bold);return m.getTextWidth(pdfSafe(s))+space*Math.max(0,[...s].length-1);};
- const wrap=(s,size,bold,max)=>{font(size,bold);return m.splitTextToSize(pdfSafe(s),max);};
- const text=(s,x,y,size,o={})=>items.push({t:'text',s:pdfSafe(s),x,y,size,bold:!!o.bold,color:o.color||C.ink,align:o.align||'left',angle:o.angle||0,space:o.space||0,keep:!!o.keep});
+ const face=m.__geFont||'helvetica',safe=m.__geFont?(v=>String(v??'')):pdfSafe;
+ const font=(size,bold)=>{m.setFont(face,bold?'bold':'normal');m.setFontSize(size);};
+ const width=(s,size,bold,space=0)=>{font(size,bold);return m.getTextWidth(safe(s))+space*Math.max(0,[...s].length-1);};
+ const wrap=(s,size,bold,max)=>{font(size,bold);return m.splitTextToSize(safe(s),max);};
+ const text=(s,x,y,size,o={})=>items.push({t:'text',s:safe(s),x,y,size,bold:!!o.bold,color:o.color||C.ink,align:o.align||'left',angle:o.angle||0,space:o.space||0,keep:!!o.keep});
  const rect=(x,y,w,h,o={})=>items.push({t:'rect',x,y,w,h,fill:o.fill||null,stroke:o.stroke===undefined?C.line:o.stroke,lw:o.lw??.6,r:o.r||0});
  const fit=(s,size,bold,max)=>{if(width(s,size,bold)<=max)return s;let t=s;while(t.length>1&&width(t+'…',size,bold)>max)t=t.slice(0,-1);return t.trimEnd()+'…';};
  const clip=(x,y,w,h,r,draw)=>{const start=items.length;draw();const inner=items.splice(start);items.push({t:'clip',x,y,w,h,r,items:inner});items.push({t:'rect',x,y,w,h,fill:null,stroke:C.line,lw:.6,r});};
@@ -173,7 +174,7 @@ export function drawPDF(doc,items){
    if(it.r)doc.roundedRect(it.x,it.y,it.w,it.h,it.r,it.r,style);else doc.rect(it.x,it.y,it.w,it.h,style);continue;}
   if(it.t==='line'){doc.setDrawColor(...rgb(it.color));doc.setLineWidth(it.lw);doc.line(it.x1,it.y1,it.x2,it.y2);continue;}
   if(it.t==='image'){try{doc.addImage(it.data,/^data:image\/png/.test(it.data)?'PNG':'JPEG',it.x,it.y,it.w,it.h,undefined,'FAST');}catch{}continue;}
-  if(it.t==='text'){doc.setFont('helvetica',it.bold?'bold':'normal');doc.setFontSize(it.size);doc.setTextColor(...rgb(it.color));
+  if(it.t==='text'){doc.setFont(doc.__geFont||'helvetica',it.bold?'bold':'normal');doc.setFontSize(it.size);doc.setTextColor(...rgb(it.color));
    const o={align:it.align};if(it.angle)o.angle=it.angle;if(it.space)o.charSpace=it.space;doc.text(it.s,it.x,it.y,o);}
  }
 }
@@ -206,10 +207,21 @@ export function fileName(d){
 }
 
 /** Le PDF complet pour les élèves choisis (dans l'ordre de la liste). */
-export function buildPDF(jsPDF,d,ids){
- const doc=new jsPDF({unit:'pt',format:'a4',compress:true});
+// D1.57 · Noms avec des lettres hors Windows-1252 (Łukasz, Ștefan, Milić…) : police Unicode intégrée.
+export function needsUnicode(d){
+ const texts=[d.title,d.subject,d.teacher,d.school,d.observation,...d.students.map(s=>s.name),...d.tasks.map(t=>t.title),...d.competencies.map(c=>c.text)];
+ return texts.some(t=>t&&pdfSafe(t)!==String(t));
+}
+export function useUnicodeFont(doc,fonts){
+ if(!fonts)return doc;
+ doc.addFileToVFS('ge-sans-Regular.ttf',fonts.regular);doc.addFont('ge-sans-Regular.ttf','GESans','normal');
+ doc.addFileToVFS('ge-sans-Bold.ttf',fonts.bold);doc.addFont('ge-sans-Bold.ttf','GESans','bold');
+ doc.__geFont='GESans';return doc;
+}
+export function buildPDF(jsPDF,d,ids,fonts=null){
+ const doc=useUnicodeFont(new jsPDF({unit:'pt',format:'a4',compress:true}),fonts);
  const want=new Set(ids);let first=true;
  for(const pupil of d.students){if(!want.has(pupil.id))continue;if(!first)doc.addPage();first=false;drawPDF(doc,layoutPage(d,pupil,doc).items);}
- doc.setProperties({title:pdfSafe(`Pages de garde · ${d.title||''}`),creator:'GrilleÉval'});
+ doc.setProperties({title:(doc.__geFont?String:pdfSafe)(`Pages de garde · ${d.title||''}`),creator:'GrilleÉval'});
  return doc.output('blob');
 }

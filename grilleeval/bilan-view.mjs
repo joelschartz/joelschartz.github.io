@@ -1,10 +1,11 @@
 import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=bilan-d152';
 import {format, levelColour, levelFor, validate} from './model.mjs';
+import {validateGrading} from './analysis.mjs';
 import {descriptorColumnWidth} from './descriptor-layout.mjs';
 
 export function createBilanWorkspace({
   getDocument, getRevision, esc, icon, euroDate, highlightSearch, foldName, displayDescriptor,
-  gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles, onLayout, onSelection, onHistory = () => {}
+  gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles, onLayout, onSelection, onHistory = () => {}, onChange = () => {}, initial = null
 }) {
   const tests = new Map();
   const folded = new Set();
@@ -18,6 +19,36 @@ export function createBilanWorkspace({
   const past = [], future = [];
   let weightSession = null, descriptorWidth = 0;
   const HISTORY_LIMIT = 80;
+  // D1.57 · Un bilan est un document : fichier .json (type grilleeval.bilan) avec les tests complets, leurs coefficients et le barème.
+  let bilanId = '', savedSignature = '';
+  const hash = text => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + ':' + text.length; };
+  function signature() {
+    return hash(JSON.stringify({tests:[...tests.values()].map(t => [t.id, String(t.weight), hash(JSON.stringify(t.doc))]), grading:customGrading || null}));
+  }
+  function exportBilan() {
+    if (!bilanId) bilanId = 'b-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    return {type:'grilleeval.bilan', schemaVersion:1, bilanId, title:'Bilan des compétences', savedAt:new Date().toISOString(),
+      grading:customGrading || null, tests:[...tests.values()].map(t => ({weight:String(t.weight), doc:t.doc}))};
+  }
+  function readBilan(raw) {
+    const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (!data || data.type !== 'grilleeval.bilan') return null;
+    if (data.schemaVersion !== 1 || !Array.isArray(data.tests)) throw new Error('Version de bilan non prise en charge.');
+    const list = data.tests.map(t => { const doc = validate(JSON.stringify(t.doc)); const id = evaluationKey(doc); return {id, doc, weight:String(t.weight ?? '1')}; });
+    const grade = data.grading ? validateGrading(data.grading) : null;
+    return {list, grading:grade, bilanId:String(data.bilanId || '')};
+  }
+  function loadBilan(data, {undoable = true, saved = true} = {}) {
+    if (undoable) record();
+    tests.clear();
+    for (const t of data.list) tests.set(t.id, t);
+    customGrading = data.grading; bilanId = data.bilanId; weightSession = null;
+    changed();
+    savedSignature = saved ? signature() : '';
+    onChange();
+  }
+  function isDirty() { return tests.size > 0 && signature() !== savedSignature; }
+  function markSaved() { savedSignature = signature(); onChange(); }
   function snapshot() {
     return {tests:[...tests.values()].map(t => ({...t})), customGrading};
   }
@@ -194,6 +225,7 @@ export function createBilanWorkspace({
           class="ge-search-clear" data-bilan-search-clear="list" aria-label="Effacer la recherche" title="Effacer la recherche" hidden>${icon('close')}</button></span>
       </div>
       <div data-bilan-tests></div>
+      <p class="ge-bilan-warning" data-bilan-collisions role="status" hidden></p>
       <button type="button" class="ge-bilan-drop" data-bilan-pick data-bilan-empty data-direct-control>
         <strong>Choisir des tests…</strong><small>ou déposer les fichiers .json ici</small></button>
     </section>
@@ -319,6 +351,16 @@ export function createBilanWorkspace({
     drawTestList();
   }
 
+  // D1.57 · Homonymes : jamais fusionnés en silence.
+  function drawCollisions() {
+    const note = find('[data-bilan-collisions]'), list = current?.collisions || [];
+    note.hidden = !list.length;
+    if (!list.length) { note.textContent = ''; return; }
+    const names = [...new Map(list.map(c => [foldName(c.name), c])).values()];
+    const shown = names.slice(0, 3).map(c => c.reason === 'same-test' ? `« ${c.name} » (deux fois dans « ${c.test} »)` : `« ${c.name} »`).join(', ');
+    note.textContent = `Même nom pour deux élèves différents : ${shown}${names.length > 3 ? ` et ${names.length - 3} autre${names.length > 4 ? 's' : ''}` : ''}. Leurs résultats restent séparés ; donnez-leur des noms distincts dans les tests pour les reconnaître.`;
+  }
+
   function updateScaleNote() {
     const signature = JSON.stringify(grading);
     find('[data-bilan-scale-note]').hidden = !listedTests.some(t=>weightOf(t.weight) && JSON.stringify(t.doc.grading)!==signature);
@@ -345,10 +387,12 @@ export function createBilanWorkspace({
       const ranks = new Map(catalogue.map((c, i) => [c.id, i]));
       current = buildBilan(list, grading, {rank:c => ranks.get(c.catalogueId)});
       current.used = list.filter(e => weightOf(e.weight) > 0);
+      drawCollisions();
       drawControls();
       drawResults();
     } else if (!hasTests) {
       current = grading = customGrading = null;
+      drawCollisions();
       shown = [];
       search = scope = pupil = '';
       manualScope = false;
@@ -368,6 +412,7 @@ export function createBilanWorkspace({
   function changed(editingWeight = false) {
     dirty = true;
     sync(getRevision(), editingWeight);
+    onChange();
   }
 
   function previewGrading(next,refreshLabels=false) {
@@ -433,8 +478,8 @@ export function createBilanWorkspace({
     row.after(detailRow);
     breakdown.innerHTML = `<div class="ge-bilan-breakdown-head"><strong>${esc(person.name)}</strong>
       <button type="button" data-bilan-breakdown-close aria-label="Fermer le détail" title="Fermer">${icon('close')}</button></div>
-      <p>${esc(displayDescriptor(comp.text))}</p><div class="ge-bilan-breakdown-parts">${result.parts.map(part =>
-        `<div class="ge-bilan-breakdown-row"><span>${esc(part.title)}</span><strong>${bilanPercent(part.percent)}</strong><small>× ${format(part.weight)}</small></div>`).join('')}</div>
+      <p>${esc(displayDescriptor(comp.text))}</p>${trendSVG(orderedParts(result.parts))}<div class="ge-bilan-breakdown-parts">${orderedParts(result.parts).map(part =>
+        `<div class="ge-bilan-breakdown-row"><span>${esc(part.title)}${part.date ? ` <small>${esc(euroDate(part.date))}</small>` : ''}</span><strong>${bilanPercent(part.percent)}</strong><small>× ${format(part.weight)}</small></div>`).join('')}</div>
       <div class="ge-bilan-breakdown-total"><span>Bilan</span><strong>${bilanPercent(result.percent)}</strong></div>`;
     const width = breakdown.offsetWidth;
     breakdown.style.marginInlineStart = Math.max(0, Math.min(cell.offsetLeft, visual.offsetWidth-width-12)) + 'px';
@@ -442,22 +487,49 @@ export function createBilanWorkspace({
     onLayout();
   }
 
+  // D1.57 · Évolution : les résultats d’une compétence dans l’ordre des dates des tests.
+  function orderedParts(parts) {
+    return parts.map(p => ({...p, date:tests.get(p.evaluation)?.doc.date || ''})).sort((a,b) => String(a.date).localeCompare(String(b.date)) || a.index - b.index);
+  }
+  function trendSVG(parts) {
+    if (parts.length < 2) return '';
+    const W = 220, H = 46, pad = 6, step = (W - 2*pad) / (parts.length - 1), y = v => pad + (H - 2*pad) * (1 - v/100);
+    const pts = parts.map((p,i) => [pad + i*step, y(Math.max(0, Math.min(100, p.percent)))]);
+    const guides = (grading?.thresholds || []).map(t => `<line x1="${pad}" x2="${W-pad}" y1="${y(t)}" y2="${y(t)}" class="ge-trend-guide"/>`).join('');
+    const dots = parts.map((p,i) => `<circle cx="${pts[i][0]}" cy="${pts[i][1]}" r="3.2" fill="${levelColour(grading, levelFor(p.percent, grading))}"><title>${esc(p.title)} · ${bilanPercent(p.percent)}</title></circle>`).join('');
+    return `<figure class="ge-bilan-trend" aria-label="Évolution sur ${parts.length} tests"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">${guides}<polyline points="${pts.map(p => p.join(',')).join(' ')}" class="ge-trend-line"/>${dots}</svg><figcaption>Évolution</figcaption></figure>`;
+  }
+  function reportData() {
+    if (!current) return null;
+    return {pupils:current.pupils, competencies:current.competencies, cell:current.cell, grading,
+      tests:current.used.map(e => ({id:e.id, title:e.doc.title, date:e.doc.date || '', subject:e.doc.subject || ''})), pupil, orderedParts};
+  }
+
   async function addFiles(files) {
     const failed = [];
     let added = false;
     const before = snapshot(), read = [];
+    let opened = null, replaced = 0, same = 0;
     for (const f of files) {
       try {
-        if (!/\.json$/i.test(f.name) || f.size > 8*1024*1024) throw new Error('format');
-        read.push(validate(await f.text()));
+        if (!/\.json$/i.test(f.name) || f.size > 32*1024*1024) throw new Error('format');
+        const text = await f.text(), bilan = readBilan(text);
+        if (bilan) { opened = bilan; continue; }
+        read.push(validate(text));
       } catch { failed.push(f.name); }
     }
+    if (opened) { loadBilan(opened); notice('Bilan ouvert · annulation possible.'); }
     for (const doc of read) {
       const id = evaluationKey(doc), prev = tests.get(id);
       if (prev?.live && id === evaluationKey(getDocument())) continue;
+      if (prev && JSON.stringify(prev.doc) === JSON.stringify(doc)) { same++; continue; }
+      if (prev) replaced++;
       tests.set(id, {id, doc, weight:prev?.weight ?? '1'});
       added = true;
     }
+    if (replaced) notice(replaced === 1 ? 'Un test du bilan a été remplacé par la version choisie · annulation possible.' : `${replaced} tests du bilan ont été remplacés par les versions choisies · annulation possible.`);
+    else if (same && !added && !opened) notice(same === 1 ? 'Ce test est déjà dans le bilan.' : 'Ces tests sont déjà dans le bilan.');
+    if (opened) { if (element.isConnected) onSelection(); if (!added) return; }
     if (added) {
       past.push(before);
       if (past.length > HISTORY_LIMIT) past.shift();
@@ -556,8 +628,12 @@ export function createBilanWorkspace({
       closeDetails(true);
     }
   });
+  if (initial?.data) {
+    try { const b = readBilan(initial.data); if (b) { loadBilan(b, {undoable:false, saved:false}); if (initial.saved) savedSignature = signature(); } } catch {}
+  }
   return {
     element, selection, results, sync, addFiles, applyGrading, previewGrading, includeOpen, clearTests, exportCSV,
+    exportBilan, isDirty, markSaved, reportData, newBilan:()=>{ if (!tests.size) return false; record(); tests.clear(); customGrading = null; bilanId = ''; changed(); savedSignature = signature(); onChange(); return true; },
     undo:()=>step(true), redo:()=>step(false), canUndo:()=>past.length > 0, canRedo:()=>future.length > 0,
     canExport:()=>Boolean(current && shown.length),
     pupilCount:()=>current?.pupils.length ?? 0, resize:()=>{ if (current) sizeDescriptors(); },

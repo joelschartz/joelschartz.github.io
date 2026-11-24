@@ -48,7 +48,7 @@
 /* A preparation sheet replaces the empty matrices until both axes exist. */
 #ge-canvas .ge-setup-sheet{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:30px;max-width:920px;color:var(--ink)}
 #ge-canvas .ge-setup-intro{margin-bottom:26px}
-#ge-canvas .ge-setup-intro h1{font-size:26px;line-height:1.25;letter-spacing:-.5px;margin:0 0 10px;font-weight:650}
+#ge-canvas .ge-setup-intro h1{font-size:26px;line-height:1.25;letter-spacing:-.5px;margin:0 0 10px;font-weight:600}
 #ge-canvas .ge-setup-intro p{font-size:16px;line-height:1.55;color:var(--muted);margin:0;max-width:620px}
 #ge-canvas .ge-setup-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 #ge-canvas .ge-setup-card{padding:20px;border:1px solid var(--line);border-radius:12px;min-height:166px;min-width:0}
@@ -169,7 +169,7 @@
 #ge-canvas .ge-workboard{position:absolute;background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 26px var(--shadow);overflow:hidden;color:var(--ink);font-size:13px}
 #ge-canvas .ge-workboard-title{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px;background:var(--soft);border-bottom:1px solid var(--line)}
 #ge-canvas .ge-workboard-title small{display:block;font-size:10px;letter-spacing:.12em;color:var(--muted);font-weight:600}
-#ge-canvas .ge-workboard h2{font-size:22px;font-weight:550;line-height:1.25;margin:4px 0 0}
+#ge-canvas .ge-workboard h2{font-size:22px;font-weight:500;line-height:1.25;margin:4px 0 0}
 #ge-canvas .ge-workboard h3{font-size:15px;font-weight:600;margin:0 0 8px}
 #ge-canvas .ge-workboard-body{padding:18px 22px}
 #ge-canvas .ge-catalogue{width:650px}
@@ -182,7 +182,7 @@
 #ge-canvas .ge-search input{width:100%}
 #ge-canvas .ge-catalogue-status{display:flex;justify-content:space-between;gap:12px;font-size:11px;margin:17px 0;color:var(--muted)}
 #ge-canvas .ge-catalogue-status strong{font-weight:500;color:var(--blue)}
-#ge-canvas .ge-catalogue-group{padding:12px 0 9px!important;margin:0!important;color:var(--muted);font-size:11px!important;font-weight:550!important;letter-spacing:.04em;border-bottom:1px solid var(--line)}
+#ge-canvas .ge-catalogue-group{padding:12px 0 9px!important;margin:0!important;color:var(--muted);font-size:11px!important;font-weight:500!important;letter-spacing:.04em;border-bottom:1px solid var(--line)}
 #ge-canvas .ge-catalogue-entry{display:flex;align-items:flex-start;gap:12px;padding:15px 12px;border-bottom:1px solid var(--line);font-size:14px;line-height:1.5;cursor:grab;overflow-wrap:anywhere}
 #ge-canvas .ge-catalogue-entry input{flex:0 0 auto;width:19px;height:19px;margin:2px 0 0;accent-color:var(--blue);cursor:grab}
 #ge-canvas .ge-catalogue-entry small{display:block;font-size:10px;letter-spacing:.02em;color:var(--muted);margin-top:6px}
@@ -221,7 +221,7 @@
 #ge-canvas .ge-result-provisional .ge-bar-fill{background:repeating-linear-gradient(135deg,transparent,transparent 4px,var(--line) 4px,var(--line) 5px);border-top-style:dashed}
 #ge-canvas .ge-threshold-line{position:absolute;left:-74px;right:0;height:16px;margin-bottom:-8px;display:flex;align-items:center;gap:8px;pointer-events:auto;cursor:ns-resize;touch-action:none;z-index:3;outline:none}
 #ge-canvas .ge-threshold-grip{width:66px;flex-shrink:0;background:var(--paper);border:1px solid var(--threshold-colour);border-radius:4px;color:var(--threshold-colour);padding:2px 4px;font-size:12px;box-shadow:0 1px 3px var(--shadow)}
-#ge-canvas .ge-threshold-grip b{font-weight:550;font-size:11px}
+#ge-canvas .ge-threshold-grip b{font-weight:500;font-size:11px}
 #ge-canvas .ge-threshold-rule{height:1px;flex:1;background:var(--threshold-colour);opacity:.75}
 #ge-canvas .ge-threshold-line:focus-visible .ge-threshold-grip,#ge-canvas .ge-dragging-threshold .ge-threshold-grip{outline:2px solid var(--blue);outline-offset:2px}
 #ge-canvas .ge-level-legend{display:flex;flex-wrap:wrap;gap:10px 20px;font-size:11px;margin-top:15px;align-items:center}
@@ -365,7 +365,7 @@
 #ge-canvas .ge-logo{height:28px;width:28px;border-radius:6px;font-size:22px;flex-shrink:0}
 #ge-canvas .ge-document{flex:1;min-width:80px;padding:0;font-size:14px;order:0;flex-basis:auto}
 #ge-canvas .ge-document form{margin:0}
-#ge-canvas .ge-document input{display:block;width:100%;height:23px;padding:0 3px;border:1px solid transparent;border-radius:4px;background:transparent;color:var(--ink);font-size:14px;font-weight:550;text-overflow:ellipsis;outline-offset:1px}
+#ge-canvas .ge-document input{display:block;width:100%;height:23px;padding:0 3px;border:1px solid transparent;border-radius:4px;background:transparent;color:var(--ink);font-size:14px;font-weight:500;text-overflow:ellipsis;outline-offset:1px}
 #ge-canvas .ge-document input:hover{border-color:var(--line)}
 #ge-canvas .ge-document input:focus{background:var(--paper);border-color:var(--blue);outline:1px solid var(--blue)}
 #ge-canvas .ge-document small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;line-height:14px;margin:0 0 0 4px;pointer-events:none}
@@ -388,9 +388,9 @@
 #ge-canvas{--stripe:light-dark(#fafbfc,#242a32);--retained:light-dark(#f8f9fb,#252c36);--orientation:light-dark(#e9edf2,#353e4b);--hover:light-dark(#eef1f5,#303946);--focus:light-dark(#385fcc,#9ab8ff);--association:light-dark(#edf2fc,#2a3b58);--checked:light-dark(#3b5fa1,#9abcf8);--on-checked:light-dark(#fff,#14243d);--control:light-dark(#778496,#8e9bae)}
 #ge-canvas .ge-header{background:var(--paper);border-bottom-color:var(--line);gap:12px}
 #ge-canvas .ge-app-brand{display:flex;align-items:center;gap:9px;padding-right:16px;border-right:1px solid var(--line);flex-shrink:0;color:var(--ink)}
-#ge-canvas .ge-app-brand strong{font-size:23px;font-weight:650;letter-spacing:-.8px;line-height:1}
+#ge-canvas .ge-app-brand strong{font-size:23px;font-weight:600;letter-spacing:-.8px;line-height:1}
 #ge-canvas .ge-app-brand .ge-logo{background:var(--blue);border-radius:7px}
-#ge-canvas .ge-document input{font-weight:550}
+#ge-canvas .ge-document input{font-weight:500}
 #ge-canvas .ge-button{box-shadow:0 1px 1px var(--shadow)}
 #ge-canvas .ge-button:hover:not(:disabled),#ge-canvas .ge-menu-panel button:hover{background:var(--hover);color:var(--ink);border-color:var(--control)}
 #ge-canvas .ge-button:active:not(:disabled){background:var(--orientation)}
@@ -440,7 +440,7 @@
 #ge-canvas .ge-grid [data-assessment-heading]{vertical-align:top;background:var(--soft)}
 #ge-canvas .ge-assessment-head-group{height:112px;flex-shrink:0;background:var(--soft);box-sizing:border-box;border-bottom:1px solid var(--line)}
 #ge-canvas .ge-assessment-title{height:32px;display:flex;align-items:center;gap:16px;padding:0 12px;text-align:left;border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap}
-#ge-canvas .ge-assessment-title strong{font-size:13px;font-weight:550}
+#ge-canvas .ge-assessment-title strong{font-size:13px;font-weight:500}
 #ge-canvas .ge-assessment-title small{font-size:10px;color:var(--muted)}
 #ge-canvas .ge-assessment-names{height:80px;display:flex}
 #ge-canvas .ge-pupil-result-head{height:80px;display:flex;flex-shrink:0;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 9px;border-right:1px solid var(--line);text-align:center;overflow-wrap:anywhere;font-size:12px}
@@ -473,9 +473,9 @@
 #ge-canvas .ge-task-label{min-height:44px}
 #ge-canvas .ge-task-label .ge-label-text>small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:3px}
 #ge-canvas .ge-transposed-results-label{text-align:left;padding:12px 15px}
-#ge-canvas .ge-transposed-results-label>strong{display:block;font-size:14px;font-weight:550}
+#ge-canvas .ge-transposed-results-label>strong{display:block;font-size:14px;font-weight:500}
 #ge-canvas .ge-transposed-results-label>small{display:block;margin-top:5px;color:var(--muted)}
-#ge-canvas .ge-competency-result .ge-result-label{font-size:13px;line-height:1.35;font-weight:550;color:var(--ink);text-align:center;overflow-wrap:anywhere}
+#ge-canvas .ge-competency-result .ge-result-label{font-size:13px;line-height:1.35;font-weight:500;color:var(--ink);text-align:center;overflow-wrap:anywhere}
 #ge-canvas .ge-competency-result .ge-result-percent{font-size:10.5px;font-weight:400;color:var(--muted);line-height:1.3}
 #ge-canvas .ge-competency-result{gap:5px}
 #ge-canvas .ge-transposed-results .ge-competency-result{min-height:92px}
@@ -494,7 +494,7 @@
 #ge-canvas .ge-competency-section{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:11px 14px;align-content:center}
 #ge-canvas .ge-visibility-switch{grid-row:2;grid-column:1/-1;justify-self:start;display:inline-flex;min-height:28px;max-width:none;border:1px solid var(--line);border-radius:6px;background:var(--soft);padding:2px;gap:2px}
 #ge-canvas .ge-visibility-switch [data-competency-visibility]{max-width:none;min-height:25px;padding:3px 13px;border:1px solid transparent;border-radius:4px;background:transparent;font:inherit;font-size:12px;font-weight:400;color:var(--muted);cursor:pointer}
-#ge-canvas .ge-visibility-switch [aria-checked="true"]{background:var(--paper);border-color:var(--line);color:var(--ink);font-weight:550;box-shadow:0 1px 2px var(--shadow)}
+#ge-canvas .ge-visibility-switch [aria-checked="true"]{background:var(--paper);border-color:var(--line);color:var(--ink);font-weight:500;box-shadow:0 1px 2px var(--shadow)}
 #ge-canvas .ge-visibility-switch [role="radio"]:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 /* One column per pupil, with an identical 0–100% plot in every column. */
 #ge-canvas .ge-grid [data-column-chart]>th,#ge-canvas .ge-grid [data-column-chart]>td{height:240px;vertical-align:top;background:var(--paper)}
@@ -503,7 +503,7 @@
 #ge-canvas .ge-column-guide{position:absolute;left:0;right:0;height:0;border-top:1px dashed var(--line);pointer-events:none}
 #ge-canvas .ge-column-fill{position:absolute;bottom:0;left:29%;width:42%;border-radius:3px 3px 0 0;min-height:0}
 #ge-canvas .ge-column-percent{position:absolute;left:0;right:0;text-align:center;transform:translateY(-7px);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;pointer-events:none}
-#ge-canvas .ge-column-level{position:absolute;bottom:7px;left:7px;right:7px;height:33px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:550;line-height:1.3;color:var(--ink);overflow-wrap:anywhere}
+#ge-canvas .ge-column-level{position:absolute;bottom:7px;left:7px;right:7px;height:33px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:500;line-height:1.3;color:var(--ink);overflow-wrap:anywhere}
 #ge-canvas .ge-vertical-heading{position:absolute;left:14px;right:14px;top:7px;display:flex;justify-content:space-between;align-items:center;font-size:14px}
 #ge-canvas .ge-vertical-heading .ge-menu-panel{left:0;right:auto;min-width:260px}
 #ge-canvas .ge-vertical-axis{position:absolute;top:36px;bottom:48px;left:14px;right:0;border-right:1px solid var(--control)}
@@ -513,7 +513,7 @@
 #ge-canvas .ge-vertical-threshold{position:absolute;left:0;right:0;display:flex;justify-content:flex-end;align-items:center;gap:7px;height:20px;transform:translateY(50%);cursor:ns-resize;border-top:0;background:transparent;touch-action:none}
 #ge-canvas .ge-vertical-threshold:after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px dashed var(--line);z-index:0;pointer-events:none}
 #ge-canvas .ge-vertical-threshold>small,#ge-canvas .ge-vertical-threshold>b,#ge-canvas .ge-vertical-threshold>span{position:relative;z-index:1;background:var(--paper);font-size:10px;font-weight:400;padding:0 2px;line-height:18px}
-#ge-canvas .ge-vertical-threshold>b{font-variant-numeric:tabular-nums;font-weight:550}
+#ge-canvas .ge-vertical-threshold>b{font-variant-numeric:tabular-nums;font-weight:500}
 #ge-canvas .ge-vertical-threshold>span{padding:0 4px;border:1px solid var(--control);border-radius:3px;color:var(--muted);font-size:12px}
 #ge-canvas .ge-vertical-threshold:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 #ge-canvas .ge-vertical-chart-note{position:absolute;bottom:16px;left:14px;right:14px;font-size:10px;text-align:left;color:var(--muted)}
@@ -554,7 +554,7 @@
 #ge-canvas .ge-association-band>div{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 #ge-canvas .ge-link-button{display:inline-flex;align-items:center;min-height:32px;padding:5px 8px;border:1px solid var(--line);border-radius:5px;background:var(--paper);color:var(--ink);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 #ge-canvas .ge-link-button:hover{background:var(--hover);border-color:var(--control)}
-#ge-canvas .ge-summary-jump{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:36px;width:100%;padding:6px 14px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:12px;font-weight:550;text-align:left}
+#ge-canvas .ge-summary-jump{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:36px;width:100%;padding:6px 14px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:12px;font-weight:500;text-align:left}
 #ge-canvas .ge-summary-jump:hover{background:var(--hover)}
 #ge-canvas .ge-grid .ge-class-summary>th{padding:0!important}
 #ge-canvas .ge-canvas-filters .ge-compact-controls{padding:16px;gap:11px}
@@ -637,7 +637,7 @@
   --radius-card:16px;
   --pill-shadow:0 1px 2px light-dark(#1c1c2d0f,#0006),0 6px 20px light-dark(#1c1c2d14,#0008);
   font:13px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,"Helvetica Neue",sans-serif;
-  -webkit-font-smoothing:antialiased;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   background:var(--canvas);
 }
 #ge-canvas [data-level="0"]{--lv:var(--lv0)}
@@ -652,7 +652,7 @@
 #ge-canvas .ge-app-brand{gap:9px;padding:0 16px 0 0;min-height:32px;border-right:1px solid var(--line)}
 #ge-canvas .ge-app-brand:hover{color:var(--ink)}
 #ge-canvas .ge-app-brand:hover .ge-logo{background:var(--blue)}
-#ge-canvas .ge-app-brand strong{font-size:17px;font-weight:650;letter-spacing:-.35px}
+#ge-canvas .ge-app-brand strong{font-size:17px;font-weight:600;letter-spacing:-.35px}
 #ge-canvas .ge-app-brand .ge-logo{width:26px;height:26px;border-radius:7px;background:var(--accent);color:#fff;font-size:0;transition:background-color .15s}
 #ge-canvas .ge-logo svg{width:18px;height:18px;stroke-width:1.6}
 #ge-canvas .ge-document{padding-left:4px}
@@ -694,7 +694,7 @@
 #ge-canvas .ge-zoom .ge-button{height:30px;min-height:30px;border:0;border-radius:9px;background:transparent;color:var(--ink-soft)}
 #ge-canvas .ge-zoom .ge-button:hover:not(:disabled){background:var(--hover)}
 #ge-canvas .ge-zoom .ge-icon{width:30px;padding:0}
-#ge-canvas .ge-zoom .ge-percent{min-width:54px;padding:0 4px;font-size:12.5px;font-weight:550;font-variant-numeric:tabular-nums;color:var(--ink)}
+#ge-canvas .ge-zoom .ge-percent{min-width:54px;padding:0 4px;font-size:12.5px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink)}
 #ge-canvas .ge-zoom [data-action="fit"]{margin-left:4px;position:relative}
 #ge-canvas .ge-zoom [data-action="fit"]::before{content:"";position:absolute;left:-3px;top:6px;bottom:6px;border-left:1px solid var(--line)}
 #ge-canvas .ge-zoom [data-action="fit"][aria-pressed="true"]{background:var(--accent-soft);color:var(--blue)}
@@ -737,9 +737,9 @@
 
 /* Titres de volet */
 #ge-canvas .ge-section{background:var(--head);padding:12px 16px}
-#ge-canvas .ge-section>.ge-pane-heading{font-size:15px;font-weight:650;letter-spacing:-.2px;color:var(--ink);cursor:zoom-in}
+#ge-canvas .ge-section>.ge-pane-heading{font-size:15px;font-weight:600;letter-spacing:-.2px;color:var(--ink);cursor:zoom-in}
 #ge-canvas .ge-section small{margin-left:5px;font-size:12px;font-weight:500;color:var(--faint);font-variant-numeric:tabular-nums;letter-spacing:0}
-#ge-canvas .ge-section .ge-button{min-height:30px;padding:4px 11px;border-color:transparent;border-radius:9px;background:var(--accent-soft);color:var(--blue);font-size:12.5px;font-weight:550}
+#ge-canvas .ge-section .ge-button{min-height:30px;padding:4px 11px;border-color:transparent;border-radius:9px;background:var(--accent-soft);color:var(--blue);font-size:12.5px;font-weight:500}
 #ge-canvas .ge-section .ge-button:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 18%,var(--paper));border-color:transparent;color:var(--blue)}
 
 /* En-têtes de colonnes */
@@ -747,9 +747,9 @@
 #ge-canvas .ge-task-head{background:var(--head);color:var(--ink);gap:5px;padding:9px 7px;font-size:13px;line-height:1.35;transition:background-color .12s}
 #ge-canvas .ge-task-head:hover{background:var(--hover)}
 #ge-canvas .ge-task-head .ge-task-index{font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--faint)}
-#ge-canvas .ge-task-head .ge-task-name{font-weight:550;color:var(--ink)}
+#ge-canvas .ge-task-head .ge-task-name{font-weight:500;color:var(--ink)}
 #ge-canvas .ge-task-head .ge-task-max{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-#ge-canvas .ge-student-head .ge-task-name{font-size:13.5px;font-weight:550;line-height:1.3}
+#ge-canvas .ge-student-head .ge-task-name{font-size:13.5px;font-weight:500;line-height:1.3}
 
 /* Lignes : noms et points */
 #ge-canvas .ge-grid [data-grade-rows] tr:nth-child(even)>*{background:var(--stripe)}
@@ -763,7 +763,7 @@
 @media(hover:none){#ge-canvas .ge-label .ge-pencil{opacity:.55}}
 #ge-canvas .ge-task-label .ge-label-text>small{font-size:11.5px;font-variant-numeric:tabular-nums}
 
-#ge-canvas .ge-grade{font-size:15px;font-weight:450;color:var(--ink);border-radius:0;letter-spacing:-.1px}
+#ge-canvas .ge-grade{font-size:15px;font-weight:400;color:var(--ink);border-radius:0;letter-spacing:-.1px}
 #ge-canvas .ge-grade::placeholder{color:var(--control)}
 #ge-canvas .ge-grade:focus{outline:2px solid var(--accent);outline-offset:-2px;border-radius:7px;background:var(--paper)}
 #ge-canvas .ge-grade.ge-invalid{outline:2px solid var(--bad);background:var(--bad-soft);color:var(--bad);border-radius:7px}
@@ -777,7 +777,7 @@
 #ge-canvas .ge-inline-result-cell{padding:0 16px 0 14px!important;border-left:1px solid var(--edge)}
 #ge-canvas [data-inline-results-head]{background:var(--head);border-left:1px solid var(--edge);border-bottom-color:var(--edge)}
 #ge-canvas .ge-inline-results-head{padding:10px 16px 8px;background:var(--head)}
-#ge-canvas .ge-inline-heading strong,#ge-canvas .ge-vertical-heading strong{font-size:15px;font-weight:650;letter-spacing:-.2px;cursor:zoom-in}
+#ge-canvas .ge-inline-heading strong,#ge-canvas .ge-vertical-heading strong{font-size:15px;font-weight:600;letter-spacing:-.2px;cursor:zoom-in}
 #ge-canvas .ge-inline-heading .ge-button,#ge-canvas .ge-vertical-heading .ge-button{min-height:26px;height:26px;padding:0 8px;border-color:transparent;background:transparent;color:var(--muted);font-size:16px;line-height:1}
 #ge-canvas .ge-inline-heading .ge-button:hover,#ge-canvas .ge-vertical-heading .ge-button:hover{background:var(--hover);color:var(--ink)}
 #ge-canvas .ge-inline-axis{height:40px;margin:0 66px 0 48px;border-bottom:1px solid var(--edge)}
@@ -791,7 +791,7 @@
 #ge-canvas .ge-inline-legend i{width:7px;height:7px;opacity:.8}
 
 #ge-canvas .ge-score-result{gap:12px}
-#ge-canvas .ge-score-result>[data-total],#ge-canvas .ge-result-pin-row>[data-result-total]{width:36px;flex-basis:36px;font-size:13.5px;font-weight:550;color:var(--ink)}
+#ge-canvas .ge-score-result>[data-total],#ge-canvas .ge-result-pin-row>[data-result-total]{width:36px;flex-basis:36px;font-size:13.5px;font-weight:500;color:var(--ink)}
 #ge-canvas .ge-inline-track{height:8px;border-radius:4px;background:light-dark(#ededf2,#333338);overflow:visible}
 #ge-canvas .ge-inline-fill{position:relative;border-radius:4px;transition:width .25s ease}
 #ge-canvas .ge-inline-fill::after,#ge-canvas .ge-column-fill::after{content:"";position:absolute;inset:0;border-radius:inherit;background:light-dark(#ffffff4d,#00000026)}
@@ -830,16 +830,16 @@
 #ge-canvas .ge-visibility-switch [aria-checked="true"]{background:var(--paper);color:var(--ink);font-weight:600;border:0;box-shadow:0 1px 2px light-dark(#1c1c2d1f,#0008),0 0 0 .5px light-dark(#1c1c2d14,#fff1)}
 
 #ge-canvas .ge-grid .ge-association-band{background:var(--head);padding:12px 16px;font-size:12.5px;color:var(--muted);vertical-align:bottom}
-#ge-canvas .ge-link-button{min-height:30px;padding:4px 11px;border:0;border-radius:9px;background:var(--accent-soft);color:var(--blue);font-size:12.5px;font-weight:550}
+#ge-canvas .ge-link-button{min-height:30px;padding:4px 11px;border:0;border-radius:9px;background:var(--accent-soft);color:var(--blue);font-size:12.5px;font-weight:500}
 #ge-canvas .ge-link-button:hover{background:color-mix(in srgb,var(--accent) 18%,var(--paper))}
 
 #ge-canvas .ge-grid [data-assessment-heading]{background:var(--head);border-left:1px solid var(--edge)}
 #ge-canvas .ge-assessment-head-group{background:var(--head);border-bottom:0}
 #ge-canvas .ge-assessment-title{height:34px;padding:0 16px;gap:12px;border-bottom:1px solid var(--line)}
-#ge-canvas .ge-assessment-title .ge-pane-heading{font-size:15px;font-weight:650;letter-spacing:-.2px;cursor:zoom-in}
+#ge-canvas .ge-assessment-title .ge-pane-heading{font-size:15px;font-weight:600;letter-spacing:-.2px;cursor:zoom-in}
 #ge-canvas .ge-assessment-title small{font-size:11.5px;color:var(--muted)}
 #ge-canvas .ge-assessment-names{height:78px}
-#ge-canvas .ge-pupil-result-head{height:78px;gap:4px;border-right-color:var(--line);font-size:13.5px;font-weight:550;line-height:1.3;color:var(--ink)}
+#ge-canvas .ge-pupil-result-head{height:78px;gap:4px;border-right-color:var(--line);font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink)}
 #ge-canvas .ge-pupil-result-head small{font-size:10.5px;font-weight:600;letter-spacing:.06em;color:var(--faint)}
 
 /* Descripteurs */
@@ -852,7 +852,7 @@
 #ge-canvas .ge-descriptor-meta{gap:8px;margin-bottom:6px;font-size:11.5px;color:var(--muted)}
 #ge-canvas .ge-descriptor-meta>a{color:var(--faint);text-decoration:none}
 #ge-canvas .ge-descriptor-meta>a:hover{color:var(--blue);text-decoration:underline}
-#ge-canvas .ge-retained-badge{border:0;border-radius:6px;padding:1px 7px;background:var(--accent-soft);color:var(--blue);font-size:11px;font-weight:550}
+#ge-canvas .ge-retained-badge{border:0;border-radius:6px;padding:1px 7px;background:var(--accent-soft);color:var(--blue);font-size:11px;font-weight:500}
 #ge-canvas .ge-competency-basis{margin-top:8px;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 #ge-canvas .ge-adopt-icon{border-color:transparent;border-radius:8px;background:var(--accent-soft);color:var(--blue)}
 
@@ -873,7 +873,7 @@
 #ge-canvas .ge-competency-result[data-level]:not([data-level=""]) .ge-result-percent{color:color-mix(in srgb,var(--lv) 45%,var(--muted))}
 #ge-canvas .ge-competency-result>i{display:none}
 #ge-canvas .ge-competency-result[data-result-state="unassociated"]{background:transparent}
-#ge-canvas .ge-competency-result[data-result-state="unassociated"] .ge-result-label{font-weight:450;font-size:12.5px;color:var(--faint)}
+#ge-canvas .ge-competency-result[data-result-state="unassociated"] .ge-result-label{font-weight:400;font-size:12.5px;color:var(--faint)}
 
 /* Diagramme en colonnes (vue transposée) */
 #ge-canvas .ge-grid [data-column-chart]>th{border-bottom-color:var(--edge)}
@@ -881,7 +881,7 @@
 #ge-canvas .ge-column-plot{border-bottom:1px solid var(--edge)}
 #ge-canvas .ge-column-guide{border-top:1px dashed var(--line)}
 #ge-canvas .ge-column-fill{left:31%;width:38%;border-radius:6px 6px 0 0;transition:height .25s ease}
-#ge-canvas .ge-column-percent{font-size:12px;font-weight:550;color:color-mix(in srgb,var(--lv,var(--muted)) 70%,var(--ink))}
+#ge-canvas .ge-column-percent{font-size:12px;font-weight:500;color:color-mix(in srgb,var(--lv,var(--muted)) 70%,var(--ink))}
 #ge-canvas .ge-column-level{font-size:12.5px;font-weight:600;color:color-mix(in srgb,var(--lv,var(--muted)) 62%,var(--ink))}
 #ge-canvas .ge-vertical-heading{left:16px;right:12px;top:9px}
 #ge-canvas .ge-vertical-axis{left:16px;border-right:1px solid var(--edge)}
@@ -894,8 +894,8 @@
 /* Filtres du catalogue : une carte posée à côté de la matrice */
 #ge-canvas .ge-canvas-filters{transform:translateX(-20px);border:1px solid var(--edge);border-radius:var(--radius-card);background:var(--paper);box-shadow:none}
 #ge-canvas .ge-canvas-filters .ge-compact-controls{padding:16px;gap:12px;background:transparent;border-radius:var(--radius-card)}
-#ge-canvas .ge-canvas-filters h3{font-size:15px;font-weight:650;letter-spacing:-.2px}
-#ge-canvas .ge-canvas-filters label{font-size:12px;font-weight:550;color:var(--muted)}
+#ge-canvas .ge-canvas-filters h3{font-size:15px;font-weight:600;letter-spacing:-.2px}
+#ge-canvas .ge-canvas-filters label{font-size:12px;font-weight:500;color:var(--muted)}
 #ge-canvas .ge-canvas-filters label input,#ge-canvas .ge-canvas-filters label select,#ge-canvas .ge-compact-controls input,#ge-canvas .ge-compact-controls select{height:36px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font-size:13.5px;font-weight:400}
 #ge-canvas .ge-canvas-filters label input:focus,#ge-canvas .ge-canvas-filters label select:focus{border-color:var(--accent);outline:3px solid color-mix(in srgb,var(--accent) 22%,transparent);outline-offset:0}
 #ge-canvas .ge-filter-more{border-color:transparent;border-radius:8px;background:var(--hover)}
@@ -915,8 +915,8 @@
 #ge-canvas .ge-dialog{border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 80px light-dark(#1c1c2d33,#000a)}
 #ge-canvas .ge-dialog::backdrop{background:light-dark(#1c1c2d38,#0009);backdrop-filter:blur(2px)}
 #ge-canvas .ge-dialog-form{padding:24px}
-#ge-canvas .ge-dialog h2{font-size:19px;font-weight:650;letter-spacing:-.3px;margin-bottom:16px}
-#ge-canvas .ge-field>span{font-size:12px;font-weight:550;color:var(--muted)}
+#ge-canvas .ge-dialog h2{font-size:19px;font-weight:600;letter-spacing:-.3px;margin-bottom:16px}
+#ge-canvas .ge-field>span{font-size:12px;font-weight:500;color:var(--muted)}
 #ge-canvas .ge-field input,#ge-canvas .ge-field textarea{border:1px solid var(--line);border-radius:11px;padding:9px 12px;background:var(--paper);font-size:14px}
 #ge-canvas .ge-field input:focus,#ge-canvas .ge-field textarea:focus{border-color:var(--accent);outline:3px solid color-mix(in srgb,var(--accent) 22%,transparent);outline-offset:0}
 #ge-canvas .ge-dialog-note,#ge-canvas .ge-help-copy p{font-size:13px;line-height:1.6;color:var(--ink-soft)}
@@ -962,13 +962,13 @@
 #ge-canvas .ge-grid .ge-empty{padding:28px 16px!important;font-size:13.5px;color:var(--muted)}
 
 /* D1 review: keyboard access and controls are independent of the camera. */
-#ge-canvas .ge-pane-heading{display:inline-flex;align-items:baseline;gap:5px;max-width:100%;padding:0;border:0;border-radius:6px;background:transparent;color:var(--ink);font:inherit;font-size:15px;font-weight:650;letter-spacing:-.2px;text-align:left;cursor:zoom-in}
+#ge-canvas .ge-pane-heading{display:inline-flex;align-items:baseline;gap:5px;max-width:100%;padding:0;border:0;border-radius:6px;background:transparent;color:var(--ink);font:inherit;font-size:15px;font-weight:600;letter-spacing:-.2px;text-align:left;cursor:zoom-in}
 #ge-canvas .ge-pane-heading:hover{color:var(--blue)}
 #ge-canvas .ge-pane-heading:focus-visible{outline:2px solid var(--focus);outline-offset:4px}
 #ge-canvas .ge-board-document .ge-pane-heading{margin:12px 16px;min-height:28px}
 #ge-canvas .ge-section>.ge-pane-heading{margin-right:auto}
 #ge-canvas .ge-competency-section>.ge-pane-heading{margin-right:auto}
-#ge-canvas .ge-inline-heading .ge-pane-heading,#ge-canvas .ge-vertical-heading .ge-pane-heading,#ge-canvas .ge-assessment-title .ge-pane-heading{font-size:15px;font-weight:650;letter-spacing:-.2px}
+#ge-canvas .ge-inline-heading .ge-pane-heading,#ge-canvas .ge-vertical-heading .ge-pane-heading,#ge-canvas .ge-assessment-title .ge-pane-heading{font-size:15px;font-weight:600;letter-spacing:-.2px}
 #ge-canvas .ge-menu-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 11px;font-size:13px}
 #ge-canvas .ge-menu-setting select{min-height:32px;max-width:140px;padding:4px 7px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);font:inherit}
 #ge-canvas .ge-inline-threshold:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:5px}
@@ -987,7 +987,7 @@
 #ge-canvas .ge-grading-preview{height:10px;display:flex;gap:2px;overflow:hidden;border-radius:5px;margin-bottom:8px}
 #ge-canvas .ge-grading-preview i{min-width:1px}
 #ge-canvas .ge-grading-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted);margin-bottom:18px}
-#ge-canvas .ge-grading-summary strong{font-size:12px;font-weight:550;color:var(--ink)}
+#ge-canvas .ge-grading-summary strong{font-size:12px;font-weight:500;color:var(--ink)}
 #ge-canvas .ge-grading-grid-head,#ge-canvas .ge-grading-row{display:grid;grid-template-columns:minmax(0,1fr) 94px 94px 68px;gap:10px;align-items:center}
 #ge-canvas .ge-grading-grid-head{font-size:11px;color:var(--muted);padding:0 0 7px}
 #ge-canvas .ge-grading-grid-head>span:nth-child(2),#ge-canvas .ge-grading-grid-head>span:nth-child(3){text-align:right;padding-right:10px}
@@ -1215,7 +1215,7 @@
 #ge-canvas [data-pane-run]>small{overflow:visible;text-overflow:clip;flex-shrink:0}
 /* D1.12 · copies épinglées identiques aux originaux */
 #ge-canvas .ge-upper-head-group .ge-assessment-title{box-sizing:border-box;align-items:center}
-#ge-canvas .ge-upper-head-group .ge-assessment-title .ge-button{min-height:30px;padding:4px 11px;border:1px solid transparent;border-radius:9px;background:var(--accent-soft);color:var(--blue);font-size:12.5px;font-weight:550;box-shadow:none}
+#ge-canvas .ge-upper-head-group .ge-assessment-title .ge-button{min-height:30px;padding:4px 11px;border:1px solid transparent;border-radius:9px;background:var(--accent-soft);color:var(--blue);font-size:12.5px;font-weight:500;box-shadow:none}
 #ge-canvas .ge-upper-head-group .ge-assessment-title .ge-button:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 18%,var(--paper));border-color:transparent;color:var(--blue)}
 #ge-canvas .ge-result-pin-head{background:var(--head)}
 #ge-canvas .ge-result-pin-title{display:flex;align-items:center;justify-content:flex-end;box-sizing:border-box;border-left:0;border-bottom:1px solid var(--line)}
@@ -1310,8 +1310,8 @@
 #ge-canvas .ge-document input{font-size:16px;letter-spacing:-.2px}
 #ge-canvas .ge-document small{font-size:12px;line-height:16px}
 #ge-canvas .ge-button{border-radius:8px}
-#ge-canvas .ge-pane-heading,#ge-canvas .ge-section .ge-pane-heading,#ge-canvas .ge-assessment-title .ge-pane-heading,#ge-canvas .ge-inline-heading .ge-pane-heading,#ge-canvas .ge-vertical-heading .ge-pane-heading{font-size:16px;font-weight:620;letter-spacing:-.2px;cursor:pointer}
-#ge-canvas .ge-pane-heading small,#ge-canvas .ge-upper-head-group .ge-assessment-title .ge-pane-heading small{font-size:12px;font-weight:450;color:var(--muted);letter-spacing:0}
+#ge-canvas .ge-pane-heading,#ge-canvas .ge-section .ge-pane-heading,#ge-canvas .ge-assessment-title .ge-pane-heading,#ge-canvas .ge-inline-heading .ge-pane-heading,#ge-canvas .ge-vertical-heading .ge-pane-heading{font-size:16px;font-weight:600;letter-spacing:-.2px;cursor:pointer}
+#ge-canvas .ge-pane-heading small,#ge-canvas .ge-upper-head-group .ge-assessment-title .ge-pane-heading small{font-size:12px;font-weight:400;color:var(--muted);letter-spacing:0}
 /* Explicit fit buttons keep their place and keyboard access without visual noise. */
 #ge-canvas .ge-pane-frame{opacity:0;pointer-events:none;transition:opacity .12s;background:transparent;color:var(--muted)}
 #ge-canvas .ge-pane-actions:hover .ge-pane-frame,#ge-canvas .ge-pane-actions:focus-within .ge-pane-frame{opacity:1;pointer-events:auto}
@@ -1323,14 +1323,14 @@
 #ge-canvas .ge-grading-button .ge-line-icon{width:18px;height:18px}
 /* Names and marks are data; indices, maxima and counters are supporting text. */
 #ge-canvas .ge-label{font-size:16px;font-weight:500}
-#ge-canvas .ge-grade{font-size:17px;line-height:1.3;font-weight:450;font-variant-numeric:tabular-nums}
-#ge-canvas .ge-task-head .ge-task-name,#ge-canvas .ge-lower-head-group .ge-task-name{font-size:14px;line-height:19px;font-weight:550;hyphens:none;overflow-wrap:normal;word-break:normal}
-#ge-canvas .ge-task-head .ge-task-index,#ge-canvas .ge-lower-head-group .ge-task-index{font-size:12px;font-weight:450;letter-spacing:.03em;color:var(--muted)}
+#ge-canvas .ge-grade{font-size:17px;line-height:1.3;font-weight:400;font-variant-numeric:tabular-nums}
+#ge-canvas .ge-task-head .ge-task-name,#ge-canvas .ge-lower-head-group .ge-task-name{font-size:14px;line-height:19px;font-weight:500;hyphens:none;overflow-wrap:normal;word-break:normal}
+#ge-canvas .ge-task-head .ge-task-index,#ge-canvas .ge-lower-head-group .ge-task-index{font-size:12px;font-weight:400;letter-spacing:.03em;color:var(--muted)}
 #ge-canvas .ge-task-head .ge-task-max,#ge-canvas .ge-lower-head-group .ge-task-max{font-size:12px;color:var(--muted)}
-#ge-canvas .ge-student-head .ge-task-name,#ge-canvas .ge-pupil-result-head>span{font-size:15px;font-weight:550;line-height:20px}
+#ge-canvas .ge-student-head .ge-task-name,#ge-canvas .ge-pupil-result-head>span{font-size:15px;font-weight:500;line-height:20px}
 #ge-canvas .ge-pupil-result-head>small,#ge-canvas .ge-label .ge-row-index{font-size:12px;color:var(--muted)}
 #ge-canvas .ge-total-title,#ge-canvas .ge-total-title strong,#ge-canvas [data-complete-count],#ge-canvas .ge-summary-jump{font-size:13px}
-#ge-canvas .ge-score-result>[data-total],#ge-canvas .ge-result-pin-row>[data-result-total]{font-size:15px;font-weight:550}
+#ge-canvas .ge-score-result>[data-total],#ge-canvas .ge-result-pin-row>[data-result-total]{font-size:15px;font-weight:500}
 #ge-canvas .ge-inline-value{font-size:14px;font-weight:500}
 /* The competency itself receives the available two lines, at reading size. */
 #ge-canvas .ge-competencies-sheet .ge-descriptor-line,#ge-canvas .ge-competencies-sheet .ge-descriptor-text{height:44px}
@@ -1346,15 +1346,15 @@
 /* Results read as one matrix rather than a wall of coloured cards. */
 #ge-canvas .ge-competency-result-cell{padding:0 8px!important}
 #ge-canvas .ge-competency-result,#ge-canvas .ge-competency-result[data-level]:not([data-level=""]),#ge-canvas .ge-competency-result[data-result-state="unassociated"]{position:relative;min-height:55px;height:55px;padding:6px 0 10px;gap:3px;border:0;border-radius:0;background:transparent;box-shadow:none}
-#ge-canvas .ge-competency-result .ge-result-label{font-size:14px;line-height:18px;font-weight:550;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;color:var(--muted)}
+#ge-canvas .ge-competency-result .ge-result-label{font-size:14px;line-height:18px;font-weight:500;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;color:var(--muted)}
 #ge-canvas .ge-competency-result[data-level]:not([data-level=""]) .ge-result-label{color:color-mix(in srgb,var(--lv) 70%,var(--ink))}
-#ge-canvas .ge-competency-result .ge-result-percent,#ge-canvas .ge-competency-result[data-level]:not([data-level=""]) .ge-result-percent{font-size:12px;line-height:15px;font-weight:450;color:var(--muted);font-variant-numeric:tabular-nums}
+#ge-canvas .ge-competency-result .ge-result-percent,#ge-canvas .ge-competency-result[data-level]:not([data-level=""]) .ge-result-percent{font-size:12px;line-height:15px;font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
 #ge-canvas .ge-competency-result>i{display:block;position:absolute;left:12px;right:12px;bottom:5px;height:3px;width:auto;min-height:0;margin:0;border:0;border-radius:2px;overflow:hidden;background:var(--line)}
 #ge-canvas .ge-competency-result>i>b{display:block;height:100%;border-radius:inherit;opacity:.9}
 #ge-canvas .ge-competency-result[data-result-state="unassociated"]>i{display:none}
 #ge-canvas .ge-competency-result[data-result-state="unassociated"] .ge-result-label{font-size:13px;font-weight:400;color:var(--muted)}
 #ge-canvas .ge-competency-result[data-result-state="incomplete"]>i>b{background:var(--control)!important}
-#ge-canvas .ge-pupil-column-result .ge-column-level{font-size:13px;font-weight:550;line-height:17px}
+#ge-canvas .ge-pupil-column-result .ge-column-level{font-size:13px;font-weight:500;line-height:17px}
 #ge-canvas .ge-pupil-column-result .ge-column-percent{font-size:13px;line-height:17px}
 #ge-canvas .ge-visibility-switch [data-competency-visibility]{font-size:14px}
 #ge-canvas .ge-map-shortcuts button{font-size:14px}
@@ -1462,7 +1462,7 @@
 }
 
 /* Boutons principaux : contraste AA (blanc sur #5563d8 = 5,0:1 ; sombre : texte foncé). */
-#ge-canvas .ge-primary{background:var(--primary);border-color:var(--primary);color:var(--on-primary);font-weight:550;box-shadow:0 1px 2px light-dark(#1c1c2d1f,#0006)}
+#ge-canvas .ge-primary{background:var(--primary);border-color:var(--primary);color:var(--on-primary);font-weight:500;box-shadow:0 1px 2px light-dark(#1c1c2d1f,#0006)}
 #ge-canvas .ge-primary:hover:not(:disabled){background:var(--primary-hover);border-color:var(--primary-hover);color:var(--on-primary);filter:none}
 #ge-canvas .ge-primary:active:not(:disabled){transform:translateY(.5px)}
 #ge-canvas .ge-primary:disabled{opacity:.45;box-shadow:none}
@@ -1477,7 +1477,7 @@
 
 /* Compteurs : petite capsule neutre, identique dans le raster et dans la copie fixée. */
 #ge-canvas .ge-pane-heading small,
-#ge-canvas .ge-upper-head-group .ge-assessment-title .ge-pane-heading small{display:inline-block;margin-left:7px;padding:0 7px;min-width:20px;box-sizing:border-box;border-radius:999px;background:var(--capsule);color:var(--muted);font-size:11.5px;line-height:18px;font-weight:550;text-align:center;letter-spacing:0;font-variant-numeric:tabular-nums;vertical-align:2px}
+#ge-canvas .ge-upper-head-group .ge-assessment-title .ge-pane-heading small{display:inline-block;margin-left:7px;padding:0 7px;min-width:20px;box-sizing:border-box;border-radius:999px;background:var(--capsule);color:var(--muted);font-size:11.5px;line-height:18px;font-weight:500;text-align:center;letter-spacing:0;font-variant-numeric:tabular-nums;vertical-align:2px}
 
 /* En-têtes d’exercices : coupure française avec trait d’union plutôt qu’une lettre isolée. */
 #ge-canvas .ge-task-head .ge-task-name,
@@ -1490,13 +1490,13 @@
 #ge-canvas .ge-inline-legend:not(.ge-extended-legend)>span{max-width:none}
 
 /* Absence : étiquette lisible (l’ancien fond gris donnait 2,5:1). */
-#ge-canvas .ge-absent-tag{background:var(--capsule);color:var(--ink-soft);font-weight:550}
+#ge-canvas .ge-absent-tag{background:var(--capsule);color:var(--ink-soft);font-weight:500}
 
 /* Pages de garde : choix A–D lisibles comme commandes actives. */
 #ge-canvas .ge-garde-letters{background:var(--soft);box-shadow:inset 0 0 0 1px var(--line)}
-#ge-canvas .ge-garde-letters button{color:var(--ink-soft);font-weight:550;transition:background-color .12s,color .12s}
+#ge-canvas .ge-garde-letters button{color:var(--ink-soft);font-weight:500;transition:background-color .12s,color .12s}
 #ge-canvas .ge-garde-letters button:hover{background:var(--hover);color:var(--ink)}
-#ge-canvas .ge-garde-letters button[aria-pressed="true"]{background:var(--paper);box-shadow:0 0 0 1px var(--line),0 1px 3px var(--shadow);font-weight:650}
+#ge-canvas .ge-garde-letters button[aria-pressed="true"]{background:var(--paper);box-shadow:0 0 0 1px var(--line),0 1px 3px var(--shadow);font-weight:600}
 #ge-canvas .ge-garde-letters button[aria-pressed="true"][data-letter="A"]{color:color-mix(in srgb,var(--lv3) 80%,var(--ink))}
 #ge-canvas .ge-garde-letters button[aria-pressed="true"][data-letter="B"]{color:color-mix(in srgb,var(--lv2) 80%,var(--ink))}
 #ge-canvas .ge-garde-letters button[aria-pressed="true"][data-letter="C"]{color:color-mix(in srgb,var(--lv1) 80%,var(--ink))}
@@ -1516,7 +1516,7 @@
 @media(forced-colors:active){#ge-canvas .ge-message{border:1px solid CanvasText}#ge-canvas .ge-pane-heading small{border:1px solid CanvasText}}
 /* Préparation : les deux accès aux compétences côte à côte, alignés sur le bord droit. */
 #ge-canvas .ge-setup-competency-actions{flex-direction:row;align-items:center;gap:8px}
-#ge-canvas .ge-setup-competencies h2 small{background:var(--capsule);border-radius:999px;padding:1px 9px;font-weight:550}
+#ge-canvas .ge-setup-competencies h2 small{background:var(--capsule);border-radius:999px;padding:1px 9px;font-weight:500}
 @media(max-width:760px){#ge-canvas .ge-setup-competency-actions{flex-wrap:wrap}}
 
 /* ═══════════ D1.23 — nouveau look ═══════════
@@ -1580,7 +1580,7 @@
 #ge-canvas .ge-competency-result[data-level]:not([data-level=""]) .ge-result-label{background:color-mix(in srgb,var(--lv) 15%,var(--paper));color:color-mix(in srgb,var(--lv) 82%,var(--ink))}
 #ge-canvas .ge-competency-result[data-result-state="incomplete"] .ge-result-label{background:transparent;box-shadow:inset 0 0 0 1px var(--edge)}
 #ge-canvas .ge-competency-result[data-result-state="unassociated"] .ge-result-label,
-#ge-canvas .ge-competency-result[data-result-state="absent"] .ge-result-label{background:transparent;font-weight:450}
+#ge-canvas .ge-competency-result[data-result-state="absent"] .ge-result-label{background:transparent;font-weight:400}
 
 /* Colonnes transposées et aperçu du barème suivent la même palette. */
 #ge-canvas .ge-column-fill{border-radius:7px 7px 2px 2px}
@@ -1588,7 +1588,7 @@
 /* Barre supérieure : plus nette, commandes en pastilles. */
 #ge-canvas .ge-app-brand .ge-logo{background:linear-gradient(140deg,#8592f7,#4f5bd5);box-shadow:0 1px 2px #2b33a033,inset 0 1px 0 #ffffff40}
 #ge-canvas .ge-app-brand strong{font-weight:700;letter-spacing:-.5px}
-#ge-canvas .ge-document input{font-weight:650}
+#ge-canvas .ge-document input{font-weight:600}
 #ge-canvas .ge-header .ge-button{border-radius:999px}
 #ge-canvas .ge-transpose-button,#ge-canvas .ge-header-actions>.ge-menu>summary{background:var(--soft)!important;color:var(--ink)!important}
 #ge-canvas .ge-transpose-button:hover:not(:disabled),#ge-canvas .ge-header-actions>.ge-menu>summary:hover{background:var(--hover)!important}
@@ -1621,13 +1621,13 @@
 #ge-canvas .ge-dialog::backdrop{background:light-dark(#14183a0f,#0000004d);-webkit-backdrop-filter:none;backdrop-filter:none}
 #ge-canvas .ge-dialog[data-anchored]{position:fixed;inset:auto;margin:0}
 #ge-canvas .ge-dialog-form{padding:18px 20px 16px}
-#ge-canvas .ge-dialog h2{font-size:17px;font-weight:650;letter-spacing:-.25px;margin:0 0 4px}
+#ge-canvas .ge-dialog h2{font-size:17px;font-weight:600;letter-spacing:-.25px;margin:0 0 4px}
 #ge-canvas .ge-dialog-note{font-size:12.5px;line-height:1.45;color:var(--muted);margin:0 0 14px}
 #ge-canvas .ge-dialog h2+:not(.ge-dialog-note){margin-top:12px}
 
 /* Champs pleins, sans cadre — le cadre n’apparaît qu’au focus. */
 #ge-canvas .ge-field{margin:12px 0}
-#ge-canvas .ge-field>span{font-size:12px;font-weight:550;color:var(--muted);margin-bottom:5px}
+#ge-canvas .ge-field>span{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px}
 #ge-canvas .ge-field input,#ge-canvas .ge-field textarea,#ge-canvas .ge-dialog select{border:1px solid transparent;border-radius:10px;background:light-dark(#f1f2f6,#2c3039);padding:8px 11px;transition:background-color .12s,box-shadow .12s}
 #ge-canvas .ge-field input:hover,#ge-canvas .ge-field textarea:hover,#ge-canvas .ge-dialog select:hover{background:light-dark(#eaecf1,#323742)}
 #ge-canvas .ge-field input:focus,#ge-canvas .ge-field textarea:focus,#ge-canvas .ge-dialog select:focus{background:var(--paper);border-color:var(--accent);outline:3px solid color-mix(in srgb,var(--accent) 20%,transparent);outline-offset:0}
@@ -1652,13 +1652,13 @@
 #ge-canvas .ge-dialog:has(.ge-grading-editor){width:min(480px,calc(100vw - 24px))}
 #ge-canvas .ge-grading-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}
 #ge-canvas .ge-grading-toolbar label{display:block}
-#ge-canvas .ge-grading-toolbar select{width:auto;min-height:30px;padding:4px 28px 4px 11px;border-radius:999px;font-size:13px;font-weight:550}
+#ge-canvas .ge-grading-toolbar select{width:auto;min-height:30px;padding:4px 28px 4px 11px;border-radius:999px;font-size:13px;font-weight:500}
 #ge-canvas .ge-grading-pass{font-size:12.5px;color:var(--muted);white-space:nowrap}
-#ge-canvas .ge-grading-pass strong{color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
+#ge-canvas .ge-grading-pass strong{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 #ge-canvas .ge-grading-preview{height:8px;gap:2px;border-radius:4px;margin:0 0 4px}
 #ge-canvas .ge-grading-summary{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin:0 0 10px;font-variant-numeric:tabular-nums}
 #ge-canvas .ge-grading-grid-head,#ge-canvas .ge-grading-row{grid-template-columns:minmax(0,1fr) 70px 64px 58px;gap:6px}
-#ge-canvas .ge-grading-grid-head{font-size:11px;font-weight:550;padding:0 0 4px;color:var(--muted)}
+#ge-canvas .ge-grading-grid-head{font-size:11px;font-weight:500;padding:0 0 4px;color:var(--muted)}
 #ge-canvas .ge-grading-grid-head>span:nth-child(2),#ge-canvas .ge-grading-grid-head>span:nth-child(3){text-align:right;padding-right:8px}
 #ge-canvas .ge-grading-row{padding:2px 0;border-top:1px solid light-dark(#eef0f4,#2c313b)}
 #ge-canvas .ge-grading-row:first-of-type{border-top-color:transparent}
@@ -1682,7 +1682,7 @@
 #ge-canvas .ge-grading-add{margin-top:8px}
 #ge-canvas .ge-grading-add .ge-button{min-height:30px;padding:4px 12px;border-radius:999px;border-color:transparent;background:var(--accent-soft);color:var(--blue);font-size:13px;font-weight:600}
 #ge-canvas .ge-grading-add small{font-size:11px;color:var(--muted)}
-#ge-canvas .ge-grading-add small b{font-weight:650;color:var(--ink-soft)}
+#ge-canvas .ge-grading-add small b{font-weight:600;color:var(--ink-soft)}
 #ge-canvas .ge-grading-note{font-size:11.5px;margin:10px 0 0;color:var(--muted)}
 #ge-canvas .ge-dialog:has(.ge-grading-editor) .ge-dialog-actions{position:static}
 @media(max-width:620px){#ge-canvas .ge-grading-grid-head{display:none}#ge-canvas .ge-grading-row{grid-template-columns:minmax(0,1fr) 78px 58px}}
@@ -1724,7 +1724,7 @@
 #ge-canvas .ge-swatch-pop button:hover{transform:scale(1.12)}
 #ge-canvas .ge-swatch-pop button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--swatch)}
 #ge-canvas .ge-swatch-pop button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-#ge-canvas .ge-swatch-pop .ge-swatch-auto{grid-column:span 2;width:auto;border-radius:11px;background:light-dark(#f1f2f6,#2c3039);font-size:11.5px;font-weight:550;color:var(--muted)}
+#ge-canvas .ge-swatch-pop .ge-swatch-auto{grid-column:span 2;width:auto;border-radius:11px;background:light-dark(#f1f2f6,#2c3039);font-size:11.5px;font-weight:500;color:var(--muted)}
 #ge-canvas .ge-swatch-pop .ge-swatch-auto[aria-pressed="true"]{box-shadow:0 0 0 2px var(--accent);color:var(--ink)}
 #ge-canvas .ge-grading-reset{min-height:28px;padding:3px 10px;border-color:transparent;background:transparent;color:var(--muted);font-size:12.5px;font-weight:500;border-radius:999px}
 #ge-canvas .ge-grading-reset:hover{background:var(--hover);color:var(--blue)}
@@ -1749,7 +1749,7 @@
 #ge-canvas .ge-task-added li{display:grid;grid-template-columns:26px minmax(0,1fr) auto 26px;align-items:center;gap:6px;min-height:30px;padding:0 2px;border-radius:7px;animation:ge-added .25s ease-out}
 #ge-canvas .ge-task-added li:hover{background:var(--hover)}
 #ge-canvas .ge-task-added-n{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-#ge-canvas .ge-task-added-title{font-size:13.5px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ge-canvas .ge-task-added-title{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #ge-canvas .ge-task-added-pts{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 #ge-canvas .ge-task-added .ge-button{width:26px;min-height:26px;padding:3px;border-color:transparent;background:transparent;color:var(--muted);opacity:0}
 #ge-canvas .ge-task-added li:hover .ge-button,#ge-canvas .ge-task-added .ge-button:focus-visible{opacity:1}
@@ -1805,7 +1805,7 @@
 #ge-canvas .ge-vertical-threshold:hover>span,#ge-canvas .ge-vertical-threshold:focus-visible>span{transform:scale(1.2)}
 /* Import CSV */
 #ge-canvas .ge-import-row{display:flex;justify-content:flex-start;margin:-2px 0 4px}
-#ge-canvas .ge-import-row .ge-button{min-height:30px;padding:4px 12px;border-color:transparent;background:light-dark(#f1f2f6,#2c3039);font-size:13px;font-weight:550}
+#ge-canvas .ge-import-row .ge-button{min-height:30px;padding:4px 12px;border-color:transparent;background:light-dark(#f1f2f6,#2c3039);font-size:13px;font-weight:500}
 #ge-canvas .ge-import-choice{margin:0 0 6px;font-size:13.5px;line-height:1.5;color:var(--ink-soft)}
 #ge-canvas .ge-setup-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
 #ge-canvas .ge-setup-actions>.ge-button+.ge-button{margin-left:8px}
@@ -1822,7 +1822,7 @@
 /* D1.35 · e-Bichelchen */
 #ge-canvas .ge-eb-card{display:grid;gap:12px;margin:2px 0 4px}
 #ge-canvas .ge-eb-steps{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-#ge-canvas .ge-eb-bookmarklet{display:inline-flex;align-items:center;min-height:32px;padding:4px 14px;border-radius:999px;background:var(--accent-soft);color:var(--blue);font-weight:650;font-size:14px;text-decoration:none;cursor:grab;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent)}
+#ge-canvas .ge-eb-bookmarklet{display:inline-flex;align-items:center;min-height:32px;padding:4px 14px;border-radius:999px;background:var(--accent-soft);color:var(--blue);font-weight:600;font-size:14px;text-decoration:none;cursor:grab;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent)}
 #ge-canvas .ge-eb-hint{font-size:12.5px;color:var(--muted)}
 #ge-canvas .ge-eb-actions{display:flex;gap:8px}
 #ge-canvas .ge-eb-paste textarea{min-height:0;resize:none;font-size:13px}
@@ -2083,9 +2083,9 @@
 /* Deux plans de travail, un même espace de navigation. */
 #ge-canvas .ge-mode-controls{display:flex;align-items:center;gap:6px;flex:none}
 #ge-canvas .ge-mode-switch{display:inline-flex;gap:2px;padding:3px;background:var(--soft);border:1px solid var(--line);border-radius:10px}
-#ge-canvas .ge-mode-switch button{border:0;border-radius:7px;padding:6px 10px;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:550;white-space:nowrap;cursor:pointer;line-height:1.2}
+#ge-canvas .ge-mode-switch button{border:0;border-radius:7px;padding:6px 10px;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:500;white-space:nowrap;cursor:pointer;line-height:1.2}
 #ge-canvas .ge-mode-switch button:hover{color:var(--ink)}
-#ge-canvas .ge-mode-switch button[aria-selected="true"]{background:var(--paper);color:var(--blue);box-shadow:0 1px 3px light-dark(#1d233326,#0006);font-weight:650}
+#ge-canvas .ge-mode-switch button[aria-selected="true"]{background:var(--paper);color:var(--blue);box-shadow:0 1px 3px light-dark(#1d233326,#0006);font-weight:600}
 #ge-canvas .ge-mode-controls button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #ge-canvas .ge-mode-info{position:relative;z-index:45;display:grid;place-items:center}
 #ge-canvas .ge-mode-info button{width:30px;height:30px;display:grid;place-items:center;padding:0;border:0;background:transparent;color:var(--muted);font:600 14px/1 Georgia,serif;cursor:help;border-radius:50%}
@@ -2114,14 +2114,14 @@
 #ge-canvas .ge-bilan-result-controls{min-width:0}
 #ge-canvas .ge-bilan-results .ge-bilan-section-head .ge-link-button{font-size:13px;white-space:nowrap}
 #ge-canvas .ge-bilan-nav{position:absolute;bottom:16px;left:16px;z-index:26;display:flex;align-items:center;padding:3px;gap:2px;min-height:38px;border:1px solid var(--line);border-radius:12px;background:var(--paper);box-shadow:var(--pill-shadow)}
-#ge-canvas .ge-bilan-nav button{display:flex;align-items:center;gap:5px;min-height:30px;padding:0 9px;border-radius:8px;background:transparent;color:var(--ink);border:0;font:inherit;font-size:13px;font-weight:550;cursor:pointer}
+#ge-canvas .ge-bilan-nav button{display:flex;align-items:center;gap:5px;min-height:30px;padding:0 9px;border-radius:8px;background:transparent;color:var(--ink);border:0;font:inherit;font-size:13px;font-weight:500;cursor:pointer}
 #ge-canvas .ge-bilan-nav button:hover,#ge-canvas .ge-bilan-nav button:focus-visible{background:var(--hover)}
 #ge-canvas .ge-bilan-nav small{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
 #ge-canvas .ge-bilan-selection .ge-bilan-test-name strong{white-space:normal;overflow-wrap:anywhere;line-height:1.35}
 
 #ge-canvas .ge-bilan-section-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;padding:0 0 10px;border-bottom:1px solid var(--line)}
-#ge-canvas .ge-bilan-section-head :is(h1,h2){display:flex;align-items:center;gap:9px;font-size:18px;line-height:1.3;letter-spacing:-.25px;font-weight:650;margin:0;flex:1 1 auto}
-#ge-canvas .ge-bilan-section-head h1 small{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;padding:0 5px;border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:13px;font-weight:550;font-variant-numeric:tabular-nums}
+#ge-canvas .ge-bilan-section-head :is(h1,h2){display:flex;align-items:center;gap:9px;font-size:18px;line-height:1.3;letter-spacing:-.25px;font-weight:600;margin:0;flex:1 1 auto}
+#ge-canvas .ge-bilan-section-head h1 small{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;padding:0 5px;border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
 #ge-canvas .ge-bilan-section-head .ge-button{font-size:13px;min-height:34px}
 #ge-canvas .ge-bilan-plan .ge-bilan-tests-head,#ge-canvas .ge-bilan-plan .ge-bilan-test-row{grid-template-columns:minmax(0,1fr) 64px 28px;gap:6px}
 #ge-canvas .ge-bilan-plan .ge-bilan-tests-head{background:var(--soft);margin-top:9px;padding:7px 8px;text-transform:none;font-size:12px;letter-spacing:0}
@@ -2165,7 +2165,7 @@
 #ge-canvas .ge-bilan-plan tr.ge-bilan-detail-row>td{background:var(--soft);text-align:left;padding:7px}
 #ge-canvas .ge-bilan-breakdown{width:min(420px,var(--bilan-tools-width));color:var(--ink);border-inline-start:3px solid var(--accent);padding:4px 12px}
 #ge-canvas .ge-bilan-breakdown-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-#ge-canvas .ge-bilan-breakdown-head strong{font-size:13px;font-weight:650}
+#ge-canvas .ge-bilan-breakdown-head strong{font-size:13px;font-weight:600}
 #ge-canvas .ge-bilan-breakdown-head button{display:grid;place-items:center;width:26px;height:26px;border:0;border-radius:7px;padding:4px;background:transparent;color:var(--muted)}
 #ge-canvas .ge-bilan-breakdown-head button:hover{background:var(--hover)}
 #ge-canvas .ge-bilan-breakdown-head svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round}
@@ -2174,7 +2174,7 @@
 #ge-canvas .ge-bilan-breakdown-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:12px}
 #ge-canvas .ge-bilan-breakdown-row span{min-width:0;overflow-wrap:anywhere}
 #ge-canvas .ge-bilan-breakdown-row small{font-size:11px;color:var(--muted)}
-#ge-canvas .ge-bilan-breakdown-total{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:12px;font-size:13px;font-weight:650}
+#ge-canvas .ge-bilan-breakdown-total{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:12px;font-size:13px;font-weight:600}
 /* Enlever le flou coûteux uniquement sur les deux contrôles flottants, sans changer le style général. */
 #ge-canvas .ge-zoom,#ge-canvas .ge-map{background:color-mix(in srgb,var(--paper) 97%,var(--soft));-webkit-backdrop-filter:none;backdrop-filter:none}
 
@@ -2190,27 +2190,27 @@
 #ge-canvas .ge-bilan-plan .ge-bilan-totals>.ge-bilan-axis-cell{vertical-align:bottom;padding:0;background:var(--paper)}
 #ge-canvas .ge-bilan-grading{display:grid;grid-template-rows:var(--plot-space) var(--plot-h) var(--level-h)}
 #ge-canvas .ge-bilan-grading .ge-vertical-heading{position:static;justify-content:flex-end;gap:9px;padding:0 13px}
-#ge-canvas .ge-bilan-grading h3{margin:0;font-size:15px;font-weight:650;letter-spacing:-.2px}
+#ge-canvas .ge-bilan-grading h3{margin:0;font-size:15px;font-weight:600;letter-spacing:-.2px}
 #ge-canvas .ge-bilan-plan .ge-bilan-grading h3 span,#ge-canvas .ge-bilan-grading .ge-bilan-axis-caption span{display:inline}
 #ge-canvas .ge-bilan-grading .ge-grading-button{width:32px;height:32px;display:grid;place-items:center;padding:0}
 #ge-canvas .ge-bilan-grading [data-bilan-axis]{position:relative}
 #ge-canvas .ge-bilan-grading .ge-vertical-axis{inset:0 0 0 12px}
-#ge-canvas .ge-bilan-grading .ge-vertical-threshold>small{margin:0;font-size:11.5px;letter-spacing:0;font-weight:450;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+#ge-canvas .ge-bilan-grading .ge-vertical-threshold>small{margin:0;font-size:11.5px;letter-spacing:0;font-weight:400;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 #ge-canvas .ge-bilan-grading .ge-vertical-threshold>b,#ge-canvas .ge-bilan-grading .ge-vertical-threshold>span{flex:none;white-space:nowrap}
-#ge-canvas .ge-bilan-table .ge-bilan-grading .ge-bilan-axis-caption{align-self:end;text-align:left;padding:0 14px 8px;margin:0;font-size:11.5px;line-height:1.3;letter-spacing:0;font-weight:450;color:var(--muted)}
+#ge-canvas .ge-bilan-table .ge-bilan-grading .ge-bilan-axis-caption{align-self:end;text-align:left;padding:0 14px 8px;margin:0;font-size:11.5px;line-height:1.3;letter-spacing:0;font-weight:400;color:var(--muted)}
 #ge-canvas .ge-bilan-column{padding-top:var(--plot-space);background:var(--paper)}
 #ge-canvas .ge-bilan-column-plot{position:relative;height:var(--plot-h);box-shadow:inset 0 -1px var(--edge)}
 #ge-canvas .ge-bilan-column-plot::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:var(--bilan-guides);-webkit-mask-image:repeating-linear-gradient(to right,#000 0 3px,transparent 3px 6px);mask-image:repeating-linear-gradient(to right,#000 0 3px,transparent 3px 6px)}
 #ge-canvas .ge-bilan-column .ge-column-fill{left:50%;width:36%;max-width:48px;height:var(--amount);transform:translateX(-50%);border-radius:6px 6px 1px 1px;background:var(--bar-colour);transition:none}
 #ge-canvas .ge-bilan-column-value{position:absolute;left:0;right:0;bottom:var(--amount);transform:translateY(-2px);font-size:13px;font-weight:600;color:color-mix(in srgb,var(--lv) 72%,var(--ink));font-variant-numeric:tabular-nums;text-align:center}
-#ge-canvas .ge-bilan-graphic-level{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:550;color:var(--lv,var(--muted))}
+#ge-canvas .ge-bilan-graphic-level{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:500;color:var(--lv,var(--muted))}
 #ge-canvas .ge-bilan-column .ge-bilan-graphic-level{height:var(--level-h);line-height:var(--level-h);margin:0;padding:0 5px}
-#ge-canvas .ge-bilan-column[data-level=""] .ge-bilan-graphic-level{font-weight:450;color:var(--muted)}
+#ge-canvas .ge-bilan-column[data-level=""] .ge-bilan-graphic-level{font-weight:400;color:var(--muted)}
 #ge-canvas .ge-bilan-overall{position:relative}
-#ge-canvas .ge-bilan-overall>span{position:absolute;z-index:1;top:3px;left:8px;font-size:11px;font-weight:550;color:var(--muted)}
+#ge-canvas .ge-bilan-overall>span{position:absolute;z-index:1;top:3px;left:8px;font-size:11px;font-weight:500;color:var(--muted)}
 #ge-canvas .ge-bilan-overall .ge-bilan-column{background:var(--soft)}
 #ge-canvas .ge-bilan-plan .ge-bilan-table .ge-bilan-class{padding:5px 12px}
-#ge-canvas .ge-bilan-plan [data-bilan-bar-head]>span{text-align:start;font-weight:650}
+#ge-canvas .ge-bilan-plan [data-bilan-bar-head]>span{text-align:start;font-weight:600}
 #ge-canvas .ge-bilan-bar-axis{display:flex;justify-content:space-between;margin:5px calc(var(--bilan-value-w) + 8px) 0 0;color:var(--muted)}
 #ge-canvas .ge-bilan-bar-axis i{font-size:11px;font-style:normal;font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
 #ge-canvas .ge-bilan-hbar{display:grid;grid-template-columns:minmax(0,1fr) var(--bilan-value-w);gap:2px 8px;align-content:center;align-items:center;min-height:45px;text-align:left}
@@ -2218,7 +2218,7 @@
 #ge-canvas .ge-bilan-bar-track i{position:absolute;inset:0 auto 0 0;width:var(--amount);border-radius:3px;background:var(--bar-colour)}
 #ge-canvas .ge-bilan-hbar .ge-result-percent{font-size:13px;font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 #ge-canvas .ge-bilan-hbar .ge-bilan-graphic-level{grid-column:1 / -1}
-#ge-canvas .ge-bilan-hbar[data-level=""] .ge-bilan-graphic-level{color:var(--muted);font-weight:450}
+#ge-canvas .ge-bilan-hbar[data-level=""] .ge-bilan-graphic-level{color:var(--muted);font-weight:400}
 #ge-canvas .ge-bilan-table .ge-bilan-empty{max-width:var(--bilan-tools-width);margin:0;text-align:left;padding:16px 12px}
 @media(min-width:990px){
  #ge-canvas .ge-bilan-plan{--bilan-tools-width:clamp(620px,calc(100vw - var(--bilan-list-width) - 88px),820px)}
@@ -2280,7 +2280,7 @@
 #ge-canvas .ge-bilan-selection.ge-bilan-sheet{padding:0 0 10px;overflow:hidden}
 #ge-canvas .ge-bilan-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:52px;padding:8px 12px 8px 16px;box-sizing:border-box;border-bottom:1px solid var(--line)}
 #ge-canvas .ge-bilan-head .ge-pane-actions{display:inline-flex;align-items:center;gap:2px;min-width:0}
-#ge-canvas .ge-bilan-head .ge-pane-heading small{display:inline-block;margin-left:7px;padding:0 7px;min-width:20px;box-sizing:border-box;border-radius:999px;background:var(--capsule);color:var(--muted);font-size:11.5px;line-height:18px;font-weight:550;text-align:center;font-variant-numeric:tabular-nums}
+#ge-canvas .ge-bilan-head .ge-pane-heading small{display:inline-block;margin-left:7px;padding:0 7px;min-width:20px;box-sizing:border-box;border-radius:999px;background:var(--capsule);color:var(--muted);font-size:11.5px;line-height:18px;font-weight:500;text-align:center;font-variant-numeric:tabular-nums}
 #ge-canvas .ge-bilan-head .ge-button{flex:none}
 #ge-canvas :is(.ge-bilan-head,.ge-bilan-grading .ge-vertical-heading,[data-bilan-bar-head]):hover .ge-pane-frame{opacity:1;pointer-events:auto}
 #ge-canvas .ge-bilan-plan .ge-bilan-tests-head{margin:0}
@@ -2305,7 +2305,7 @@
 /* Colonne des compétences : largeur naturelle (deux lignes), puis resserrée et épinglée au défilement, comme dans le test. */
 #ge-canvas .ge-bilan-pin>span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:2.7em;line-height:1.35}
 #ge-canvas .ge-bilan-pin .ge-bilan-competency-meta{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#ge-canvas .ge-bilan-column-heads .ge-bilan-pin small{padding:0 7px;border-radius:999px;background:var(--capsule);color:var(--muted);font-size:11.5px;line-height:18px;font-weight:550}
+#ge-canvas .ge-bilan-column-heads .ge-bilan-pin small{padding:0 7px;border-radius:999px;background:var(--capsule);color:var(--muted);font-size:11.5px;line-height:18px;font-weight:500}
 #ge-canvas .ge-bilan-plan .ge-bilan-fold{max-width:var(--pin-w,var(--bilan-descriptor))}
 /* Barème : titre à gauche, réglage à droite, comme dans le test. */
 #ge-canvas .ge-bilan-grading .ge-vertical-heading{justify-content:space-between;gap:6px;padding:0 10px 0 16px}
@@ -2336,7 +2336,7 @@
 #ge-canvas .ge-bilan-plan .ge-bilan-table .ge-bilan-column-heads th.ge-bilan-corner{--pin-bg:var(--soft);vertical-align:bottom}
 #ge-canvas .ge-bilan-plan tbody tr:not(.ge-bilan-section):hover>th.ge-bilan-desc{--pin-bg:var(--hover)}
 #ge-canvas .ge-bilan-pin{box-sizing:border-box;width:var(--pin-w,100%);padding:9px 12px 9px 16px;text-align:left;pointer-events:auto}
-#ge-canvas .ge-bilan-column-heads .ge-bilan-pin{display:flex;align-items:baseline;gap:6px;padding-block:10px;font-size:16px;font-weight:620;letter-spacing:-.2px}
+#ge-canvas .ge-bilan-column-heads .ge-bilan-pin{display:flex;align-items:baseline;gap:6px;padding-block:10px;font-size:16px;font-weight:600;letter-spacing:-.2px}
 #ge-canvas .ge-bilan-axis-cell .ge-bilan-pin{padding:0}
 /* Même typographie qu’à 100 % dans le test. */
 #ge-canvas .ge-bilan-plan .ge-bilan-desc .ge-bilan-pin>span{font-size:16px;line-height:22px;min-height:44px;letter-spacing:0}
@@ -2344,7 +2344,7 @@
 #ge-canvas .ge-bilan-plan .ge-bilan-fold strong{font-size:14px;font-weight:600}
 #ge-canvas .ge-bilan-plan .ge-bilan-fold small{font-size:12px}
 #ge-canvas .ge-bilan-plan .ge-bilan-column-heads [data-bilan-pupil] small,#ge-canvas .ge-bilan-plan .ge-bilan-column-heads th>small{font-size:12px;font-weight:600}
-#ge-canvas .ge-bilan-plan .ge-bilan-column-heads [data-bilan-pupil] span,#ge-canvas .ge-bilan-plan .ge-bilan-column-heads th>span{font-size:15px;font-weight:550;line-height:20px}
+#ge-canvas .ge-bilan-plan .ge-bilan-column-heads [data-bilan-pupil] span,#ge-canvas .ge-bilan-plan .ge-bilan-column-heads th>span{font-size:15px;font-weight:500;line-height:20px}
 /* Méta à droite du descripteur, comme dans le test ; elle cède la place au texte quand la colonne se resserre. */
 #ge-canvas .ge-bilan-plan .ge-bilan-desc .ge-bilan-pin{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:center;column-gap:14px;padding-block:6px}
 #ge-canvas .ge-bilan-plan .ge-bilan-competency-meta{display:flex;flex-direction:column;align-items:flex-end;margin:0;text-align:right;white-space:nowrap;color:var(--muted)}
@@ -2410,18 +2410,18 @@
 #ge-canvas .ge-calendar[hidden]{display:none}
 #ge-canvas .ge-calendar button{border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
 #ge-canvas .ge-calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-#ge-canvas .ge-calendar-head strong{font-weight:620;text-transform:capitalize}
+#ge-canvas .ge-calendar-head strong{font-weight:600;text-transform:capitalize}
 #ge-canvas .ge-calendar-head button{width:30px;height:30px;border-radius:8px;font-size:18px;line-height:1;color:var(--muted)}
 #ge-canvas .ge-calendar-head button:hover{background:var(--hover);color:var(--ink)}
 #ge-canvas .ge-calendar-week,#ge-canvas .ge-calendar-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
 #ge-canvas .ge-calendar-week span{font-size:11px;font-weight:600;color:var(--muted);padding:3px 0}
 #ge-canvas .ge-calendar-days button{height:30px;border-radius:8px;font-variant-numeric:tabular-nums}
 #ge-canvas .ge-calendar-days button:hover{background:var(--hover)}
-#ge-canvas .ge-calendar-days button[data-today]{color:var(--blue);font-weight:650}
-#ge-canvas .ge-calendar-days button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:650}
+#ge-canvas .ge-calendar-days button[data-today]{color:var(--blue);font-weight:600}
+#ge-canvas .ge-calendar-days button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
 #ge-canvas .ge-calendar button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 #ge-canvas .ge-calendar-foot{display:flex;justify-content:flex-end;margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
-#ge-canvas .ge-calendar-foot button{padding:5px 10px;border-radius:999px;background:var(--accent-soft);color:var(--blue);font-weight:550;font-size:12.5px}
+#ge-canvas .ge-calendar-foot button{padding:5px 10px;border-radius:999px;background:var(--accent-soft);color:var(--blue);font-weight:500;font-size:12.5px}
 /* D1.52g · Informations de l’évaluation : sur un écran large, les observations occupent toute la colonne de droite. */
 @media(min-width:820px){
  #ge-canvas .ge-dialog:has(.ge-dialog-split){width:min(780px,calc(100vw - 32px))}
@@ -2465,3 +2465,35 @@
 #ge-canvas button.ge-save.ge-unsaved::before{content:'';position:absolute;left:11px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--lv1)}
 @media (max-width:760px){#ge-canvas button.ge-save.ge-unsaved{width:28px;padding:0;font-size:0}#ge-canvas button.ge-save.ge-unsaved::before{left:11px}}
 #ge-canvas .ge-menu-version{margin:6px 0 0;padding:8px 12px 2px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+
+/* D1.56 · Graisses : seulement 400 / 500 / 600 / 700. Les valeurs intermédiaires (450, 550, 620, 650) s’affichaient
+   plus grasses dans Chrome que dans Firefox ; avec des graisses standard, les deux navigateurs montrent la même chose. */
+
+/* D1.57 · Copies de secours */
+#ge-canvas .ge-copies{list-style:none;margin:4px 0 6px;padding:0;max-height:min(52vh,420px);overflow:auto;border:1px solid var(--line);border-radius:12px}
+#ge-canvas .ge-copy{display:flex;align-items:center;gap:12px;padding:10px 12px;border-top:1px solid var(--line)}
+#ge-canvas .ge-copy:first-child{border-top:0}
+#ge-canvas .ge-copy-text{flex:1;min-width:0;display:grid;gap:2px}
+#ge-canvas .ge-copy-text strong{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ge-canvas .ge-copy-text small{font-size:12px;color:var(--muted)}
+#ge-canvas .ge-copy-text .ge-copy-unsaved{color:color-mix(in srgb,var(--lv1) 75%,var(--ink))}
+#ge-canvas .ge-copy-open{font-size:12px;font-weight:600;color:var(--muted);padding:0 6px}
+#ge-canvas .ge-copies-clear{margin-right:auto}
+#ge-canvas .ge-bilan-warning{margin:8px 14px 4px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--lv1) 12%,transparent);color:color-mix(in srgb,var(--lv1) 70%,var(--ink));font-size:12.5px;line-height:1.45}
+/* D1.57 · Données d’exemple : une étiquette discrète à côté du titre, pas de texte d’aide. */
+#ge-canvas[data-demo="true"][data-mode="test"] .ge-header .ge-document-title::after{content:"Exemple";display:inline-block;margin-left:8px;padding:2px 7px;border-radius:999px;background:var(--accent-soft);color:var(--blue);font-size:11px;font-weight:600;letter-spacing:.1px;vertical-align:2px}
+/* D1.57 · Exercice dispensé */
+#ge-canvas .ge-grade.ge-dispensed:not(.ge-editing){color:var(--muted);font-style:italic}
+/* D1.57 · Évolution d’une compétence dans le détail du bilan */
+#ge-canvas .ge-bilan-trend{margin:6px 0 8px;display:flex;align-items:center;gap:10px}
+#ge-canvas .ge-bilan-trend figcaption{font-size:11.5px;color:var(--muted)}
+#ge-canvas .ge-bilan-trend .ge-trend-line{fill:none;stroke:var(--muted);stroke-width:1.4;stroke-linejoin:round;opacity:.7}
+#ge-canvas .ge-bilan-trend .ge-trend-guide{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}
+#ge-canvas .ge-bilan-breakdown-row span small{color:var(--muted);font-weight:400;margin-left:4px}
+/* D1.57 · Menu Fichier : défile si l’écran est bas (iPad paysage). */
+#ge-canvas .ge-header-actions .ge-menu-panel{max-height:calc(100dvh - 64px);overflow-y:auto;overscroll-behavior:contain}
+/* D1.58 · Bulle d’explication du point d’enregistrement */
+#ge-canvas button.ge-save{position:relative;cursor:default}
+#ge-canvas button.ge-save:not(.ge-unsaved)::before{content:'';position:absolute;inset:-9px}
+#ge-canvas button.ge-save[data-tip]:hover::after,#ge-canvas button.ge-save[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;top:calc(100% + 10px);right:-12px;z-index:60;width:max-content;max-width:280px;padding:9px 11px;border-radius:10px;background:var(--paper);color:var(--ink);box-shadow:0 8px 28px var(--shadow),0 0 0 1px var(--line);font-size:12.5px;font-weight:400;line-height:1.45;letter-spacing:0;white-space:normal;text-align:left;pointer-events:none}
+#ge-canvas button.ge-save.ge-unsaved{cursor:pointer}

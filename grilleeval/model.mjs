@@ -21,11 +21,14 @@ export const DESCRIPTORS = [
  'Interpréter des textes courts, en s’appuyant sur le contexte, les mots-clés et la ponctuation.',
  'Lire à voix haute un texte préparé — compétence personnalisée.'
 ];
-export function format(value) {return value == null ? '' : Number(value.toFixed(2)).toString().replace('.',',');}
+// D1.57 · « D » = dispensé : l’exercice ne compte ni dans les points ni dans le maximum de cet élève.
+export const DISPENSED='D';
+export function format(value) {return value == null ? '' : value === DISPENSED ? DISPENSED : Number(value.toFixed(2)).toString().replace('.',',');}
 export function text(value,label) {if(typeof value!=='string'||!value.trim())throw new Error(`${label} ne peut pas être vide.`);if(value.length>12000)throw new Error(`${label} est trop long.`);return value.trim();}
 export function points(raw,max=Infinity,{empty=true}={}) {
  const s=String(raw).trim();if(!s&&empty)return null;
- if(!/^\d+(?:[.,]\d{1,2})?$/.test(s))throw new Error('Saisir un nombre avec deux décimales au maximum.');
+ if(/^d(?:isp(?:ens[ée])?)?\.?$/i.test(s))return DISPENSED;
+ if(!/^\d+(?:[.,]\d{1,2})?$/.test(s))throw new Error('Saisir un nombre (deux décimales au maximum) ou D pour dispensé.');
  const n=Number(s.replace(',','.'));if(!Number.isFinite(n)||n<0||n>max)throw new Error(`Saisir entre 0 et ${format(max)} points.`);return n;
 }
 export function capacity(s,t,c) {if([s,t,c].some(n=>!Number.isInteger(n)||n<0||n>250))throw new Error('Entre 0 et 250 éléments par liste.');if((s+c)*t>LIMIT)throw new Error(`Cette version accepte ${LIMIT.toLocaleString('fr-FR')} cellules au maximum.`);}
@@ -103,25 +106,27 @@ export function validate(source) {
  if(raw.schemaVersion!==2)throw new Error('Version de sauvegarde non prise en charge.');
  for(const key of ['students','tasks','competencies'])if(!Array.isArray(raw[key]))throw new Error(`Liste ${key} invalide.`);
  capacity(raw.students.length,raw.tasks.length,raw.competencies.length);
- const d={schemaVersion:2,app:'GrilleEvalCanvas',title:text(raw.title,'Titre'),subject:text(raw.subject||'Luxembourgeois','Matière'),cycle:text(raw.cycle||'4.2','Cycle'),students:raw.students.map(s=>({id:id(s.id),name:text(s.name,'Nom'),...(s.absent===true?{absent:true}:{}),...(/^[ABCD]$/.test(s.attitude||'')?{attitude:s.attitude}:{}),...(/^[ABCD]$/.test(s.ecriture||'')?{ecriture:s.ecriture}:{})})),tasks:raw.tasks.map(t=>{if(typeof t.maxPoints!=='number'||!Number.isFinite(t.maxPoints)||t.maxPoints<=0)throw new Error('Maximum de points invalide.');return {id:id(t.id),title:text(t.title,'Exercice'),maxPoints:t.maxPoints};}),competencies:raw.competencies.map(k=>({id:id(k.id),text:text(k.text,'Compétence'),...(k.catalogueId?{catalogueId:id(k.catalogueId)}:{}),...Object.fromEntries(['subject','cycle','section','kind','level','competence','source','domain','pathway','sourceScope','printedPage'].filter(key=>typeof k[key]==='string').map(key=>[key,k[key]])),...(Number.isInteger(k.page)&&k.page>0?{page:k.page}:{})})),scores:{},links:{}};
+ const d={schemaVersion:2,app:'GrilleEvalCanvas',title:text(raw.title,'Titre'),subject:text(raw.subject||'Luxembourgeois','Matière'),cycle:text(raw.cycle||'4.2','Cycle'),students:raw.students.map(s=>({id:id(s.id),...(typeof s.uid==='string'&&/^[A-Za-z0-9-]{8,40}$/.test(s.uid)?{uid:s.uid}:{}),name:text(s.name,'Nom'),...(s.absent===true?{absent:true}:{}),...(/^[ABCD]$/.test(s.attitude||'')?{attitude:s.attitude}:{}),...(/^[ABCD]$/.test(s.ecriture||'')?{ecriture:s.ecriture}:{})})),tasks:raw.tasks.map(t=>{if(typeof t.maxPoints!=='number'||!Number.isFinite(t.maxPoints)||t.maxPoints<=0)throw new Error('Maximum de points invalide.');return {id:id(t.id),title:text(t.title,'Exercice'),maxPoints:t.maxPoints};}),competencies:raw.competencies.map(k=>({id:id(k.id),text:text(k.text,'Compétence'),...(k.catalogueId?{catalogueId:id(k.catalogueId)}:{}),...Object.fromEntries(['subject','cycle','section','kind','level','competence','source','domain','pathway','sourceScope','printedPage'].filter(key=>typeof k[key]==='string').map(key=>[key,k[key]])),...(Number.isInteger(k.page)&&k.page>0?{page:k.page}:{})})),scores:{},links:{}};
  for(const field of ['date','className','duration','demoId','teacher','school','evalId'])if(typeof raw[field]==='string')d[field]=raw[field].slice(0,200);if(typeof raw.observation==='string')d.observation=raw.observation.slice(0,600);
  if(raw.logo==='none')d.logo='none';else if(typeof raw.logo==='string'&&raw.logo.length<700000&&/^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(raw.logo))d.logo=raw.logo;
  for(const a of [d.students,d.tasks,d.competencies])if(new Set(a.map(x=>x.id)).size!==a.length)throw new Error('Identifiants en double.');
  const scoreMap=object(raw.scores,'Points'),linkMap=object(raw.links,'Associations');
  const pids=new Set(d.students.map(p=>p.id)),tids=new Set(d.tasks.map(t=>t.id)),kids=new Set(d.competencies.map(k=>k.id));
  if(Object.keys(scoreMap).some(p=>!pids.has(p)))throw new Error('Points associés à un élève inconnu.');
- for(const p of d.students){const row=object(scoreMap[p.id]||{},'Points élève');if(Object.keys(row).some(t=>!tids.has(t)))throw new Error('Points associés à un exercice inconnu.');d.scores[p.id]={};for(const t of d.tasks){const n=row[t.id]??null;if(n!==null&&(typeof n!=='number'||!Number.isFinite(n)||n<0||n>t.maxPoints||Math.abs(n*100-Math.round(n*100))>1e-6))throw new Error(`Points invalides : ${p.name} / ${t.title}.`);d.scores[p.id][t.id]=n;}}
+ for(const p of d.students){const row=object(scoreMap[p.id]||{},'Points élève');if(Object.keys(row).some(t=>!tids.has(t)))throw new Error('Points associés à un exercice inconnu.');d.scores[p.id]={};for(const t of d.tasks){const n=row[t.id]??null;if(n!==null&&n!==DISPENSED&&(typeof n!=='number'||!Number.isFinite(n)||n<0||n>t.maxPoints||Math.abs(n*100-Math.round(n*100))>1e-6))throw new Error(`Points invalides : ${p.name} / ${t.title}.`);d.scores[p.id][t.id]=n;}}
  if(Object.keys(linkMap).some(k=>!kids.has(k)))throw new Error('Association à une compétence inconnue.');
  for(const k of d.competencies){const row=linkMap[k.id]||[];if(!Array.isArray(row)||row.some(t=>!tids.has(t)))throw new Error('Association à un exercice inconnu.');d.links[k.id]=[...new Set(row)];}
  d.grading=validateGrading(raw.grading);d.catalogue=validateCatalogue(raw.catalogueIncludesPlan?[...new Map([...PLAN_CATALOGUE,...(raw.catalogue||[])].map(e=>[e.id,e])).values()]:raw.catalogue||PLAN_CATALOGUE,d.cycle);
  return d;
 }
-export function total(d,p) {return d.tasks.reduce((n,t)=>n+(d.scores[p]?.[t.id]??0),0);}
+export function total(d,p) {return d.tasks.reduce((n,t)=>{const v=d.scores[p]?.[t.id];return n+(typeof v==='number'?v:0);},0);}
 export function possible(d) {return d.tasks.reduce((n,t)=>n+t.maxPoints,0);}
 export function filled(d,p) {return d.tasks.filter(t=>d.scores[p]?.[t.id]!=null).length;}
 export function linked(d,k,t) {return d.links[k]?.includes(t)||false;}
 export function removeTask(d,tid) {d.tasks=d.tasks.filter(t=>t.id!==tid);for(const row of Object.values(d.scores))delete row[tid];for(const [key,list]of Object.entries(d.links))d.links[key]=list.filter(id=>id!==tid);}
-export function toCSV(d) {const q=v=>'"'+String(v).replaceAll('"','""')+'"';return '\ufeff'+[['Élève',...d.tasks.map(t=>`${t.title} / ${format(t.maxPoints)}`),'Total','Saisie complète'],...d.students.map(p=>[p.name,...d.tasks.map(t=>format(d.scores[p.id]?.[t.id])),format(total(d,p.id)),filled(d,p.id)===d.tasks.length?'Oui':'Non'])].map(row=>row.map(q).join(';')).join('\r\n');}
+// D1.57 · Une cellule de texte qui commence par = + - @ serait exécutée comme formule par Excel : on la préfixe d’une apostrophe.
+export function csvSafe(v){const t=String(v);return /^[=+\-@\t\r]/.test(t)&&!/^-?\d+(?:[.,]\d+)?$/.test(t)?"'"+t:t;}
+export function toCSV(d) {const q=v=>'"'+csvSafe(v).replaceAll('"','""')+'"';return '\ufeff'+[['Élève',...d.tasks.map(t=>`${t.title} / ${format(t.maxPoints)}`),'Total','Saisie complète'],...d.students.map(p=>[p.name,...d.tasks.map(t=>format(d.scores[p.id]?.[t.id])),format(total(d,p.id)),filled(d,p.id)===d.tasks.length?'Oui':'Non'])].map(row=>row.map(q).join(';')).join('\r\n');}
 export function pasteBlock(d,pid,tid,source,{transposed=false}={}) {
  const p=d.students.findIndex(s=>s.id===pid),t=d.tasks.findIndex(task=>task.id===tid);if(p<0||t<0)throw new Error('Cellule inconnue.');
  const lines=source.replace(/\r\n?/g,'\n').replace(/\n$/,'').split('\n').map(row=>row.split('\t'));
