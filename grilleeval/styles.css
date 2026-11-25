@@ -2504,3 +2504,7 @@
 #ge-canvas :is(.ge-free-row textarea,.ge-inline-free textarea,.ge-free-form textarea,.ge-search-box input,.ge-bilan-test-row input,.ge-custom-labels input):focus{border-color:var(--accent);outline:3px solid color-mix(in srgb,var(--accent) 20%,transparent);outline-offset:0}
 /* D1.64 · Ligne « Statistiques d’utilisation anonymes » sous la version (seulement sur la version publiée). */
 #ge-canvas .ge-menu-version.ge-menu-stats{border-top:0;margin:0;padding:0 12px 2px;font-size:11px}
+/* D1.66 · Les seuils du barème sur le canevas sont un simple affichage : on ne peut plus les saisir (ni par mégarde en
+   déplaçant la vue). Le barème se change dans la fenêtre « Barème ». */
+#ge-canvas .ge-surface :is(.ge-inline-threshold,.ge-vertical-threshold,.ge-threshold-line){pointer-events:none;cursor:inherit;touch-action:auto}
+#ge-canvas .ge-surface :is(.ge-inline-threshold,.ge-vertical-threshold,.ge-threshold-line)>span[aria-hidden="true"]{display:none}
