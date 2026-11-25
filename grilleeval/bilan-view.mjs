@@ -1,7 +1,7 @@
-import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=D1.66';
-import {format, levelColour, levelFor, validate} from './model.mjs?v=D1.66';
-import {validateGrading} from './analysis.mjs?v=D1.66';
-import {descriptorColumnWidth} from './descriptor-layout.mjs?v=D1.66';
+import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=D1.67';
+import {format, levelColour, levelFor, validate} from './model.mjs?v=D1.67';
+import {validateGrading} from './analysis.mjs?v=D1.67';
+import {descriptorColumnWidth} from './descriptor-layout.mjs?v=D1.67';
 
 export function createBilanWorkspace({
   getDocument, getRevision, esc, icon, euroDate, highlightSearch, foldName, displayDescriptor,
@@ -177,7 +177,7 @@ export function createBilanWorkspace({
   function columnAxis(person) {
     return `<th scope="row" class="ge-bilan-corner ge-bilan-axis-cell"><div class="ge-bilan-pin">
       <section class="ge-bilan-grading" aria-label="Barème">
-        <div class="ge-vertical-heading">${paneHeading('chart','Résultats · Barème',null,true,'<span class="ge-bilan-heading-prefix">Résultats · </span>Barème')}${gradingMenu()}</div>
+        <div class="ge-vertical-heading">${paneHeading('chart','Résultats',null,true,'Résultats')}${gradingMenu()}</div>
         <div data-bilan-axis>${verticalGradingAxis(grading)}</div>
         <small class="ge-bilan-axis-caption">${person ? 'Score global par test' : 'Moyenne pondérée<span> des tests complets</span>'}</small>
       </section></div></th>`;

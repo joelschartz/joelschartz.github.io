@@ -2508,3 +2508,51 @@
    déplaçant la vue). Le barème se change dans la fenêtre « Barème ». */
 #ge-canvas .ge-surface :is(.ge-inline-threshold,.ge-vertical-threshold,.ge-threshold-line){pointer-events:none;cursor:inherit;touch-action:auto}
 #ge-canvas .ge-surface :is(.ge-inline-threshold,.ge-vertical-threshold,.ge-threshold-line)>span[aria-hidden="true"]{display:none}
+
+/* ── D1.67 · Achse des Barème neu: reine Anzeige, ruhig, vollständig beschriftet ─────────────────────────────
+   Horizontal (Test): eine Zeile Werte über einem farbigen Band (ohne Griffe), darunter die Legende der Niveaus.
+   Vertikal (Bilan, Test transponiert): jedes Niveau mit Farbpunkt, Name und Startwert direkt neben dem Band;
+   keine gestrichelten Linien quer durch die leere Spalte, 0 % und 100 % in derselben Spalte wie die Werte. */
+#ge-canvas .ge-grading-button{display:inline-flex;align-items:center;gap:5px;width:auto!important;height:28px!important;min-height:28px!important;padding:0 10px 0 8px!important;border:0!important;border-radius:14px;background:var(--accent-soft)!important;color:var(--accent)!important;font-size:12.5px!important;font-weight:500;line-height:1}
+#ge-canvas .ge-grading-button:hover{background:color-mix(in srgb,var(--accent) 16%,transparent)!important}
+#ge-canvas .ge-grading-button .ge-line-icon{width:15px;height:15px}
+/* horizontal */
+#ge-canvas .ge-inline-axis{height:30px;border-bottom:0}
+#ge-canvas .ge-inline-axis>.ge-axis-levels{left:0;right:0;bottom:0;height:6px;gap:2px}
+#ge-canvas .ge-inline-axis>.ge-axis-levels i{border-radius:0}
+#ge-canvas .ge-inline-axis>.ge-axis-levels i:first-child{border-radius:3px 0 0 3px}
+#ge-canvas .ge-inline-axis>.ge-axis-levels i:last-child{border-radius:0 3px 3px 0}
+#ge-canvas .ge-inline-axis .ge-axis-zero,#ge-canvas .ge-inline-axis .ge-axis-end{top:0;bottom:auto;font-size:10.5px;line-height:14px;color:var(--faint);font-variant-numeric:tabular-nums}
+#ge-canvas .ge-inline-threshold,#ge-canvas .ge-inline-threshold.ge-close-threshold{top:0;height:14px;min-width:0;width:auto}
+#ge-canvas .ge-inline-threshold>b,#ge-canvas .ge-inline-threshold.ge-close-threshold>b{position:static;transform:none;display:block;font-size:10.5px;line-height:14px;font-weight:600;color:var(--ink-soft);background:transparent}
+#ge-canvas .ge-inline-threshold>span{display:none!important}
+#ge-canvas .ge-inline-threshold.ge-close-threshold>b{position:absolute;left:50%;transform:translateX(-50%);top:calc(var(--threshold-lane)*-11px)}
+#ge-canvas .ge-crowded-threshold>b{visibility:visible}
+#ge-canvas .ge-axis-legend{display:flex;flex-wrap:wrap;gap:3px 12px;margin:8px 0 0;font-size:10.5px;line-height:14px;color:var(--muted);max-height:28px;overflow:hidden}
+#ge-canvas .ge-inline-results-head .ge-axis-legend{margin-inline:calc(var(--total-width, 48px) + var(--total-gap, 0px)) calc(var(--percent-width, 66px) + var(--percent-gap, 0px))}
+#ge-canvas .ge-axis-legend>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+#ge-canvas .ge-axis-legend i,#ge-canvas .ge-level-dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex:none}
+/* vertical */
+#ge-canvas .ge-vertical-axis>.ge-axis-levels{right:0;width:5px;gap:2px}
+#ge-canvas .ge-vertical-axis>.ge-axis-levels i{border-radius:0}
+#ge-canvas .ge-vertical-axis>.ge-axis-levels i:first-child{border-radius:0 0 3px 3px}
+#ge-canvas .ge-vertical-axis>.ge-axis-levels i:last-child{border-radius:3px 3px 0 0}
+#ge-canvas .ge-vertical-threshold,#ge-canvas .ge-vertical-axis-max,#ge-canvas .ge-vertical-axis-zero{position:absolute;left:0;right:13px;display:flex;justify-content:flex-end;align-items:center;gap:8px;height:16px;min-height:16px;padding:0;border:0;background:transparent;transform:translateY(50%)}
+#ge-canvas .ge-vertical-axis-max{top:0;bottom:auto;transform:translateY(-50%)}
+#ge-canvas .ge-vertical-axis-zero{bottom:0;top:auto}
+#ge-canvas .ge-vertical-threshold::after{display:none}
+#ge-canvas :is(.ge-vertical-threshold,.ge-vertical-axis-max,.ge-vertical-axis-zero)>small{display:inline-flex;align-items:center;gap:6px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:transparent;padding:0;font-size:11.5px;line-height:16px;font-weight:400;color:var(--ink-soft);visibility:visible}
+#ge-canvas :is(.ge-vertical-threshold,.ge-vertical-axis-max,.ge-vertical-axis-zero)>b{flex:none;min-width:34px;text-align:right;background:transparent;padding:0;font-size:11.5px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink-soft);visibility:visible}
+#ge-canvas .ge-vertical-axis-max>b{color:var(--faint);font-weight:500}
+#ge-canvas .ge-vertical-axis-zero>b{color:var(--faint);font-weight:500}
+#ge-canvas .ge-vertical-threshold>span{display:none!important}
+#ge-canvas .ge-vertical-threshold.ge-close-threshold>small{visibility:hidden}
+#ge-canvas .ge-bilan-grading .ge-vertical-axis{inset:0 0 0 12px}
+/* D1.67 · Gegen ältere, spezifischere Regeln (Bilan-Tabelle, Diagrammseite) durchsetzen. */
+#ge-canvas :is(.ge-vertical-threshold,.ge-vertical-axis-max,.ge-vertical-axis-zero){display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;left:0!important;right:13px!important;height:16px!important;min-height:16px!important}
+#ge-canvas :is(.ge-vertical-threshold,.ge-vertical-axis-max,.ge-vertical-axis-zero)>small{display:inline-flex!important;gap:6px!important;margin:0!important}
+#ge-canvas :is(.ge-vertical-heading,.ge-inline-heading) .ge-grading-button{display:inline-flex!important;flex:none!important;margin-left:auto!important;white-space:nowrap}
+#ge-canvas .ge-inline-axis :is(.ge-axis-zero,.ge-axis-end){display:none}
+#ge-canvas .ge-vertical-axis-max{display:none!important}
+#ge-canvas .ge-inline-heading{display:flex!important;align-items:center;justify-content:space-between!important}
+#ge-canvas .ge-inline-heading>:only-child{flex:1 1 auto;display:flex;align-items:center;min-width:0}
