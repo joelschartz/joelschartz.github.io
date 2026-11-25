@@ -2572,3 +2572,10 @@
 #ge-canvas .ge-message-close{flex:none;width:22px;height:22px;margin:-2px -6px -2px auto;padding:0;border:0;border-radius:11px;background:transparent;color:inherit;opacity:.7;cursor:pointer;display:grid;place-items:center}
 #ge-canvas .ge-message-close::before{content:"✕";font-size:12px;line-height:1}
 #ge-canvas .ge-message-close:hover{opacity:1;background:color-mix(in srgb,var(--bad) 12%,transparent)}
+/* D1.70 · Un seul ✕ dans le bilan : même forme et même survol que « Retirer » dans la liste des tests.
+   Nouveau ✕ à côté du nom de l’élève pour revenir à toute la classe. */
+#ge-canvas .ge-bilan-breakdown-head .ge-bilan-remove{width:26px;height:26px;padding:0;border-radius:999px;display:grid;place-items:center;background:transparent;color:var(--muted)}
+#ge-canvas .ge-bilan-breakdown-head .ge-bilan-remove:hover{background:var(--active);color:var(--ink)}
+#ge-canvas .ge-bilan-breakdown-head .ge-bilan-remove svg{width:12px;height:12px;stroke-width:1.8}
+#ge-canvas .ge-bilan-column-heads .ge-bilan-corner .ge-bilan-pin:has(.ge-bilan-back){display:flex;align-items:center;gap:8px}
+#ge-canvas .ge-bilan-back{flex:none;margin-left:auto;margin-right:6px}

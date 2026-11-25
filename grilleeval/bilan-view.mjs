@@ -1,7 +1,7 @@
-import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=D1.69';
-import {format, levelColour, levelFor, validate} from './model.mjs?v=D1.69';
-import {validateGrading} from './analysis.mjs?v=D1.69';
-import {descriptorColumnWidth} from './descriptor-layout.mjs?v=D1.69';
+import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=D1.70';
+import {format, levelColour, levelFor, validate} from './model.mjs?v=D1.70';
+import {validateGrading} from './analysis.mjs?v=D1.70';
+import {descriptorColumnWidth} from './descriptor-layout.mjs?v=D1.70';
 
 export function createBilanWorkspace({
   getDocument, getRevision, esc, icon, euroDate, highlightSearch, foldName, displayDescriptor,
@@ -202,7 +202,7 @@ export function createBilanWorkspace({
       <colgroup><col class="ge-bilan-descriptor-col">${n ? `<col span="${n}">` : ''}<col class="ge-bilan-bar-col"></colgroup>
       <thead><tr class="ge-bilan-totals">${columnAxis(person)}${top.map(bar=>`<td>${bar}</td>`).join('')}
         ${person ? `<td class="ge-bilan-overall"><span>Moyenne des tests</span>${overallColumn(person)}</td>` : '<td class="ge-bilan-chart-gap" aria-hidden="true"></td>'}</tr>
-        <tr class="ge-bilan-column-heads"><th scope="col" class="ge-bilan-corner"><div class="ge-bilan-pin">${paneHeading('table',person ? person.name : 'Compétences',String(shown.length))}</div></th>${names.join('')}
+        <tr class="ge-bilan-column-heads"><th scope="col" class="ge-bilan-corner"><div class="ge-bilan-pin">${paneHeading('table',person ? person.name : 'Compétences',String(shown.length))}${person ? `<button type="button" class="ge-bilan-remove ge-bilan-back" data-bilan-pupil="" data-direct-control aria-label="Fermer le bilan de ${esc(person.name)} et revenir à toute la classe" title="Revenir à toute la classe">${icon('close')}</button>` : ''}</div></th>${names.join('')}
           <th scope="col" class="ge-bilan-class" data-bilan-bar-head>${paneHeading('competencies',person ? 'Bilan de '+person.name : 'Moyenne de la classe',null)}
             <div class="ge-bilan-bar-axis" aria-hidden="true"><i>0 %</i><i>50 %</i><i>100 %</i></div>
           </th></tr></thead><tbody>${rows}</tbody></table>`;
@@ -480,7 +480,7 @@ export function createBilanWorkspace({
     slot.append(breakdown);
     row.after(detailRow);
     breakdown.innerHTML = `<div class="ge-bilan-breakdown-head"><strong>${esc(person.name)}</strong>
-      <button type="button" data-bilan-breakdown-close aria-label="Fermer le détail" title="Fermer">${icon('close')}</button></div>
+      <button type="button" class="ge-bilan-remove" data-bilan-breakdown-close data-direct-control aria-label="Fermer le détail" title="Fermer">${icon('close')}</button></div>
       <p>${esc(displayDescriptor(comp.text))}</p>${trendSVG(orderedParts(result.parts))}<div class="ge-bilan-breakdown-parts">${orderedParts(result.parts).map(part =>
         `<div class="ge-bilan-breakdown-row"><span>${esc(part.title)}${part.date ? ` <small>${esc(euroDate(part.date))}</small>` : ''}</span><strong>${bilanPercent(part.percent)}</strong><small>× ${format(part.weight)}</small></div>`).join('')}</div>
       <div class="ge-bilan-breakdown-total"><span>Bilan</span><strong>${bilanPercent(result.percent)}</strong></div>`;
@@ -628,7 +628,13 @@ export function createBilanWorkspace({
     if (e.key === 'Escape' && detailRow) {
       e.preventDefault();
       e.stopPropagation();
-      closeDetails(true);
+      return closeDetails(true);
+    }
+    // D1.70 · Échap dans le bilan d’un élève : retour à toute la classe.
+    if (e.key === 'Escape' && pupil && !e.target.closest?.('input,select,textarea')) {
+      e.preventDefault();
+      e.stopPropagation();
+      choosePupil('');
     }
   });
   if (initial?.data) {
