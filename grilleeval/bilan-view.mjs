@@ -5,7 +5,7 @@ import {descriptorColumnWidth} from './descriptor-layout.mjs';
 
 export function createBilanWorkspace({
   getDocument, getRevision, esc, icon, euroDate, highlightSearch, foldName, displayDescriptor,
-  gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles, onLayout, onSelection, onHistory = () => {}, onChange = () => {}, setGrading = () => {}, initial = null
+  gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles, onLayout, onSelection, onKeepResults = () => {}, onHistory = () => {}, onChange = () => {}, setGrading = () => {}, initial = null
 }) {
   const tests = new Map();
   const folded = new Set();
@@ -308,7 +308,8 @@ export function createBilanWorkspace({
     pupil = key;
     pupilSelect.value = key;
     drawResults();
-    onSelection();
+    // D1.63 · Choisir un élève (ou toute la classe) ne déplace plus la vue : seulement si le tableau n’est plus visible.
+    onKeepResults();
   }
 
   function drawControls() {

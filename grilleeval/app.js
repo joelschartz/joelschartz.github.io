@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.62',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.63',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -829,6 +829,8 @@ document.addEventListener('keydown',event=>{
 });
 document.addEventListener('keyup',event=>{if(event.code==='Space'){space=false;vp.classList.remove('ge-space');}});
 window.addEventListener('blur',()=>{pinch=null;gestureZoom=null;wheelZooming=false;space=false;vp.classList.remove('ge-space');endPan();});
+// D1.63 · La carte se ferme d’un clic à côté (comme un popover) ; le clic garde son effet normal.
+document.addEventListener('pointerdown',event=>{const map=$('[data-map-navigate]');if(!map||map.hidden)return;if(event.target.closest?.('[data-map-navigate],[data-map-shortcuts],[data-action="map"]'))return;toggleMap(false);},true);
 function toggleMap(open=$('[data-map-navigate]').hidden){$('[data-map-navigate]').hidden=!open;$('[data-map-shortcuts]').hidden=!open;$('[data-action="map"]').setAttribute('aria-expanded',String(open));}
 $('[data-map-navigate]').addEventListener('click',event=>{if(event.detail===0)return bilanOrigin?revealBilanResults():focusPane('points');const r=$('[data-map-svg]').getBoundingClientRect();const x=(event.clientX-r.left)/r.width*180,y=(event.clientY-r.top)/r.height*125;panTo(Math.max(0,(x-mapOffset.x)/mapScale),Math.max(0,(y-mapOffset.y)/mapScale),true);});
 {const fs=$('[data-action="fullscreen"]');if(fs){fs.hidden=!document.fullscreenEnabled;document.addEventListener('fullscreenchange',()=>{const on=Boolean(document.fullscreenElement);fs.setAttribute('aria-pressed',String(on));fs.innerHTML=on?'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 3.5 11 9M11 4.5V9h4.5M3.5 16.5 9 11M9 15.5V11H4.5"/></svg>':'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.5 3.5h5v5M16.5 3.5l-5.5 5.5M8.5 16.5h-5v-5M3.5 16.5 9 11"/></svg>';fs.title=on?'Quitter le plein écran':'Plein écran';fs.setAttribute('aria-label',fs.title);schedule(true);});}}
@@ -1446,11 +1448,11 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=bilan-d162').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=bilan-d163').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
-        onLayout:()=>{if (bilanOrigin) { schedule(true); syncBilanHeader(); }}, onSelection:revealBilanResults,
+        onLayout:()=>{if (bilanOrigin) { schedule(true); syncBilanHeader(); }}, onSelection:revealBilanResults, onKeepResults:keepBilanResults,
         onHistory:()=>{if (bilanOrigin) updateHistory();},
         onChange:()=>queueBilanAutosave(), initial:readBilanAutosave(),
         setGrading:next=>mutation(()=>{d.grading=next;},null,{render:false})
@@ -1615,6 +1617,15 @@ function focusBilanArea(name, includeTests = false) {
   vp.scrollTop = Math.max(0, rect.y*z - margin);
   rememberCamera();
   schedule(true);
+}
+// D1.63 · Après le choix d’un élève : la vue reste ; si le tableau des résultats est sorti de l’écran (il devient plus étroit), on le ramène juste assez.
+function keepBilanResults(){
+  if (!bilanOrigin || !bilanPane?.element.isConnected) return;
+  measureBilan();const r=bilanPaneRect('results'),z=view.zoom,v=dims(),m=32;if(!r||!r.w)return;
+  const right=(r.x+r.w)*z+m-v.w,bottom=(r.y+r.h)*z+m-v.h;
+  if(vp.scrollLeft>right)vp.scrollLeft=Math.max(0,Math.min(vp.scrollLeft,Math.max(right,r.x*z-m)));
+  if(vp.scrollTop>bottom)vp.scrollTop=Math.max(0,Math.min(vp.scrollTop,Math.max(bottom,r.y*z-m)));
+  rememberCamera();schedule(true);
 }
 function revealBilanResults() {
   if (!bilanOrigin || !bilanPane?.element.isConnected) return;

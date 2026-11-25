@@ -2497,3 +2497,8 @@
 #ge-canvas button.ge-save:not(.ge-unsaved)::before{content:'';position:absolute;inset:-9px}
 #ge-canvas button.ge-save[data-tip]:hover::after,#ge-canvas button.ge-save[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;top:calc(100% + 10px);right:-12px;z-index:60;width:max-content;max-width:280px;padding:9px 11px;border-radius:10px;background:var(--paper);color:var(--ink);box-shadow:0 8px 28px var(--shadow),0 0 0 1px var(--line);font-size:12.5px;font-weight:400;line-height:1.45;letter-spacing:0;white-space:normal;text-align:left;pointer-events:none}
 #ge-canvas button.ge-save.ge-unsaved{cursor:pointer}
+
+/* D1.63 · Champs de saisie : rendu propre dans tous les navigateurs (Safari dessinait des coins carrés dans le champ
+   arrondi de la compétence libre) et un seul anneau de focus, collé au bord arrondi. */
+#ge-canvas :is(textarea,input[type=text],input[type=search],input[type=email],input:not([type])){-webkit-appearance:none;appearance:none;background-clip:padding-box}
+#ge-canvas :is(.ge-free-row textarea,.ge-inline-free textarea,.ge-free-form textarea,.ge-search-box input,.ge-bilan-test-row input,.ge-custom-labels input):focus{border-color:var(--accent);outline:3px solid color-mix(in srgb,var(--accent) 20%,transparent);outline-offset:0}
