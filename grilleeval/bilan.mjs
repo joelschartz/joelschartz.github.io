@@ -3,8 +3,8 @@
 // Le bilan fait la moyenne pondérée de ces pourcentages, élève par élève et compétence par compétence.
 // Les élèves sont reconnus par leur nom (accents, majuscules et ordre Nom/Prénom ignorés),
 // les compétences du plan par leur identifiant, les compétences libres par leur texte.
-import {competencyResult,levelFor,pupilResult} from './analysis.mjs?v=D1.63';
-import {csvSafe} from './model.mjs?v=D1.63';
+import {competencyResult,levelFor,pupilResult} from './analysis.mjs?v=D1.64';
+import {csvSafe} from './model.mjs?v=D1.64';
 
 export function foldName(value){return String(value||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();}
 export function pupilKey(name){return foldName(name).split(' ').filter(Boolean).sort().join(' ');}

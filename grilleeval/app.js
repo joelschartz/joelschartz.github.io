@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.63';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.63';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.63';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.64';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.64';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.64';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,11 +8,19 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.63',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.64',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
 const FILE_PICKER=TOP&&typeof window.showSaveFilePicker==='function'&&typeof window.showOpenFilePicker==='function';
+// D1.64 · Statistiques d’utilisation anonymes (GoatCounter, sans cookie) : seulement sur la version publiée
+// (joelschartz.github.io, page principale). Ne sont envoyés que l’ouverture de l’app et le nom de quelques actions,
+// jamais un nom d’élève, un titre de test ou une note.
+const STATS=TOP&&!DEV&&(()=>{try{return location.hostname==='joelschartz.github.io';}catch{return false;}})();
+if(STATS){try{const s=document.createElement('script');s.async=true;s.src='https://gc.zgo.at/count.js';s.dataset.goatcounter='https://grilleeval.goatcounter.com/count';document.head.append(s);}catch{}}
+const STAT_TITLES={'test-enregistre':'Test enregistré','bilan-affiche':'Bilan affiché','bilan-enregistre':'Bilan enregistré','pdf-exporte':'PDF exporté'};
+function track(name,retry=true){if(!STATS)return;try{const gc=window.goatcounter;if(gc?.count)gc.count({path:name,title:STAT_TITLES[name]||name,event:true});else if(retry)setTimeout(()=>track(name,false),4000);}catch{}}
+let bilanTracked=false;
 let restoredSaved=false,fileHandle=null,fileSaveKind='written',otherTabWarned=false;
 const COPY_PREFIX=STORE_NS+'grilleeval-copy:',COPY_LIMIT=12,TAB_ID=Math.random().toString(36).slice(2,10);
 const KEY=STORE_NS+'grilleeval-canvas-v2',PREVIOUS=KEY+'-previous',X=900,Y=700,LABEL=360,COL=100,SUM=390,COMP=130,SHEET_GAP=40,LOWER_HEAD=146,LOWER_NAMES=112;
@@ -92,7 +100,7 @@ async function saveBilan(workspace,saveAs=false){
  const name=`${new Date().toISOString().slice(0,10)} Bilan des compétences.json`,text=JSON.stringify(workspace.exportBilan(),null,1);let result;
  if(FILE_PICKER){try{if(!bilanHandle||saveAs)bilanHandle=await window.showSaveFilePicker({suggestedName:name,types:[{description:'Bilan GrilleÉval',accept:{'application/json':['.json']}}]});const w=await bilanHandle.createWritable();await w.write(new Blob([text],{type:'application/json'}));await w.close();result={written:bilanHandle.name||name};}catch(error){if(error?.name==='AbortError'){notice('Enregistrement annulé.');return;}bilanHandle=null;result=await download(text,name,'application/json');}}
  else result=await download(text,name,'application/json');
- if(!result)return;workspace.markSaved();persistBilan();notice(result==='exported'?`Bilan téléchargé : « ${name} ».`:`Bilan enregistré${result.written?` dans « ${result.written} »`:''}.`);
+ if(!result)return;workspace.markSaved();persistBilan();track('bilan-enregistre');notice(result==='exported'?`Bilan téléchargé : « ${name} ».`:`Bilan enregistré${result.written?` dans « ${result.written} »`:''}.`);
 }
 function newEvaluation(message='Nouvelle évaluation · annulation possible.'){fileHandle=null;fileSaveKind='written';if(overview)leaveOverview();mutation(()=>{const prev=d;d=emptyDocument('Nouvelle évaluation');d.cycle=prev.cycle;d.grading=clone(prev.grading);d.catalogue=clone(prev.catalogue);if(prev.teacher)d.teacher=prev.teacher;if(prev.school)d.school=prev.school;active=null;transposed=false;resetCatalogueContext();catalogueUsedOnly=false;},message,{shape:true});requestAnimationFrame(()=>frameStart());}
 // D1.57 · « Copies de secours… » : les tests gardés sur cet appareil ; en rouvrir un, ou tout effacer (ordinateur partagé).
@@ -670,10 +678,13 @@ function testFileName(){const day=d.date&&/^\d{4}-\d{2}-\d{2}$/.test(d.date)?d.d
 function docHash(text){let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+':'+text.length;}
 function untouchedDemo(){if(!d.demoId)return false;const m=mathDemo(),pick=x=>JSON.stringify([x.title,x.students,x.tasks,x.scores,x.links,x.competencies.map(c=>c.catalogueId||c.text)]);return pick(d)===pick(m);}
 function isUnsaved(){if(!(d.students.length||d.tasks.length||d.competencies.length)||untouchedDemo())return false;return docHash(encodeDocument(d))!==fileSavedHash;}
-function exportJSON(after=null,saveAs=false){if(!commitDraft())return;persist();const hash=docHash(encodeDocument(d));const fileName=testFileName();saveTestFile(JSON.stringify(d,null,2),fileName,saveAs).then(result=>{if(!result)return;fileSavedHash=hash;fileSaveKind=result==='exported'?'exported':'written';persist();showSave();notice(result==='exported'?`Fichier téléchargé : « ${fileName} ».`:result.written?`Test enregistré dans « ${result.written} ».`:'Test enregistré.');after?.();});}
+function exportJSON(after=null,saveAs=false){if(!commitDraft())return;persist();const hash=docHash(encodeDocument(d));const fileName=testFileName();saveTestFile(JSON.stringify(d,null,2),fileName,saveAs).then(result=>{if(!result)return;fileSavedHash=hash;fileSaveKind=result==='exported'?'exported':'written';persist();showSave();track('test-enregistre');notice(result==='exported'?`Fichier téléchargé : « ${fileName} ».`:result.written?`Test enregistré dans « ${result.written} ».`:'Test enregistré.');after?.();});}
 // D1.53 · Sur un hébergement propre (Chrome, Edge), « Enregistrer » réécrit le même fichier ; ailleurs, un fichier est téléchargé.
 // D1.58 · Chrome / Edge : chaque export demande où l’enregistrer (comme un programme). Ailleurs, le navigateur décide (Téléchargements).
 async function exportFile(contents,name,type){
+ const result=await exportFileRaw(contents,name,type);if(result&&type==='application/pdf')track('pdf-exporte');return result;
+}
+async function exportFileRaw(contents,name,type){
  if(!FILE_PICKER)return download(contents,name,type);
  const ext=(name.match(/\.[a-z0-9]+$/i)||['.pdf'])[0].toLowerCase(),label=ext==='.pdf'?'Document PDF':'Fichier GrilleÉval';
  try{const handle=await window.showSaveFilePicker({suggestedName:name,types:[{description:label,accept:{[type]:[ext]}}]});const w=await handle.createWritable();await w.write(contents instanceof Blob?contents:new Blob([contents],{type}));await w.close();return {written:handle.name||name};}
@@ -1258,7 +1269,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
-{const v=$('[data-app-version]');if(v)v.textContent='GrilleÉval · version '+APP_VERSION+(DEV?' · développement':'');for(const sa of root.querySelectorAll('[data-action="save-as"],[data-action="bilan-save-as"]'))sa.hidden=!FILE_PICKER;}codeInput.value=d.title;renderBoard();
+{const v=$('[data-app-version]');if(v){v.textContent='GrilleÉval · version '+APP_VERSION+(DEV?' · développement':'');if(STATS){const n=document.createElement('p');n.className='ge-menu-version ge-menu-stats';n.textContent='Statistiques d’utilisation anonymes, sans données d’élèves';v.after(n);}}for(const sa of root.querySelectorAll('[data-action="save-as"],[data-action="bilan-save-as"]'))sa.hidden=!FILE_PICKER;}codeInput.value=d.title;renderBoard();
 requestAnimationFrame(()=>{measure();if(needsSetup())startSetup();else{updateScale();vp.scrollLeft=view.x*view.zoom;vp.scrollTop=view.y*view.zoom;}updatePins();updateMap();showSave();if(!lastSavedDoc)queueSave();root.dataset.ready='true';});
 
 if(document.fonts?.ready)document.fonts.ready.then(()=>{descriptorMeasureCache.clear();resizeDescriptors(false);});
@@ -1448,7 +1459,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.63').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.64').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1465,6 +1476,7 @@ function loadBilan() {
 
 function setMode(mode) {
   const isBilan = mode === 'bilan';
+  if (isBilan && !bilanTracked) { bilanTracked = true; track('bilan-affiche'); }
   root.dataset.mode = mode;
   board.hidden = isBilan;
   bilanMount.hidden = !isBilan;
