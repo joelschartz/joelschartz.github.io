@@ -1,4 +1,0 @@
-ge-sans-Regular.ttf / ge-sans-Bold.ttf : sous-ensembles (latin étendu, grec, cyrillique) de Liberation Sans 2.1.5.
-Liberation Sans — Copyright (c) 2012 Red Hat, Inc. Liberation is a trademark of Red Hat, Inc.
-Licensed under the SIL Open Font License, Version 1.1 (https://openfontlicense.org).
-Utilisées par GrilleÉval uniquement pour écrire les noms avec tous leurs signes dans les PDF.
