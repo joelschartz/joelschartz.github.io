@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.67';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.67';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.67';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.68';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.68';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.68';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.67',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.68',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -1056,11 +1056,10 @@ function updateCompetencyResults(scoreChange=null){
 function summaryContent(p){const r=pupilResult(d,p.id),status=r.absent?'Absent':r.complete?d.grading.labels[r.level]:r.percent==null?'Non saisi':'Provisoire',colour=r.level==null?'var(--control)':levelColour(d.grading,r.level);return `<div class="ge-pupil-column-result" data-level="${r.level??''}" style="--lv:${gradingLevelInk(r.level)}" role="img" aria-label="${esc(p.name+' · '+status+' · '+resultPercent(r.percent)+' · '+format(r.points)+' / '+format(r.possible)+' points')}" title="${esc(p.name+' · '+status+' · '+resultPercent(r.percent))}" data-result-state="${r.absent?'absent':r.complete?'complete':'incomplete'}"><div class="ge-column-plot">${d.grading.thresholds.map((n,i)=>`<i class="ge-column-guide" data-column-threshold="${i}" style="bottom:${n}%"></i>`).join('')}<div class="ge-column-fill" style="height:${r.percent??0}%;background:${colour}"></div><small class="ge-result-percent ge-column-percent" style="bottom:${r.percent??0}%">${resultPercent(r.percent)}${r.complete||r.absent?'':'*'}</small></div><strong class="ge-result-label ge-column-level">${esc(status)}</strong></div>`;}
 function resultPercent(n){return n==null?'—':format(Math.round(n*10)/10)+' %';}
 function gradingLevelInk(index,g=d.grading){const c=levelColour(g,index);return g.labels.length===4&&index!=null&&!g.colours?.[index]?`var(--lv${index})`:`light-dark(color-mix(in srgb,${c} 82%,black),color-mix(in srgb,${c} 60%,white))`;}
-// D1.67 · Le bouton dit ce qu’il ouvre : « Barème ». C’est le seul endroit où l’on modifie le barème.
-function gradingMenu(){return `<button type="button" class="ge-button ge-grading-button" data-edit-grading data-direct-control aria-haspopup="dialog" title="Modifier le barème (niveaux et seuils)">${icon('sliders')}<span>Barème</span></button>`;}
-// D1.67 · Légende du barème : chaque niveau avec sa couleur, dans l’ordre.
-function axisLegend(g){return g.labels.map((l,i)=>`<span><i style="background:${levelColour(g,i)}"></i>${esc(l)}</span>`).join('');}
-function levelDot(g,i){return `<i class="ge-level-dot" style="background:${levelColour(g,i)}"></i>`;}
+function gradingMenu(){return `<button type="button" class="ge-button ge-grading-button" data-edit-grading data-direct-control aria-haspopup="dialog" aria-label="Configurer le barème" title="Modifier le barème (niveaux et seuils)">${icon('sliders')}</button>`;}
+// D1.68 · Légende sobre : les noms des niveaux en gris, dans l’ordre de la bande colorée (pas de pastilles).
+function axisLegend(g){return g.labels.map(l=>`<span>${esc(l)}</span>`).join(' ');}
+function levelDot(){return '';}
 // D1.31 · La légende du barème devient la ligne de l’axe : chaque niveau y a sa couleur (nom au survol).
 function axisLevels(g=d.grading){return g.labels.map((l,i)=>`<i style="flex:${(g.thresholds[i]??100)-(g.thresholds[i-1]??0)};background:${levelColour(g,i)}" title="${esc(l)} · ${format(g.thresholds[i-1]??0)}–${format(g.thresholds[i]??100)} %"></i>`).join('');}
 function gradingPreview(g){return g.labels.map((l,i)=>`<i style="flex:${(g.thresholds[i]??100)-(g.thresholds[i-1]??0)};background:${levelColour(g,i)}" title="${esc(l)}"></i>`).join('');}
@@ -1132,9 +1131,9 @@ function verticalGradingAxis(scale) {
  return `<div class="ge-vertical-axis" data-plot data-vertical-plot><span class="ge-vertical-axis-max"><b>100 %</b></span>
    <span class="ge-vertical-axis-zero" data-axis-zero><small>${levelDot(scale,0)}${esc(scale.labels[0])}</small><b>0 %</b></span><div class="ge-axis-levels" data-axis-levels aria-hidden="true">${axisLevels(scale)}</div>${lines.join('')}</div>`;
 }
-function verticalResultHeader(){return `<div class="ge-vertical-results-head"><div class="ge-vertical-heading">${paneHeading('results','Résultats')}${gradingMenu()}</div>${verticalGradingAxis(d.grading)}<small class="ge-vertical-chart-note">/ ${format(possible(d))} pts</small></div>`;}
+function verticalResultHeader(){return `<div class="ge-vertical-results-head"><div class="ge-vertical-heading">${paneHeading('results','Résultats · Barème')}${gradingMenu()}</div>${verticalGradingAxis(d.grading)}<small class="ge-vertical-chart-note">/ ${format(possible(d))} pts</small></div>`;}
 function horizontalGradingAxis(g){return `<div class="ge-inline-axis" data-plot><small class="ge-axis-zero">0 %</small><small class="ge-axis-end">100 %</small><div class="ge-axis-levels" data-axis-levels aria-hidden="true">${axisLevels(g)}</div>${g.thresholds.map((n,i)=>`<div class="ge-inline-threshold ${closeThreshold(i,g)?'ge-close-threshold':''} ${crowdedThreshold(i,g)?'ge-crowded-threshold':''}" data-threshold-line="${i}" aria-orientation="horizontal" aria-label="Seuil ${esc(g.labels[i+1])}" aria-valuenow="${n}" aria-valuemin="${i*.5}" aria-valuemax="${100-(g.thresholds.length-1-i)*.5}" style="left:${n}%;--threshold-lane:${i%2}"><b>${format(n)} %</b></div>`).join('')}</div><div class="ge-axis-legend" data-axis-legend aria-label="Niveaux du barème">${axisLegend(g)}</div>`;}
-function resultHeader(){return `<div class="ge-inline-results-head"><div class="ge-inline-heading">${paneHeading('results','Résultats')}${gradingMenu()}</div>${horizontalGradingAxis(d.grading)}</div>`;}
+function resultHeader(){return `<div class="ge-inline-results-head"><div class="ge-inline-heading">${paneHeading('results','Résultats · Barème')}${gradingMenu()}</div>${horizontalGradingAxis(d.grading)}</div>`;}
 function updateGradingAxis(container,g) {
  const levels = axisLevels(g);
  for (const node of container.querySelectorAll('[data-axis-levels]')) if (node.innerHTML!==levels) node.innerHTML=levels;
@@ -1181,7 +1180,7 @@ function updateResultsPin(){if(!resultsPin||!scrollCache)return;const c=scrollCa
 function bindResults(){
  root.addEventListener('click',e=>{if(e.target.closest('[data-edit-grading]'))editGrading();});
  // D1.66 · Le barème ne se modifie plus en glissant les seuils sur le canevas (on le changeait par mégarde en déplaçant la vue) :
- // seulement dans la fenêtre « Barème » (bouton « Barème » à côté de « Résultats »). Les seuils restent affichés.
+ // seulement dans la fenêtre « Barème » (bouton à côté de « Résultats · Barème »). Les seuils restent affichés.
  root.addEventListener('pointermove',e=>{
   const drag=gradingDrag;if(!drag||e.pointerId!==drag.pointerId)return;e.preventDefault();
   const {plot,scale}=drag, percent=drag.vertical?(plot.bottom-e.clientY)/plot.height*100:(e.clientX-plot.left)/plot.width*100;
@@ -1449,7 +1448,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.67').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.68').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),

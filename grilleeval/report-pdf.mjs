@@ -1,7 +1,7 @@
 // D1.57 · Bilan individuel en PDF (A4 portrait) : une page (ou plus) par élève, depuis le bilan des compétences.
 // Pour chaque compétence : nombre de tests, résultat du bilan, niveau, et l’évolution test par test (petits points).
-import {levelColour,levelFor,format} from './model.mjs?v=D1.67';
-import {pdfSafe,useUnicodeFont,frenchDate} from './pages-garde.mjs?v=D1.67';
+import {levelColour,levelFor,format} from './model.mjs?v=D1.68';
+import {pdfSafe,useUnicodeFont,frenchDate} from './pages-garde.mjs?v=D1.68';
 
 const P={w:595.28,h:841.89},M=36;
 const C={ink:'#1d1d1f',muted:'#6b6b73',line:'#d3d3db',head:'#f2f3f7',accent:'#3b49c4'};
