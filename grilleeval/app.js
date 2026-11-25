@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.68';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.68';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.68';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.69';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.69';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.69';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.68',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.69',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -52,7 +52,8 @@ function icon(name){const paths={close:'<path d="m6 6 8 8m0-8-8 8"/>',frame:'<pa
 
 const dims=()=>({w:vp.clientWidth||1000,h:vp.clientHeight||650});
 const task=id=>d.tasks.find(t=>t.id===id),pupil=id=>d.students.find(p=>p.id===id),competency=id=>d.competencies.find(c=>c.id===id);
-function notice(message,error=false){clearTimeout(noticeTimer);$('[data-message]').textContent=message;$('[data-message]').classList.toggle('ge-error-message',error);if(!error)noticeTimer=setTimeout(()=>{$('[data-message]').textContent='';},6500);}
+// D1.69 · Un message d’avertissement reste jusqu’au prochain message ou jusqu’à un clic sur ✕ ; les autres disparaissent après 6,5 s.
+function notice(message,error=false){clearTimeout(noticeTimer);const box=$('[data-message]'),clear=()=>{clearTimeout(noticeTimer);box.textContent='';box.classList.remove('ge-error-message');};box.textContent=message;box.classList.toggle('ge-error-message',error);if(error&&message){const x=document.createElement('button');x.type='button';x.className='ge-message-close';x.setAttribute('aria-label','Fermer le message');x.title='Fermer';x.addEventListener('click',clear);box.append(x);}else noticeTimer=setTimeout(clear,6500);}
 // D1.53 · L’indicateur parle du fichier, pas du navigateur : point vert = test enregistré, « Non enregistré » = à enregistrer (clic).
 function showSave(pending=false){const node=$('[data-save]');if(!node)return;
  if(!d)return;const unsaved=Boolean(draft?.dirty)||isUnsaved(),local=storageState==='ok';
@@ -1057,9 +1058,8 @@ function summaryContent(p){const r=pupilResult(d,p.id),status=r.absent?'Absent':
 function resultPercent(n){return n==null?'—':format(Math.round(n*10)/10)+' %';}
 function gradingLevelInk(index,g=d.grading){const c=levelColour(g,index);return g.labels.length===4&&index!=null&&!g.colours?.[index]?`var(--lv${index})`:`light-dark(color-mix(in srgb,${c} 82%,black),color-mix(in srgb,${c} 60%,white))`;}
 function gradingMenu(){return `<button type="button" class="ge-button ge-grading-button" data-edit-grading data-direct-control aria-haspopup="dialog" aria-label="Configurer le barème" title="Modifier le barème (niveaux et seuils)">${icon('sliders')}</button>`;}
-// D1.68 · Légende sobre : les noms des niveaux en gris, dans l’ordre de la bande colorée (pas de pastilles).
-function axisLegend(g){return g.labels.map(l=>`<span>${esc(l)}</span>`).join(' ');}
-function levelDot(){return '';}
+// D1.69 · Légende : les noms des niveaux écrits dans la couleur de leur niveau, dans l’ordre de la bande.
+function axisLegend(g){return g.labels.map((l,i)=>`<span style="color:${gradingLevelInk(i,g)}">${esc(l)}</span>`).join(' ');}
 // D1.31 · La légende du barème devient la ligne de l’axe : chaque niveau y a sa couleur (nom au survol).
 function axisLevels(g=d.grading){return g.labels.map((l,i)=>`<i style="flex:${(g.thresholds[i]??100)-(g.thresholds[i-1]??0)};background:${levelColour(g,i)}" title="${esc(l)} · ${format(g.thresholds[i-1]??0)}–${format(g.thresholds[i]??100)} %"></i>`).join('');}
 function gradingPreview(g){return g.labels.map((l,i)=>`<i style="flex:${(g.thresholds[i]??100)-(g.thresholds[i-1]??0)};background:${levelColour(g,i)}" title="${esc(l)}"></i>`).join('');}
@@ -1125,11 +1125,11 @@ function verticalGradingAxis(scale) {
     data-threshold-line="${i}" aria-orientation="vertical"
     aria-label="Seuil ${label}" aria-valuenow="${value}" aria-valuetext="${format(value)} %" aria-valuemin="${i*.5}"
     aria-valuemax="${100-(scale.thresholds.length-1-i)*.5}" style="bottom:${value}%">
-    <small>${levelDot(scale,i+1)}${label}</small><b>${format(value)} %</b></div>`;
+    <small style="color:${gradingLevelInk(i+1,scale)}">${label}</small><b>${format(value)} %</b></div>`;
  });
  // D1.67 · Le premier niveau a aussi son nom, à 0 % ; 0 % et 100 % sont alignés avec les autres valeurs.
  return `<div class="ge-vertical-axis" data-plot data-vertical-plot><span class="ge-vertical-axis-max"><b>100 %</b></span>
-   <span class="ge-vertical-axis-zero" data-axis-zero><small>${levelDot(scale,0)}${esc(scale.labels[0])}</small><b>0 %</b></span><div class="ge-axis-levels" data-axis-levels aria-hidden="true">${axisLevels(scale)}</div>${lines.join('')}</div>`;
+   <span class="ge-vertical-axis-zero" data-axis-zero><small style="color:${gradingLevelInk(0,scale)}">${esc(scale.labels[0])}</small><b>0 %</b></span><div class="ge-axis-levels" data-axis-levels aria-hidden="true">${axisLevels(scale)}</div>${lines.join('')}</div>`;
 }
 function verticalResultHeader(){return `<div class="ge-vertical-results-head"><div class="ge-vertical-heading">${paneHeading('results','Résultats · Barème')}${gradingMenu()}</div>${verticalGradingAxis(d.grading)}<small class="ge-vertical-chart-note">/ ${format(possible(d))} pts</small></div>`;}
 function horizontalGradingAxis(g){return `<div class="ge-inline-axis" data-plot><small class="ge-axis-zero">0 %</small><small class="ge-axis-end">100 %</small><div class="ge-axis-levels" data-axis-levels aria-hidden="true">${axisLevels(g)}</div>${g.thresholds.map((n,i)=>`<div class="ge-inline-threshold ${closeThreshold(i,g)?'ge-close-threshold':''} ${crowdedThreshold(i,g)?'ge-crowded-threshold':''}" data-threshold-line="${i}" aria-orientation="horizontal" aria-label="Seuil ${esc(g.labels[i+1])}" aria-valuenow="${n}" aria-valuemin="${i*.5}" aria-valuemax="${100-(g.thresholds.length-1-i)*.5}" style="left:${n}%;--threshold-lane:${i%2}"><b>${format(n)} %</b></div>`).join('')}</div><div class="ge-axis-legend" data-axis-legend aria-label="Niveaux du barème">${axisLegend(g)}</div>`;}
@@ -1138,7 +1138,7 @@ function updateGradingAxis(container,g) {
  const levels = axisLevels(g);
  for (const node of container.querySelectorAll('[data-axis-levels]')) if (node.innerHTML!==levels) node.innerHTML=levels;
  const legend=axisLegend(g);for (const node of container.querySelectorAll('[data-axis-legend]')) if (node.innerHTML!==legend) node.innerHTML=legend;
- const zero=`${levelDot(g,0)}${esc(g.labels[0])}`;for (const node of container.querySelectorAll('[data-axis-zero]>small')) if (node.innerHTML!==zero) node.innerHTML=zero;
+ for (const node of container.querySelectorAll('[data-axis-zero]>small')) {node.textContent=g.labels[0]??'';node.style.color=gradingLevelInk(0,g);}
  for (const line of container.querySelectorAll('[data-threshold-line]')) {
   const i=Number(line.dataset.thresholdLine), n=g.thresholds[i];
   line.style[line.getAttribute('aria-orientation')==='vertical'?'bottom':'left']=n+'%';
@@ -1147,7 +1147,7 @@ function updateGradingAxis(container,g) {
   line.setAttribute('aria-valuemin',i*.5);
   line.setAttribute('aria-valuemax',100-(g.thresholds.length-1-i)*.5);
   line.querySelector('b').textContent=format(n)+' %';
-  const name=line.querySelector('small');if(name){const html=`${levelDot(g,i+1)}${esc(g.labels[i+1]??'')}`;if(name.innerHTML!==html)name.innerHTML=html;}
+  const name=line.querySelector('small');if(name){name.textContent=g.labels[i+1]??'';name.style.color=gradingLevelInk(i+1,g);}
   line.classList.toggle('ge-close-threshold',closeThreshold(i,g));
   line.classList.toggle('ge-crowded-threshold',crowdedThreshold(i,g));
  }
@@ -1448,7 +1448,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.68').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.69').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
