@@ -1,9 +1,9 @@
-import {PLAN_CATALOGUE,PLAN_INFO} from './curriculum.mjs?v=D1.64';
+import {PLAN_CATALOGUE,PLAN_INFO} from './curriculum.mjs?v=D1.65';
 export {PLAN_CATALOGUE,PLAN_INFO};
-import {DEMO_CATALOGUE} from './catalogue.mjs?v=D1.64';
-import {DEFAULT_GRADING,validateGrading,validateCatalogue} from './analysis.mjs?v=D1.64';
+import {DEMO_CATALOGUE} from './catalogue.mjs?v=D1.65';
+import {DEFAULT_GRADING,validateGrading,validateCatalogue} from './analysis.mjs?v=D1.65';
 export {DEMO_CATALOGUE};
-export * from './analysis.mjs?v=D1.64';
+export * from './analysis.mjs?v=D1.65';
 export const LIMIT = 30000;
 export const DEFAULT_NAMES = ['Léa Weber','Tom Schmit','Elena Rossi','Louis Bernard','Anna Wagner','Max Hoffmann','Sophie Klein','Liam Muller','Mia Meyer','Noah Becker','Emma Hoffmann','Lucas Schneider','Chloé Martin','Hugo Lambert','Léonie Thill','Paul Dupont','Jade Ferreira','Gabriel Carvalho','Manon Lefèvre','Raphaël Simon'];
 export const EXAMPLES = [
@@ -157,5 +157,5 @@ export function upgradeCatalogue(d){
  d.catalogue=[...new Map([...PLAN_CATALOGUE,...d.catalogue.filter(e=>!obsolete(e))].map(e=>[e.id,e])).values()];return d;
 }
 
-export {twoLineWidth,descriptorColumnWidth,stickyDescriptor} from './descriptor-layout.mjs?v=D1.64';
-export {autoResultsState,paneTitleOffset} from './auto-results.mjs?v=D1.64';
+export {twoLineWidth,descriptorColumnWidth,stickyDescriptor} from './descriptor-layout.mjs?v=D1.65';
+export {autoResultsState,paneTitleOffset} from './auto-results.mjs?v=D1.65';
