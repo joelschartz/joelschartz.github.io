@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.61',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.62',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -546,7 +546,7 @@ function modal({title,fields=[],note='',submit='Enregistrer',onSubmit,remove,con
  dialog.querySelector('[data-modal-cancel]').addEventListener('click',()=>dialog.close());if(remove)dialog.querySelector('[data-modal-remove]').addEventListener('click',()=>{remove();submitted=true;dialog.close();});
  dialog.addEventListener('close',()=>{dialogControls?.abort();dialogControls=null;dialog.style.translate='';const follow=afterDialog,proceed=dialog.dataset.proceed==='true';afterDialog=null;delete dialog.dataset.proceed;requestAnimationFrame(()=>{if(dialog.open)return;if((submitted||proceed)&&follow){follow();return;}if(!submitted&&trigger?.isConnected)trigger.focus({preventScroll:true});if(dialogMoved){rememberCamera();schedule(true);return;}view={...cameraBefore};updateScale();vp.scrollLeft=view.x*view.zoom;vp.scrollTop=view.y*view.zoom;active=selectionBefore;normalizeActive();mark();schedule(true);});},{once:true});dialog.showModal();anchorDialog(trigger);freeDialog();const first=dialog.querySelector('input,textarea');if(first){first.focus();if(first.tagName==='INPUT')first.select();}
 }
-function add(kind){if(kind==='competency')return jumpCatalogue(true);const c=counts(d);capacity(c[0]+(kind==='student'?1:0),c[1]+(kind==='task'?1:0),c[2]+(kind==='competency'?1:0));
+function add(kind){if(kind==='competency')return needsSetup()||overview?jumpCatalogue(true):openFreeCompetency();const c=counts(d);capacity(c[0]+(kind==='student'?1:0),c[1]+(kind==='task'?1:0),c[2]+(kind==='competency'?1:0));
  if(kind==='student')modal({title:'Ajouter des élèves',after:'<div class="ge-import-row"><button type="button" class="ge-button" data-import-csv title="Une liste CSV, ou un test GrilleÉval déjà enregistré pour reprendre ses élèves">Depuis un fichier…</button></div>',fields:[{name:'names',label:'Noms et prénoms (un par ligne)',multiline:true,required:true,rows:6}],submit:'Ajouter',onSubmit:v=>{const names=v.names.split(/\r?\n/).map(n=>n.trim()).filter(Boolean).map(n=>text(n,'Nom'));if(!names.length)throw new Error('Saisir au moins un nom.');checkPupilNames(names);capacity(d.students.length+names.length,d.tasks.length,d.competencies.length);let first;mutation(()=>{for(const name of names){const p={id:newId('s'),uid:newUid(),name};first||=p.id;d.students.push(p);d.scores[p.id]=Object.fromEntries(d.tasks.map(t=>[t.id,null]));}},`${names.length} élève(s) ajouté(s).`,{shape:true});afterDialog=()=>{if(d.tasks.length)focusGrade(first,d.tasks[0].id);else jump('students');};}});
  if(kind==='task')addTasks();
 
@@ -962,6 +962,11 @@ function jumpCatalogue(focus=false){
  if(overview)leaveOverview();if(!commitDraft())return;if(needsSetup())openSetupCatalogue();if(focus){freeOpen=true;refreshCatalogue();}
  finishDescriptorResize();measure();const g=geometry.groups.find(g=>g.kind==='competencies');const banner=needsSetup()?worldRect([board.querySelector('[data-setup-catalogue-bar]')]):null;panTo(X-EXTEND-320,banner?banner.y+26:(g?.y??Y)-140);if(focus)$('[data-free-text]')?.focus({preventScroll:true});notice(needsSetup()?'Cocher le cercle à gauche pour retenir une compétence.':'Filtrer à gauche · cocher directement sous les exercices');
 }
+// D1.62 · + Compétence ouvre la ligne libre sur place : la vue ne bouge que si la ligne est hors de l’écran.
+function openFreeCompetency(){
+ if(!commitDraft())return;if(!freeOpen){freeOpen=true;refreshCatalogue();}
+ const input=$('[data-free-text]');if(!input)return jumpCatalogue(true);input.focus({preventScroll:true});const row=input.closest('[data-free-row]');if(row){const r=row.getBoundingClientRect(),i=input.getBoundingClientRect(),bottom=vp.getBoundingClientRect().top+vp.clientHeight-90;if(r.bottom>bottom)vp.scrollTop+=Math.min(r.bottom-bottom,Math.max(0,i.top-vp.getBoundingClientRect().top-LOWER_HEAD*view.zoom-10));}reveal(input);
+}
 function addFreeCompetency(tid=null){
  if(!commitDraft())return false;const value=text(freeDraft,'Compétence'),meta={subject:catalogueFilter.subject||subjectName(d.subject),cycle:catalogueFilter.cycle||cycleRoot(d.cycle),section:catalogueFilter.section||'Personnalisées',kind:'libre',level:'Libre'};
  let c=d.competencies.find(c=>sameLabel(c.text,value));
@@ -1055,7 +1060,7 @@ function editGrading(){
  const labels=()=>[...dialog.querySelectorAll('[data-grading-label]')].map(e=>e.value.trim());
  const read=()=>{const names=labels(),thresholds=[...dialog.querySelectorAll('[data-threshold-input]')].map(e=>e.value.trim()===''?NaN:Number(e.value.replace(',','.'))),preset=names.every((l,i)=>l===g.labels[i])?g.preset:'custom';return validateGrading({labels:names,thresholds,preset,colours:g.colours});};
  const error=message=>{const n=dialog.querySelector('.ge-dialog-error');n.textContent=message;n.hidden=!message;};
- modal({title:report?'Barème du bilan':'Barème',content:`<div class="ge-grading-editor">${gradingDraftMarkup(g)}</div>`,submit:'Appliquer le barème',onSubmit:()=>{const next=read();if(JSON.stringify(next)===JSON.stringify(initial))return;if(report)report.applyGrading(next);else mutation(()=>{d.grading=next;},'Barème mis à jour. Annulation possible.');}});
+ modal({title:'Barème',content:`<div class="ge-grading-editor">${gradingDraftMarkup(g)}</div>`,submit:'Appliquer le barème',onSubmit:()=>{const next=read();if(JSON.stringify(next)===JSON.stringify(initial))return;if(report)report.applyGrading(next);else mutation(()=>{d.grading=next;},'Barème mis à jour. Annulation possible.');}});
  if(!dialog.open)return;dialog.querySelector('form').setAttribute('novalidate','');
  const editor=dialog.querySelector('.ge-grading-editor');
  // D1.29 · Rien n’est présélectionné : le modèle d’abord ; les libellés seulement pour un barème personnalisé.
@@ -1385,12 +1390,14 @@ function importStudents(names,source){
 }
 root.addEventListener('click',e=>{if(e.target.closest('[data-import-csv]')){e.preventDefault();pickStudentCsv();}});
 
-// D1.36 · Cadre de départ : catalogue, feuille des points et feuille des compétences ensemble, centrés,
-// au plus 100 % (la feuille des compétences peut déborder à droite avec ses colonnes par élève).
-function frameStart(){if(bilanOrigin)return;measure();const v=dims(),panel=filterPanel&&!catalogueUsedOnly?worldRect([filterPanel]):null,lower=worldRect([board.querySelector('.ge-competencies-sheet')]);
- const left=Math.min(panel?panel.x:Infinity,X-EXTEND),right=X+LABEL+layout().primary*(transposed?COMP:COL)+(transposed?0:SUM),top=Y,bottom=Math.max(lower?lower.y+lower.h:Y+700,panel?panel.y+panel.h:0),m=28;
- const z=Math.max(.7,Math.min(1,(v.w-2*m)/(right-left)));view.zoom=z;updateScale();
- vp.scrollLeft=Math.max(0,(right-left)*z<=v.w-2*m?(left+right)/2*z-v.w/2:left*z-m);vp.scrollTop=Math.max(0,(bottom-top)*z<=v.h-2*m?(top+bottom)/2*z-v.h/2:top*z-m);rememberCamera();schedule(true);}
+// D1.62 · Cadre de départ (premier lancement, nouvelle évaluation, test ouvert) : la feuille des points avec ses
+// résultats, entière, au plus 100 % et au moins 70 %, centrée ; trop large, elle s’aligne à gauche (noms visibles) ;
+// trop haute, elle commence en haut. Au retour dans l’app, la vue enregistrée reste inchangée.
+function frameStart(){if(bilanOrigin)return;finishDescriptorResize();measure();const v=dims(),m=28,sheet=worldRect([board.querySelector('.ge-points-sheet'),transposed?board.querySelector('[data-column-chart]'):null]);
+ if(!sheet){panTo(X,Y);return;}
+ sheet.w=Math.min(sheet.w,LABEL+layout().primary*layout().pw+(transposed?0:SUM));
+ const z=Math.max(.7,Math.min(1,(v.w-2*m)/sheet.w));view.zoom=z;updateScale();
+ vp.scrollLeft=Math.max(0,sheet.w*z<=v.w-2*m?(sheet.x+sheet.w/2)*z-v.w/2:sheet.x*z-m);vp.scrollTop=Math.max(0,sheet.h*z<=v.h-2*m?(sheet.y+sheet.h/2)*z-v.h/2:sheet.y*z-m);rememberCamera();schedule(true);}
 // Premier lancement : seulement avec une vraie mise en page (pas dans les tests sans rendu).
 if(!hadSavedView)requestAnimationFrame(()=>requestAnimationFrame(()=>{if(board.getBoundingClientRect().height>0)frameStart();}));
 
@@ -1439,13 +1446,14 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=bilan-d152').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=bilan-d162').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
         onLayout:()=>{if (bilanOrigin) { schedule(true); syncBilanHeader(); }}, onSelection:revealBilanResults,
         onHistory:()=>{if (bilanOrigin) updateHistory();},
-        onChange:()=>queueBilanAutosave(), initial:readBilanAutosave()
+        onChange:()=>queueBilanAutosave(), initial:readBilanAutosave(),
+        setGrading:next=>mutation(()=>{d.grading=next;},null,{render:false})
       });
       return bilanPane;
     }).catch(error => { bilanLoading = null; throw error; });

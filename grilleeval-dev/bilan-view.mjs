@@ -5,7 +5,7 @@ import {descriptorColumnWidth} from './descriptor-layout.mjs';
 
 export function createBilanWorkspace({
   getDocument, getRevision, esc, icon, euroDate, highlightSearch, foldName, displayDescriptor,
-  gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles, onLayout, onSelection, onHistory = () => {}, onChange = () => {}, initial = null
+  gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles, onLayout, onSelection, onHistory = () => {}, onChange = () => {}, setGrading = () => {}, initial = null
 }) {
   const tests = new Map();
   const folded = new Set();
@@ -13,7 +13,8 @@ export function createBilanWorkspace({
   let listedTests = [], liveTest = null, listQuery = '';
   let manualScope = false, current = null, shown = [];
   let renderedRevision = -1, dirty = true;
-  let grading = null, customGrading = null, catalogue = null;
+  // D1.62 · Un seul barème : celui du test ouvert (d.grading). Le bilan n’a plus de barème propre.
+  let grading = null, catalogue = null;
   let detailRow = null, detailsTrigger = null;
   // D1.52 · Annuler / rétablir : la sélection des tests, les coefficients et le barème du bilan.
   const past = [], future = [];
@@ -23,12 +24,12 @@ export function createBilanWorkspace({
   let bilanId = '', savedSignature = '';
   const hash = text => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + ':' + text.length; };
   function signature() {
-    return hash(JSON.stringify({tests:[...tests.values()].map(t => [t.id, String(t.weight), hash(JSON.stringify(t.doc))]), grading:customGrading || null}));
+    return hash(JSON.stringify({tests:[...tests.values()].map(t => [t.id, String(t.weight), hash(JSON.stringify(t.doc))])}));
   }
   function exportBilan() {
     if (!bilanId) bilanId = 'b-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     return {type:'grilleeval.bilan', schemaVersion:1, bilanId, title:'Bilan des compétences', savedAt:new Date().toISOString(),
-      grading:customGrading || null, tests:[...tests.values()].map(t => ({weight:String(t.weight), doc:t.doc}))};
+      grading:grading || getDocument().grading || null, tests:[...tests.values()].map(t => ({weight:String(t.weight), doc:t.doc}))};
   }
   function readBilan(raw) {
     const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
@@ -42,7 +43,7 @@ export function createBilanWorkspace({
     if (undoable) record();
     tests.clear();
     for (const t of data.list) tests.set(t.id, t);
-    customGrading = data.grading; bilanId = data.bilanId; weightSession = null;
+    bilanId = data.bilanId; weightSession = null;
     changed();
     savedSignature = saved ? signature() : '';
     onChange();
@@ -50,7 +51,7 @@ export function createBilanWorkspace({
   function isDirty() { return tests.size > 0 && signature() !== savedSignature; }
   function markSaved() { savedSignature = signature(); onChange(); }
   function snapshot() {
-    return {tests:[...tests.values()].map(t => ({...t})), customGrading};
+    return {tests:[...tests.values()].map(t => ({...t})), grading:getDocument().grading};
   }
   function record() {
     past.push(snapshot());
@@ -61,7 +62,7 @@ export function createBilanWorkspace({
   function restore(state) {
     tests.clear();
     for (const t of state.tests) tests.set(t.id, {...t});
-    customGrading = state.customGrading;
+    if (state.grading && JSON.stringify(state.grading) !== JSON.stringify(getDocument().grading)) setGrading(state.grading);
     weightSession = null;
     changed();
   }
@@ -175,7 +176,7 @@ export function createBilanWorkspace({
 
   function columnAxis(person) {
     return `<th scope="row" class="ge-bilan-corner ge-bilan-axis-cell"><div class="ge-bilan-pin">
-      <section class="ge-bilan-grading" aria-label="Barème du bilan">
+      <section class="ge-bilan-grading" aria-label="Barème">
         <div class="ge-vertical-heading">${paneHeading('chart','Résultats · Barème',null,true,'<span class="ge-bilan-heading-prefix">Résultats · </span>Barème')}${gradingMenu()}</div>
         <div data-bilan-axis>${verticalGradingAxis(grading)}</div>
         <small class="ge-bilan-axis-caption">${person ? 'Score global par test' : 'Moyenne pondérée<span> des tests complets</span>'}</small>
@@ -238,7 +239,7 @@ export function createBilanWorkspace({
           <span class="ge-search-box ge-bilan-search"><input type="search" data-bilan-search placeholder="Chercher une compétence…" aria-label="Chercher une compétence" autocomplete="off"><button type="button"
             class="ge-search-clear" data-bilan-search-clear="competencies" aria-label="Effacer la recherche" title="Effacer la recherche" hidden>${icon('close')}</button></span>
         </div>
-        <small class="ge-bilan-scale-note" data-bilan-scale-note hidden>Certains tests utilisent un autre barème.</small>
+        <small class="ge-bilan-scale-note" data-bilan-scale-note hidden>Certains tests ont été enregistrés avec un autre barème ; le bilan applique le barème actuel.</small>
       </div>
       <div data-bilan-table></div>
     </section>`;
@@ -372,7 +373,7 @@ export function createBilanWorkspace({
     const selected = tests.get(key);
     const live = selected?.live ? selected : null;
     if (live) live.doc = doc;
-    const nextGrading = customGrading ?? doc.grading;
+    const nextGrading = doc.grading;
     const recalculate = dirty || live || grading !== nextGrading || catalogue !== doc.catalogue;
     const list = [...tests.values()].sort((a,b) => String(a.doc.date || '').localeCompare(String(b.doc.date || '')));
     const openUsable = doc.tasks.length > 0 && (doc.students.length > 0 || doc.competencies.some(c => doc.links[c.id]?.length));
@@ -391,7 +392,7 @@ export function createBilanWorkspace({
       drawControls();
       drawResults();
     } else if (!hasTests) {
-      current = grading = customGrading = null;
+      current = grading = null;
       drawCollisions();
       shown = [];
       search = scope = pupil = '';
@@ -438,7 +439,8 @@ export function createBilanWorkspace({
     record();
     const labelsChanged = grading.labels !== next.labels;
     const refreshLabels = labelsChanged || grading.colours !== next.colours;
-    customGrading = grading = next;
+    grading = next;
+    setGrading(next);
     current.setGrading(next);
     updateScaleNote();
     const axis = find('[data-bilan-axis]');
@@ -633,7 +635,7 @@ export function createBilanWorkspace({
   }
   return {
     element, selection, results, sync, addFiles, applyGrading, previewGrading, includeOpen, clearTests, exportCSV,
-    exportBilan, isDirty, markSaved, reportData, newBilan:()=>{ if (!tests.size) return false; record(); tests.clear(); customGrading = null; bilanId = ''; changed(); savedSignature = signature(); onChange(); return true; },
+    exportBilan, isDirty, markSaved, reportData, newBilan:()=>{ if (!tests.size) return false; record(); tests.clear(); bilanId = ''; changed(); savedSignature = signature(); onChange(); return true; },
     undo:()=>step(true), redo:()=>step(false), canUndo:()=>past.length > 0, canRedo:()=>future.length > 0,
     canExport:()=>Boolean(current && shown.length),
     pupilCount:()=>current?.pupils.length ?? 0, resize:()=>{ if (current) sizeDescriptors(); },
