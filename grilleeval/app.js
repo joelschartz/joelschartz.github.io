@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.93';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.93';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.93';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.94';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.94';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.94';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.93',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.94',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -25,6 +25,18 @@ function countHit(path,title,event=false){if(!STATS||STATS_SKIP)return;try{const
 if(STATS)setTimeout(()=>countHit('/grilleeval/','GrilleÉval'),800);
 const STAT_TITLES={'test-enregistre':'Test enregistré','bilan-affiche':'Bilan affiché','bilan-enregistre':'Bilan enregistré','pdf-exporte':'PDF exporté','visite-guidee':'Visite guidée'};
 function track(name){countHit(name,STAT_TITLES[name]||name,true);}
+// D1.94 · Combien de personnes ? GoatCounter ne reconnaît un visiteur que 8 heures (empreinte IP + navigateur, sans cookie).
+// Pour compter des personnes différentes sans rien identifier : chaque navigateur envoie une seule fois « Nouvel appareil »,
+// puis au plus une fois par semaine et par mois « Appareils actifs ». Aucun identifiant ne quitte l’appareil ; seul un repère
+// de date reste dans ce navigateur. Même règle que le reste : jamais hors de joelschartz.github.io, ni si ce navigateur est exclu.
+if(STATS&&!STATS_SKIP)setTimeout(()=>{try{const k=STORE_NS+'grilleeval-stats',seen=JSON.parse(localStorage.getItem(k)||'{}'),now=new Date();
+ const t=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())),day=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-day);
+ const wy=t.getUTCFullYear(),wn=Math.ceil(((t-Date.UTC(wy,0,1))/864e5+1)/7),week=`${wy}-S${String(wn).padStart(2,'0')}`,month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+ const months=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+ if(!seen.first){countHit('nouvel-appareil','Nouvel appareil',true);seen.first=month;}
+ if(seen.week!==week){countHit('appareils-semaine/'+week,`Appareils actifs · semaine ${wn} (${wy})`,true);seen.week=week;}
+ if(seen.month!==month){countHit('appareils-mois/'+month,`Appareils actifs · ${months[now.getMonth()]} ${now.getFullYear()}`,true);seen.month=month;}
+ localStorage.setItem(k,JSON.stringify(seen));}catch{}},1600);
 let bilanTracked=false;
 let restoredSaved=false,fileHandle=null,fileSaveKind='written',otherTabWarned=false;
 const COPY_PREFIX=STORE_NS+'grilleeval-copy:',COPY_LIMIT=12,TAB_ID=Math.random().toString(36).slice(2,10);
@@ -1329,7 +1341,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.93'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.94'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1528,7 +1540,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.93').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.94').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1947,7 +1959,7 @@ const TOUR_STEPS=[
   target:()=>$('[data-mode-tab="bilan"]')},
 ];
 function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=document.createElement('div');el.className='ge-tour';
- el.innerHTML=`<div class="ge-tour-spot" aria-hidden="true"></div><section class="ge-tour-card" role="dialog" aria-modal="false" aria-labelledby="ge-tour-title"><header class="ge-tour-head"><p class="ge-tour-count"><span class="ge-tour-name">Tutoriel</span><span class="ge-tour-step"></span></p><p class="ge-tour-sub">Où remplir quoi. Ensuite, procédez dans l’ordre que vous voulez.</p></header><ol class="ge-tour-list">${TOUR_STEPS.map((s,i)=>`<li><button type="button" data-tour-go="${i}"><span class="ge-tour-tick" aria-hidden="true">${i+1}</span>${s.label}</button></li>`).join('')}</ol><h2 id="ge-tour-title"></h2><p class="ge-tour-text"></p><div class="ge-tour-actions"><button type="button" class="ge-button ge-tour-quit" data-tour-quit>Quitter</button><span class="ge-tour-gap"></span><button type="button" class="ge-button" data-tour-prev>← Précédent</button><button type="button" class="ge-button ge-primary" data-tour-next>Suivant →</button></div></section>`;
+ el.innerHTML=`<div class="ge-tour-spot" aria-hidden="true"></div><section class="ge-tour-card" role="dialog" aria-modal="false" aria-labelledby="ge-tour-title"><header class="ge-tour-head"><p class="ge-tour-count"><span class="ge-tour-name">Tutoriel</span><span class="ge-tour-step"></span></p><p class="ge-tour-sub">Découvrez où saisir chaque information. Ensuite, remplissez dans l’ordre que vous voulez.</p></header><ol class="ge-tour-list">${TOUR_STEPS.map((s,i)=>`<li><button type="button" data-tour-go="${i}"><span class="ge-tour-tick" aria-hidden="true">${i+1}</span>${s.label}</button></li>`).join('')}</ol><h2 id="ge-tour-title"></h2><p class="ge-tour-text"></p><div class="ge-tour-actions"><button type="button" class="ge-button ge-tour-quit" data-tour-quit>Quitter</button><span class="ge-tour-gap"></span><button type="button" class="ge-button" data-tour-prev>← Précédent</button><button type="button" class="ge-button ge-primary" data-tour-next>Suivant →</button></div></section>`;
  root.append(el);el.addEventListener('click',e=>{const go=e.target.closest('[data-tour-go]');if(go)return tourShow(Number(go.dataset.tourGo));
   if(e.target.closest('[data-tour-next]'))return tour.i>=TOUR_STEPS.length-1?endTour():tourShow(tour.i+1);
   if(e.target.closest('[data-tour-prev]'))return tourShow(Math.max(0,tour.i-1));

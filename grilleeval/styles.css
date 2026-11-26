@@ -2656,3 +2656,8 @@
 #ge-canvas .ge-task-added.ge-more-above{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 28px);mask-image:linear-gradient(to bottom,transparent 0,#000 28px)}
 /* D1.90 · le défilement dans une fenêtre ne passe jamais à l’app derrière */
 #ge-canvas .ge-dialog,#ge-canvas .ge-dialog .ge-task-added,#ge-canvas .ge-dialog textarea{overscroll-behavior:contain}
+/* D1.94 · cadre de la visite plus visible : contour lumineux qui pulse doucement (immobile si « réduire les animations ») */
+#ge-canvas .ge-tour-spot{box-shadow:0 0 0 3px var(--accent),0 0 22px 4px color-mix(in srgb,var(--accent) 55%,transparent),0 0 0 9999px color-mix(in srgb,#0b1020 34%,transparent)}
+#ge-canvas .ge-tour-spot::after{content:"";position:absolute;inset:-3px;border-radius:inherit;box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 70%,transparent);animation:ge-tour-pulse 1.6s cubic-bezier(.22,1,.36,1) infinite}
+@keyframes ge-tour-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}70%{box-shadow:0 0 0 14px color-mix(in srgb,var(--accent) 0%,transparent)}100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 0%,transparent)}}
+@media (prefers-reduced-motion: reduce){#ge-canvas .ge-tour-spot::after{animation:none}}
