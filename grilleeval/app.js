@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.88';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.88';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.88';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.89';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.89';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.89';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.88',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.89',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -576,12 +576,13 @@ function parseTaskLines(textValue,fallback){return textValue.split(/\r?\n/).map(
 function addTasks(){
  const added=[];
  const content=`<div class="ge-task-adder"><div class="ge-task-line"><label class="ge-field"><span>Intitulé</span><input name="title" data-task-title autocomplete="off" placeholder="p. ex. Comparer des fractions"></label><label class="ge-field ge-task-max"><span>Points</span><span class="ge-points-box"><input name="max" data-task-max inputmode="decimal" autocomplete="off" value="${esc(lastTaskPoints)}"><small aria-hidden="true">pts</small></span></label></div><ol class="ge-task-added" data-task-added hidden></ol></div>`;
- const listAdded=()=>{const list=dialog.querySelector('[data-task-added]');if(!list)return;list.hidden=!added.length;list.innerHTML=added.map(id=>{const t=task(id);if(!t)return '';const n=d.tasks.findIndex(x=>x.id===id)+1;return `<li><span class="ge-task-added-n">${String(n).padStart(2,'0')}</span><span class="ge-task-added-title">${esc(t.title)}</span><span class="ge-task-added-pts">/ ${format(t.maxPoints)} pts</span><button type="button" class="ge-button" data-task-undo="${esc(id)}" aria-label="Retirer ${esc(t.title)}" title="Retirer cet exercice">${icon('close')}</button></li>`;}).join('');const submit=dialog.querySelector('button[type="submit"]');if(submit)submit.textContent='Ajouter';const cancelButton=dialog.querySelector('[data-modal-cancel]');if(cancelButton)cancelButton.textContent=added.length?`Terminer · ${added.length} ajouté${added.length>1?'s':''}`:'Annuler';};
+ const listAdded=()=>{const list=dialog.querySelector('[data-task-added]');if(!list)return;list.hidden=!added.length;requestAnimationFrame(()=>{/* D1.89 · le dernier ajouté reste visible ; un fondu en haut montre que la liste continue */list.scrollTop=list.scrollHeight;list.classList.toggle('ge-more-above',list.scrollTop>2);});list.innerHTML=added.map(id=>{const t=task(id);if(!t)return '';const n=d.tasks.findIndex(x=>x.id===id)+1;return `<li><span class="ge-task-added-n">${String(n).padStart(2,'0')}</span><span class="ge-task-added-title">${esc(t.title)}</span><span class="ge-task-added-pts">/ ${format(t.maxPoints)} pts</span><button type="button" class="ge-button" data-task-undo="${esc(id)}" aria-label="Retirer ${esc(t.title)}" title="Retirer cet exercice">${icon('close')}</button></li>`;}).join('');const submit=dialog.querySelector('button[type="submit"]');if(submit)submit.textContent='Ajouter';const cancelButton=dialog.querySelector('[data-modal-cancel]');if(cancelButton)cancelButton.textContent=added.length?`Terminer · ${added.length} ajouté${added.length>1?'s':''}`:'Annuler';};
  const addMany=items=>{checkTaskTitles(items.map(item=>text(item.title,'Intitulé')));const ready=items.map(item=>{const name=text(item.title,'Intitulé'),max=points(item.max,Infinity,{empty:false,dispensed:false});if(!max)throw new Error('Le maximum doit être supérieur à zéro.');return {id:newId('t'),title:name,maxPoints:max};});capacity(d.students.length,d.tasks.length+ready.length,d.competencies.length);mutation(()=>{for(const t of ready){d.tasks.push(t);for(const p of d.students)d.scores[p.id][t.id]=null;}},ready.length>1?`${ready.length} exercices ajoutés.`:'Exercice ajouté.',{shape:true});added.push(...ready.map(t=>t.id));lastTaskPoints=String(ready.at(-1).maxPoints).replace('.',',');listAdded();};
  modal({title:'Ajouter des exercices',content,submit:'Ajouter',cancel:'Annuler',onSubmit:()=>{const form=dialog.querySelector('form'),title=form.elements.namedItem('title'),max=form.elements.namedItem('max');
   if(!title.value.trim()){if(added.length)return;throw new Error('Saisir un intitulé.');}
   addMany([{title:title.value,max:max.value}]);title.value='';title.focus();return 'keep';}});
  if(!dialog.open)return;
+ dialog.querySelector('[data-task-added]')?.addEventListener('scroll',e=>e.target.classList.toggle('ge-more-above',e.target.scrollTop>2),{passive:true});
  const form=dialog.querySelector('form'),title=form.elements.namedItem('title'),max=form.elements.namedItem('max'),error=message=>{const n=dialog.querySelector('.ge-dialog-error');n.textContent=message;n.hidden=!message;};
  max.addEventListener('keydown',e=>{if(e.key!=='ArrowUp'&&e.key!=='ArrowDown')return;e.preventDefault();const n=Number(max.value.trim().replace(',','.'))||0,next=Math.max(.5,Math.round((n+(e.key==='ArrowUp'?.5:-.5))*2)/2);max.value=format(next);});
  form.addEventListener('click',e=>{const undo=e.target.closest('[data-task-undo]');
@@ -1302,7 +1303,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.88'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.89'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1501,7 +1502,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.88').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.89').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1925,10 +1926,12 @@ function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=d
   if(e.target.closest('[data-tour-again]'))return restartTour();
   if(e.target.closest('[data-tour-quit]'))return endTour();
   // D1.88 · Visite « à regarder » : le reste de l’app ne réagit pas. Seul le bouton plein écran de la 1re station se clique, à travers le cadre.
-  const r=tour?.spot;if(TOUR_STEPS[tour?.i]?.fullscreen&&r&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)$('[data-action="fullscreen"]')?.click();});
+  const r=tour?.spot;if(TOUR_STEPS[tour?.i]?.fullscreen&&r&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)$('[data-action="fullscreen"]')?.click();else tourTip(e,0);});
  // Molette, pincement, glisser : bloqués sur le plan pendant la visite (la vue reste celle que montre la visite).
  for(const type of ['wheel','pointerdown','mousedown','touchstart','dblclick','contextmenu','gesturestart'])el.addEventListener(type,e=>{if(e.target.closest('.ge-tour-card'))return;e.stopPropagation();if(type==='wheel'||type==='contextmenu'||type==='gesturestart')e.preventDefault();},{passive:false});
- el.addEventListener('pointermove',e=>{const r=tour?.spot;el.style.cursor=TOUR_STEPS[tour?.i]?.fullscreen&&r&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom?'pointer':'';});
+ el.addEventListener('pointermove',e=>{const r=tour?.spot,onButton=TOUR_STEPS[tour?.i]?.fullscreen&&r&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;el.style.cursor=onButton?'pointer':'';
+  if(onButton||e.target.closest('.ge-tour-card'))tourTip(null);else tourTip(e,900);});
+ el.addEventListener('pointerleave',()=>tourTip(null));
  return el;}
 function startTour(){if(!commitDraft())return;closeMenus();hideTourInvite();if(tour)return;try{localStorage.setItem(TOUR_KEY,'started');}catch{}
  if(bilanOrigin)$('[data-mode-tab="test"]')?.click();if(overview)leaveOverview();
@@ -1939,6 +1942,13 @@ function restartTour(){const corner=tour?.corner,cam=tour?.cam;document.querySel
 const tourFirst=()=>{const b=$('[data-action="fullscreen"]');return document.fullscreenElement||!b||b.hidden?1:0;};
 // En passant en plein écran, la fenêtre change de taille : on reprend la vue de départ, puis on passe à la station suivante.
 document.addEventListener('fullscreenchange',()=>{if(!tour)return;requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!tour)return;frameStart();if(document.fullscreenElement&&TOUR_STEPS[tour.i]?.fullscreen)setTimeout(()=>{if(tour&&TOUR_STEPS[tour.i]?.fullscreen)tourShow(tour.i+1);},500);else tourShow(tour.i);}));});
+// D1.89 · Petite bulle noire près du pointeur quand on s’arrête (ou clique) sur le plan : la visite ne se pilote que par sa carte.
+function tourTip(e,delay){const ui=document.querySelector('.ge-tour');if(!ui||!tour)return;let tip=ui.querySelector('.ge-tour-tip');clearTimeout(tour.tipTimer);
+ if(tip)tip.classList.remove('ge-on');if(!e)return;const x=e.clientX,y=e.clientY;
+ tour.tipTimer=setTimeout(()=>{if(!tour)return;if(!tip){tip=document.createElement('div');tip.className='ge-tour-tip';tip.setAttribute('role','status');ui.append(tip);}
+  tip.textContent=tour.i>=TOUR_STEPS.length-1?'Visite guidée : « Terminer » pour revenir à l’application.':'Visite guidée : cliquez sur « Suivant » pour continuer.';
+  const W=globalThis.innerWidth||1000,H=globalThis.innerHeight||700,w=tip.offsetWidth||260,h=tip.offsetHeight||30;
+  tip.style.left=Math.min(x+16,W-w-8)+'px';tip.style.top=(y+h+22>H?y-h-12:y+20)+'px';tip.classList.add('ge-on');},delay);}
 // Une zone hors écran : on fait glisser la vue juste assez, sans changer le zoom (pas de recadrage qui saute).
 function tourReveal(r){if(!r)return;const v=vp.getBoundingClientRect(),m=CAM.margin,w=Math.min(r.width,v.width-2*m),h=Math.min(r.height,v.height-2*m);
  let dx=0,dy=0;if(r.left<v.left+m)dx=r.left-(v.left+m);else if(r.left+w>v.right-m)dx=r.left+w-(v.right-m);

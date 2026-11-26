@@ -2648,3 +2648,9 @@
 #ge-canvas .ge-tour-sub{font-size:12.5px;margin-top:3px}
 #ge-canvas .ge-tour-card h2{font-size:15px;margin-top:2px}
 #ge-canvas .ge-tour.ge-tour-end{background:none;pointer-events:none}
+/* D1.89 · bulle d’aide de la visite, près du pointeur */
+#ge-canvas .ge-tour-tip{position:fixed;z-index:3;max-width:280px;padding:7px 10px;border-radius:8px;background:rgba(20,22,28,.92);color:#fff;font-size:12.5px;line-height:1.35;pointer-events:none;opacity:0;transform:translateY(-2px);transition:opacity .15s,transform .15s}
+#ge-canvas .ge-tour-tip.ge-on{opacity:1;transform:none}
+/* D1.89 · liste des exercices ajoutés : plus haute, fondu en haut quand elle continue */
+#ge-canvas .ge-task-added{max-height:min(300px,38vh)}
+#ge-canvas .ge-task-added.ge-more-above{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 28px);mask-image:linear-gradient(to bottom,transparent 0,#000 28px)}
