@@ -1,7 +1,7 @@
-import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=D1.94';
-import {format, levelColour, levelFor, validate} from './model.mjs?v=D1.94';
-import {validateGrading} from './analysis.mjs?v=D1.94';
-import {descriptorColumnWidth} from './descriptor-layout.mjs?v=D1.94';
+import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=D1.95';
+import {format, levelColour, levelFor, validate} from './model.mjs?v=D1.95';
+import {validateGrading} from './analysis.mjs?v=D1.95';
+import {descriptorColumnWidth} from './descriptor-layout.mjs?v=D1.95';
 
 export function createBilanWorkspace({
   getDocument, getRevision, esc, icon, euroDate, highlightSearch, foldName, displayDescriptor,
@@ -227,8 +227,12 @@ export function createBilanWorkspace({
       </div>
       <div data-bilan-tests></div>
       <p class="ge-bilan-warning" data-bilan-collisions role="status" hidden></p>
-      <button type="button" class="ge-bilan-drop" data-bilan-pick data-bilan-empty data-direct-control>
-        <strong>Choisir des tests…</strong><small>ou déposer les fichiers .json ici</small></button>
+      <div class="ge-bilan-start" data-bilan-empty>
+        <p>Regroupez vos évaluations enregistrées pour analyser les résultats par élève et par compétence.</p>
+        <button type="button" class="ge-bilan-drop" data-bilan-pick data-direct-control>
+          <strong>Choisir des tests…</strong><small>ou déposer les fichiers .json ici</small></button>
+        <button type="button" class="ge-link-button ge-bilan-open-saved" data-bilan-pick data-direct-control>Ouvrir un bilan enregistré…</button>
+      </div>
     </section>
     <section class="ge-bilan-results ge-bilan-sheet" data-bilan-area="results" data-bilan-result aria-label="Résultats du bilan" hidden>
       <div class="ge-bilan-tools">
@@ -328,6 +332,8 @@ export function createBilanWorkspace({
     const rows = find('[data-bilan-tests]');
     find('[data-bilan-list-tools]').hidden = listedTests.length < 5;
     find('[data-bilan-empty]').hidden = listedTests.length > 0;
+    // D1.95 · Carte de départ : « + Tests » redondant tant que rien n’est choisi ; carte plus large.
+    find('.ge-bilan-head [data-bilan-pick]').hidden = !listedTests.length;element.classList.toggle('ge-bilan-is-empty', !listedTests.length);
     if (!listedTests.length) { rows.replaceChildren(); return; }
     const query = foldName(listQuery);
     const matches = query ? listedTests.filter(e =>
@@ -533,7 +539,7 @@ export function createBilanWorkspace({
     }
     if (replaced) notice(replaced === 1 ? 'Un test du bilan a été remplacé par la version choisie · annulation possible.' : `${replaced} tests du bilan ont été remplacés par les versions choisies · annulation possible.`);
     else if (same && !added && !opened) notice(same === 1 ? 'Ce test est déjà dans le bilan.' : 'Ces tests sont déjà dans le bilan.');
-    if (opened) { if (element.isConnected) onSelection(); if (!added) return; }
+    if (opened) { if (element.isConnected) onSelection('opened'); if (!added) return; }
     if (added) {
       past.push(before);
       if (past.length > HISTORY_LIMIT) past.shift();

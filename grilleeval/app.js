@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.94';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.94';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.94';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.95';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.95';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.95';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.94',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.95',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -1341,7 +1341,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.94'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.95'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1540,7 +1540,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.94').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.95').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1596,7 +1596,7 @@ async function bilanAction(action) {
   const workspace = await loadBilan();
   // D1.93 · Comme « Nouvelle évaluation » : un bilan pas encore enregistré dans un fichier fait d’abord poser la question.
   if (action === 'bilan-open') { guardBilanUnsaved(workspace, () => bilanFiles.click()); return; }
-  if (action === 'bilan-new') { guardBilanUnsaved(workspace, () => { if (workspace.newBilan()) { bilanHandle = null; persistBilan(); notice('Nouveau bilan · annulation possible.'); } updateHistory(); syncBilanHeader(); }); return; }
+  if (action === 'bilan-new') { guardBilanUnsaved(workspace, () => { if (workspace.newBilan()) { bilanHandle = null; persistBilan(); notice('Nouveau bilan · annulation possible.'); requestAnimationFrame(() => revealBilanResults('new')); } updateHistory(); syncBilanHeader(); }); return; }
   if (action === 'bilan-save') await saveBilan(workspace);
   if (action === 'bilan-save-as') await saveBilan(workspace, true);
   if (action === 'bilan-report') await bilanReports(workspace);
@@ -1684,7 +1684,7 @@ function pinBilanHeadings() {
   if (bilanLayout.pinY !== y) { table.style.setProperty('--pin-y',y+'px'); bilanLayout.pinY = y; }
 }
 
-function focusBilanArea(name, includeTests = false) {
+function focusBilanArea(name, includeTests = false, zoom = 'keep') {
   if (!bilanPane?.element.isConnected) return;
   if (bilanOverview) fitBilan();
   measureBilan();
@@ -1699,7 +1699,7 @@ function focusBilanArea(name, includeTests = false) {
     if ((rect.x - left.x + Math.min(620, rect.w)) * z + 2*CAM.margin <= vp.clientWidth) rect = {...rect, x:left.x, w:rect.x+rect.w-left.x};
   }
   // D1.73 · Comme un titre de volet du test.
-  frameRect(rect, {zoom:'keep', side:z=>bilanSide(name,z)*z});
+  frameRect(rect, {zoom, side:z=>bilanSide(name,z)*z});
 }
 
 // D1.63 · Après le choix d’un élève : la vue reste ; si le tableau des résultats est sorti de l’écran (il devient plus étroit), on le ramène juste assez.
@@ -1711,21 +1711,27 @@ function keepBilanResults(){
   if(vp.scrollTop>bottom)vp.scrollTop=Math.max(0,Math.min(vp.scrollTop,Math.max(bottom,r.y*z-m)));
   rememberCamera();schedule(true);
 }
-function revealBilanResults() {
+// D1.95 · Revue avec ChatGPT (ronde 10) : le bilan vide est une carte de départ, pas une surface de travail → 100 %, centrée
+// (horizontalement, et à 40 % de la hauteur : centre optique), aussi après « Nouveau bilan ». Les premiers tests ajoutés
+// font cadrer une fois l’ensemble (liste + résultats, 70–100 %) ; les tests suivants ne bougent plus la vue.
+let bilanWasEmpty=false;
+function revealBilanResults(reason) {
   if (!bilanOrigin || !bilanPane?.element.isConnected) return;
   if (bilanPane.results.hidden) {
-    // Aucun test : la carte de départ au centre, un peu au-dessus du milieu (centre optique).
     if (bilanOverview) fitBilan();
+    if (Math.abs(view.zoom - 1) > .001) { view.zoom = 1; updateScale(); }
     measureBilan();
     const r = bilanLayout.areas.tests, v = dims(), z = view.zoom;
     if (!r) return;
     vp.scrollLeft = Math.max(0, (r.x + r.w/2)*z - v.w/2);
     vp.scrollTop = Math.max(0, (r.y + r.h/2)*z - v.h*.4);
+    bilanWasEmpty = true;
     rememberCamera();
     schedule(true);
     return;
   }
-  focusBilanArea(bilanPane.results.hidden ? 'tests' : 'results',true);
+  if (bilanWasEmpty) { bilanWasEmpty = false; return focusBilanArea('results', true, 'work'); }
+  if (reason === 'open' || reason === 'opened') focusBilanArea('results', true);
 }
 
 function fitBilan() {
@@ -1785,7 +1791,8 @@ async function openBilan() {
     workspace.sync(revision);
     updateHistory();
     syncBilanHeader();
-    revealBilanResults();
+    bilanWasEmpty = false;
+    revealBilanResults('open');
   } catch (error) {
     if (bilanOrigin !== origin) return;
     closeBilan(false);
@@ -1797,7 +1804,8 @@ function closeBilan(restoreFocus = true) {
   if (!bilanOrigin) return;
   finishGradingDrag(null,false);
   const origin = bilanOrigin;
-  const bilanZoom = (bilanOverview || view).zoom;
+  // Un bilan resté vide (zoom 100 % automatique) ne change pas le zoom du test.
+  const bilanZoom = bilanPane?.results?.hidden ? null : (bilanOverview || view).zoom;
   bilanOrigin = null;
   bilanPane?.detach();
   bilanLayout = null;

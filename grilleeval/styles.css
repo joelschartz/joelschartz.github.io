@@ -2661,3 +2661,11 @@
 #ge-canvas .ge-tour-spot::after{content:"";position:absolute;inset:-3px;border-radius:inherit;box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 70%,transparent);animation:ge-tour-pulse 1.6s cubic-bezier(.22,1,.36,1) infinite}
 @keyframes ge-tour-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}70%{box-shadow:0 0 0 14px color-mix(in srgb,var(--accent) 0%,transparent)}100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 0%,transparent)}}
 @media (prefers-reduced-motion: reduce){#ge-canvas .ge-tour-spot::after{animation:none}}
+/* D1.95 · carte de départ du bilan vide */
+#ge-canvas .ge-bilan-plan.ge-bilan-is-empty{--bilan-list-width:400px}
+#ge-canvas .ge-bilan-start{padding:2px 0 14px}
+#ge-canvas .ge-bilan-start[hidden]{display:none}
+#ge-canvas .ge-bilan-start>p{margin:14px 18px 0;font-size:13.5px;line-height:1.45;color:var(--ink-soft)}
+#ge-canvas .ge-bilan-start .ge-bilan-drop{margin-top:12px}
+#ge-canvas .ge-bilan-open-saved{display:block;margin:10px auto 0;padding:0;font-size:12.5px}
+#ge-canvas .ge-bilan-head [data-bilan-pick][hidden]{display:none}
