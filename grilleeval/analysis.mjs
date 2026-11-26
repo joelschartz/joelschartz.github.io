@@ -68,7 +68,8 @@ export function validateCatalogue(raw,fallbackCycle='4.2'){
 // Vor dem Vergleich auf zwei Nachkommastellen runden (wie GrilleÉval Flutter seit v3.8.57):
 // Summen von Zehntelpunkten treffen die Schwelle sonst knapp nicht – 1,2 von 2,4 Punkten
 // ergeben im Rechner 49,999999999999986 %, angezeigt werden « 50 % », eingestuft würde darunter.
-export const roundForThreshold=value=>Math.round(value*100)/100;
+// D1.71 · Même arrondi que l’affichage (une décimale) : 49,96 % s’affiche 50 % et compte aussi comme 50 %.
+export const roundForThreshold=value=>Math.round(value*10)/10;
 export function levelFor(value,grading=DEFAULT_GRADING){if(value==null||!Number.isFinite(value))return null;const v=roundForThreshold(value);return grading.thresholds.reduce((level,n)=>level+(v>=n?1:0),0);}
 // D1.57 · Exercice dispensé (« D ») : saisi, mais retiré des points et du maximum de l’élève.
 function tally(d,pid,tasks){

@@ -1,9 +1,9 @@
-import {PLAN_CATALOGUE,PLAN_INFO} from './curriculum.mjs?v=D1.70';
+import {PLAN_CATALOGUE,PLAN_INFO} from './curriculum.mjs?v=D1.71';
 export {PLAN_CATALOGUE,PLAN_INFO};
-import {DEMO_CATALOGUE} from './catalogue.mjs?v=D1.70';
-import {DEFAULT_GRADING,validateGrading,validateCatalogue} from './analysis.mjs?v=D1.70';
+import {DEMO_CATALOGUE} from './catalogue.mjs?v=D1.71';
+import {DEFAULT_GRADING,validateGrading,validateCatalogue} from './analysis.mjs?v=D1.71';
 export {DEMO_CATALOGUE};
-export * from './analysis.mjs?v=D1.70';
+export * from './analysis.mjs?v=D1.71';
 export const LIMIT = 30000;
 export const DEFAULT_NAMES = ['Léa Weber','Tom Schmit','Elena Rossi','Louis Bernard','Anna Wagner','Max Hoffmann','Sophie Klein','Liam Muller','Mia Meyer','Noah Becker','Emma Hoffmann','Lucas Schneider','Chloé Martin','Hugo Lambert','Léonie Thill','Paul Dupont','Jade Ferreira','Gabriel Carvalho','Manon Lefèvre','Raphaël Simon'];
 export const EXAMPLES = [
@@ -25,9 +25,10 @@ export const DESCRIPTORS = [
 export const DISPENSED='D';
 export function format(value) {return value == null ? '' : value === DISPENSED ? DISPENSED : Number(value.toFixed(2)).toString().replace('.',',');}
 export function text(value,label) {if(typeof value!=='string'||!value.trim())throw new Error(`${label} ne peut pas être vide.`);if(value.length>12000)throw new Error(`${label} est trop long.`);return value.trim();}
-export function points(raw,max=Infinity,{empty=true}={}) {
+export function points(raw,max=Infinity,{empty=true,dispensed=true}={}) {
  const s=String(raw).trim();if(!s&&empty)return null;
- if(/^d(?:isp(?:ens[ée])?)?\.?$/i.test(s))return DISPENSED;
+ // D1.71 · « D » seulement pour les points d’un élève, jamais pour le maximum d’un exercice.
+ if(/^d(?:isp(?:ens[ée])?)?\.?$/i.test(s)){if(dispensed)return DISPENSED;throw new Error('Saisir un nombre de points.');}
  if(!/^\d+(?:[.,]\d{1,2})?$/.test(s))throw new Error('Saisir un nombre (deux décimales au maximum) ou D pour dispensé.');
  const n=Number(s.replace(',','.'));if(!Number.isFinite(n)||n<0||n>max)throw new Error(`Saisir entre 0 et ${format(max)} points.`);return n;
 }
@@ -157,5 +158,5 @@ export function upgradeCatalogue(d){
  d.catalogue=[...new Map([...PLAN_CATALOGUE,...d.catalogue.filter(e=>!obsolete(e))].map(e=>[e.id,e])).values()];return d;
 }
 
-export {twoLineWidth,descriptorColumnWidth,stickyDescriptor} from './descriptor-layout.mjs?v=D1.70';
-export {autoResultsState,paneTitleOffset} from './auto-results.mjs?v=D1.70';
+export {twoLineWidth,descriptorColumnWidth,stickyDescriptor} from './descriptor-layout.mjs?v=D1.71';
+export {autoResultsState,paneTitleOffset} from './auto-results.mjs?v=D1.71';

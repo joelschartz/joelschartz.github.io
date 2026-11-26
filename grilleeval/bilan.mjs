@@ -3,10 +3,11 @@
 // Le bilan fait la moyenne pondérée de ces pourcentages, élève par élève et compétence par compétence.
 // Les élèves sont reconnus par leur nom (accents, majuscules et ordre Nom/Prénom ignorés),
 // les compétences du plan par leur identifiant, les compétences libres par leur texte.
-import {competencyResult,levelFor,pupilResult} from './analysis.mjs?v=D1.70';
-import {csvSafe} from './model.mjs?v=D1.70';
+import {competencyResult,levelFor,pupilResult} from './analysis.mjs?v=D1.71';
+import {csvSafe} from './model.mjs?v=D1.71';
 
-export function foldName(value){return String(value||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();}
+// D1.71 · Toutes les écritures (cyrillique, grec, arabe…) : seuls les accents et la ponctuation sont ignorés.
+export function foldName(value){return String(value||'').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();}
 export function pupilKey(name){return foldName(name).split(' ').filter(Boolean).sort().join(' ');}
 export function competencyKey(c){return c.catalogueId?'plan:'+c.catalogueId:'libre:'+foldName(c.text);}
 export function weightOf(value){const n=Number(String(value??'').replace(',','.'));return Number.isFinite(n)&&n>0?Math.min(n,100):0;}
@@ -26,11 +27,14 @@ export function buildBilan(evaluations,grading,{rank=null}={}){
  const keyFor=(student,usedHere,d)=>{
   const name=pupilKey(student.name);if(!name)return null;
   let key=student.uid&&byUid.get(student.uid);
-  if(!key){const candidates=byName.get(name)||[];key=candidates.find(k=>!usedHere.has(k)&&(!student.uid||!pupils.get(k).uid||pupils.get(k).uid===student.uid));}
+  let ambiguous=false;
+  if(!key){const candidates=(byName.get(name)||[]).filter(k=>!usedHere.has(k)&&(!student.uid||!pupils.get(k).uid||pupils.get(k).uid===student.uid));
+   // D1.71 · Sans identifiant et plusieurs élèves possibles du même nom : on ne choisit pas au hasard.
+   if(candidates.length===1||student.uid&&candidates.length)key=candidates[0];else if(candidates.length>1)ambiguous=true;}
   if(!key){
    const taken=(byName.get(name)||[]).length;
    key=taken?name+'#'+(taken+1):name;
-   if(taken)collisions.push({name:student.name,test:d.title,reason:(byName.get(name)||[]).some(k=>usedHere.has(k))?'same-test':'different-uid'});
+   if(taken)collisions.push({name:student.name,test:d.title,reason:ambiguous?'ambiguous':(byName.get(name)||[]).some(k=>usedHere.has(k))?'same-test':'different-uid'});
    pupils.set(key,{key,name:student.name,uid:student.uid||null,order:pupils.size,tests:new Map()});
    byName.set(name,[...(byName.get(name)||[]),key]);
   }

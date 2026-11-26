@@ -1,11 +1,11 @@
-import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=D1.70';
-import {format, levelColour, levelFor, validate} from './model.mjs?v=D1.70';
-import {validateGrading} from './analysis.mjs?v=D1.70';
-import {descriptorColumnWidth} from './descriptor-layout.mjs?v=D1.70';
+import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=D1.71';
+import {format, levelColour, levelFor, validate} from './model.mjs?v=D1.71';
+import {validateGrading} from './analysis.mjs?v=D1.71';
+import {descriptorColumnWidth} from './descriptor-layout.mjs?v=D1.71';
 
 export function createBilanWorkspace({
   getDocument, getRevision, esc, icon, euroDate, highlightSearch, foldName, displayDescriptor,
-  gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles, onLayout, onSelection, onKeepResults = () => {}, onHistory = () => {}, onChange = () => {}, setGrading = () => {}, initial = null
+  gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles, onLayout, onSelection, onKeepResults = () => {}, onOpened = () => {}, onHistory = () => {}, onChange = () => {}, setGrading = () => {}, initial = null
 }) {
   const tests = new Map();
   const folded = new Set();
@@ -359,7 +359,7 @@ export function createBilanWorkspace({
     note.hidden = !list.length;
     if (!list.length) { note.textContent = ''; return; }
     const names = [...new Map(list.map(c => [foldName(c.name), c])).values()];
-    const shown = names.slice(0, 3).map(c => c.reason === 'same-test' ? `« ${c.name} » (deux fois dans « ${c.test} »)` : `« ${c.name} »`).join(', ');
+    const shown = names.slice(0, 3).map(c => c.reason === 'same-test' ? `« ${c.name} » (deux fois dans « ${c.test} »)` : c.reason === 'ambiguous' ? `« ${c.name} » (dans « ${c.test} », impossible de savoir lequel)` : `« ${c.name} »`).join(', ');
     note.textContent = `Même nom pour deux élèves différents : ${shown}${names.length > 3 ? ` et ${names.length - 3} autre${names.length > 4 ? 's' : ''}` : ''}. Leurs résultats restent séparés ; donnez-leur des noms distincts dans les tests pour les reconnaître.`;
   }
 
@@ -521,7 +521,8 @@ export function createBilanWorkspace({
         read.push(validate(text));
       } catch { failed.push(f.name); }
     }
-    if (opened) { loadBilan(opened); notice('Bilan ouvert · annulation possible.'); }
+    // D1.71 · Un autre bilan ouvert : « Enregistrer » ne doit plus écrire dans le fichier du bilan précédent.
+    if (opened) { loadBilan(opened); onOpened(); notice('Bilan ouvert · annulation possible.'); }
     for (const doc of read) {
       const id = evaluationKey(doc), prev = tests.get(id);
       if (prev?.live && id === evaluationKey(getDocument())) continue;

@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.70';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.70';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.70';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.71';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.71';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.71';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.70',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.71',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -18,9 +18,11 @@ const FILE_PICKER=TOP&&typeof window.showSaveFilePicker==='function'&&typeof win
 // jamais un nom d’élève, un titre de test ou une note.
 const STATS=TOP&&!DEV&&(()=>{try{return location.hostname==='joelschartz.github.io';}catch{return false;}})();
 // D1.65 · Pas de comptage automatique : il enverrait le titre de l’onglet, qui contient le titre du test. On compte l’ouverture à la main, avec un titre fixe.
-if(STATS){try{const s=document.createElement('script');s.async=true;s.src='https://gc.zgo.at/count.js';s.dataset.goatcounter='https://grilleeval.goatcounter.com/count';s.dataset.goatcounterSettings=JSON.stringify({no_onload:true});s.addEventListener('load',()=>{try{window.goatcounter?.count?.({path:'/grilleeval/',title:'GrilleÉval',referrer:''});}catch{}});document.head.append(s);}catch{}}
+// D1.71 · Aucun script extérieur dans l’application : une simple requête « pixel » vers GoatCounter, avec des champs fixes.
+function countHit(path,title,event=false){if(!STATS)return;try{const q=new URLSearchParams({p:path,t:title,r:'',s:[screen.width,screen.height,devicePixelRatio||1].join(','),b:'0',rnd:Math.random().toString(36).slice(2,8)});if(event)q.set('e','true');const img=new Image();img.referrerPolicy='no-referrer';img.src='https://grilleeval.goatcounter.com/count?'+q;}catch{}}
+if(STATS)setTimeout(()=>countHit('/grilleeval/','GrilleÉval'),800);
 const STAT_TITLES={'test-enregistre':'Test enregistré','bilan-affiche':'Bilan affiché','bilan-enregistre':'Bilan enregistré','pdf-exporte':'PDF exporté'};
-function track(name,retry=true){if(!STATS)return;try{const gc=window.goatcounter;if(gc?.count)gc.count({path:name,title:STAT_TITLES[name]||name,event:true});else if(retry)setTimeout(()=>track(name,false),4000);}catch{}}
+function track(name){countHit(name,STAT_TITLES[name]||name,true);}
 let bilanTracked=false;
 let restoredSaved=false,fileHandle=null,fileSaveKind='written',otherTabWarned=false;
 const COPY_PREFIX=STORE_NS+'grilleeval-copy:',COPY_LIMIT=12,TAB_ID=Math.random().toString(36).slice(2,10);
@@ -77,7 +79,8 @@ function copyKeys(){const keys=[];try{for(let i=0;i<localStorage.length;i++){con
 function readCopies(){return copyKeys().map(k=>{try{const p=JSON.parse(localStorage.getItem(k));return p&&p.document?{key:k,...p}:null;}catch{return null;}}).filter(Boolean).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));}
 function writeCopy(encoded){
  const key=COPY_PREFIX+d.evalId,value=JSON.stringify({document:JSON.parse(encoded),hash:docHash(encoded),savedAt:Date.now(),saved:fileSavedHash,tab:TAB_ID});
- const prune=keep=>{const old=readCopies().filter(c=>c.key!==key);for(const c of old.slice(keep))localStorage.removeItem(c.key);};
+ // D1.71 · Faire de la place : d’abord les copies déjà enregistrées dans un fichier, les plus anciennes en premier.
+ const prune=keep=>{const old=readCopies().filter(c=>c.key!==key),unsaved=c=>c.saved!==c.hash?1:0;old.sort((a,b)=>unsaved(b)-unsaved(a)||(b.savedAt||0)-(a.savedAt||0));for(const c of old.slice(keep))localStorage.removeItem(c.key);};
  try{localStorage.setItem(key,value);prune(COPY_LIMIT-1);}
  catch(error){if(error?.name!=='QuotaExceededError')throw error;prune(2);localStorage.setItem(key,value);}
 }
@@ -570,7 +573,7 @@ function addTasks(){
  const added=[];
  const content=`<div class="ge-task-adder"><div class="ge-task-line"><label class="ge-field"><span>Intitulé</span><input name="title" data-task-title autocomplete="off" placeholder="p. ex. Comparer des fractions"></label><label class="ge-field ge-task-max"><span>Points</span><span class="ge-points-box"><input name="max" data-task-max inputmode="decimal" autocomplete="off" value="${esc(lastTaskPoints)}"><small aria-hidden="true">pts</small></span></label></div><ol class="ge-task-added" data-task-added hidden></ol></div>`;
  const listAdded=()=>{const list=dialog.querySelector('[data-task-added]');if(!list)return;list.hidden=!added.length;list.innerHTML=added.map(id=>{const t=task(id);if(!t)return '';const n=d.tasks.findIndex(x=>x.id===id)+1;return `<li><span class="ge-task-added-n">${String(n).padStart(2,'0')}</span><span class="ge-task-added-title">${esc(t.title)}</span><span class="ge-task-added-pts">/ ${format(t.maxPoints)} pts</span><button type="button" class="ge-button" data-task-undo="${esc(id)}" aria-label="Retirer ${esc(t.title)}" title="Retirer cet exercice">${icon('close')}</button></li>`;}).join('');const submit=dialog.querySelector('button[type="submit"]');if(submit)submit.textContent='Ajouter';const cancelButton=dialog.querySelector('[data-modal-cancel]');if(cancelButton)cancelButton.textContent=added.length?`Terminer · ${added.length} ajouté${added.length>1?'s':''}`:'Annuler';};
- const addMany=items=>{checkTaskTitles(items.map(item=>text(item.title,'Intitulé')));const ready=items.map(item=>{const name=text(item.title,'Intitulé'),max=points(item.max,Infinity,{empty:false});if(!max)throw new Error('Le maximum doit être supérieur à zéro.');return {id:newId('t'),title:name,maxPoints:max};});capacity(d.students.length,d.tasks.length+ready.length,d.competencies.length);mutation(()=>{for(const t of ready){d.tasks.push(t);for(const p of d.students)d.scores[p.id][t.id]=null;}},ready.length>1?`${ready.length} exercices ajoutés.`:'Exercice ajouté.',{shape:true});added.push(...ready.map(t=>t.id));lastTaskPoints=String(ready.at(-1).maxPoints).replace('.',',');listAdded();};
+ const addMany=items=>{checkTaskTitles(items.map(item=>text(item.title,'Intitulé')));const ready=items.map(item=>{const name=text(item.title,'Intitulé'),max=points(item.max,Infinity,{empty:false,dispensed:false});if(!max)throw new Error('Le maximum doit être supérieur à zéro.');return {id:newId('t'),title:name,maxPoints:max};});capacity(d.students.length,d.tasks.length+ready.length,d.competencies.length);mutation(()=>{for(const t of ready){d.tasks.push(t);for(const p of d.students)d.scores[p.id][t.id]=null;}},ready.length>1?`${ready.length} exercices ajoutés.`:'Exercice ajouté.',{shape:true});added.push(...ready.map(t=>t.id));lastTaskPoints=String(ready.at(-1).maxPoints).replace('.',',');listAdded();};
  modal({title:'Ajouter des exercices',content,submit:'Ajouter',cancel:'Annuler',onSubmit:()=>{const form=dialog.querySelector('form'),title=form.elements.namedItem('title'),max=form.elements.namedItem('max');
   if(!title.value.trim()){if(added.length)return;throw new Error('Saisir un intitulé.');}
   addMany([{title:title.value,max:max.value}]);title.value='';title.focus();return 'keep';}});
@@ -584,7 +587,7 @@ function addTasks(){
  afterDialog=()=>{board.querySelector('[data-add="task"]')?.focus({preventScroll:true});};
 }
 function editStudent(id){const p=pupil(id);if(!p)return;modal({title:'Modifier l’élève',fields:[{name:'name',label:'Nom et prénom',value:p.name,required:true},{name:'absent',type:'checkbox',label:'Absent(e) à ce test',hint:'Sans résultat ni croix ; ne compte pas dans les statistiques de la classe.',value:!!p.absent}],onSubmit:v=>{const name=text(v.name,'Nom'),absent=!!v.absent;checkPupilNames([name],id);mutation(()=>{p.name=name;if(absent)p.absent=true;else delete p.absent;},absent!==!!p.absent?(absent?'Élève marqué absent.':'Élève de nouveau présent.'):'Nom modifié.');},remove:()=>mutation(()=>{d.students=d.students.filter(s=>s.id!==id);delete d.scores[id];},'Élève retiré. Annulation possible.',{shape:true})});}
-function editTask(id){const t=task(id);if(!t)return;modal({title:'Modifier l’exercice',fields:[{name:'title',label:'Intitulé complet',value:t.title,required:true},{name:'max',label:'Maximum de points',value:format(t.maxPoints),required:true,numeric:true}],onSubmit:v=>{const title=text(v.title,'Intitulé');checkTaskTitles([title],id);const max=points(v.max,Infinity,{empty:false}),highest=Math.max(0,...d.students.map(p=>d.scores[p.id][id]??0));if(!max||max<highest)throw new Error(`Le maximum doit être positif et couvrir les points saisis : au moins ${format(highest)}.`);mutation(()=>{t.title=title;t.maxPoints=max;},'Exercice modifié.');},remove:()=>mutation(()=>removeTask(d,id),'Exercice et associations retirés. Annulation possible.',{shape:true})});}
+function editTask(id){const t=task(id);if(!t)return;modal({title:'Modifier l’exercice',fields:[{name:'title',label:'Intitulé complet',value:t.title,required:true},{name:'max',label:'Maximum de points',value:format(t.maxPoints),required:true,numeric:true}],onSubmit:v=>{const title=text(v.title,'Intitulé');checkTaskTitles([title],id);const max=points(v.max,Infinity,{empty:false,dispensed:false}),highest=Math.max(0,...d.students.map(p=>d.scores[p.id][id]).filter(n=>typeof n==='number'));if(!max||max<highest)throw new Error(`Le maximum doit être positif et couvrir les points saisis : au moins ${format(highest)}.`);mutation(()=>{t.title=title;t.maxPoints=max;},'Exercice modifié.');},remove:()=>mutation(()=>removeTask(d,id),'Exercice et associations retirés. Annulation possible.',{shape:true})});}
 function editCompetency(id){const c=competency(id);if(!c)return;
  const entry=d.catalogue.find(item=>item.id===c.catalogueId),meta=competencyMeta(d,c);
  const details=[meta.level,meta.pathway,competencyBasis(c)].filter(Boolean).join(' · ');
@@ -1255,6 +1258,9 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{const link=document.createElement('link');link.rel='manifest';link.href='manifest.json';document.head.append(link);
   const touch=document.createElement('link');touch.rel='apple-touch-icon';touch.href='assets/icon-180.png';document.head.append(touch);}catch{}
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
+ // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
+ // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.71'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1448,11 +1454,11 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.70').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.71').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
-        onLayout:()=>{if (bilanOrigin) { schedule(true); syncBilanHeader(); }}, onSelection:revealBilanResults, onKeepResults:keepBilanResults,
+        onLayout:()=>{if (bilanOrigin) { schedule(true); syncBilanHeader(); }}, onSelection:revealBilanResults, onKeepResults:keepBilanResults, onOpened:()=>{bilanHandle=null;},
         onHistory:()=>{if (bilanOrigin) updateHistory();},
         onChange:()=>queueBilanAutosave(), initial:readBilanAutosave(),
         setGrading:next=>mutation(()=>{d.grading=next;},null,{render:false})
