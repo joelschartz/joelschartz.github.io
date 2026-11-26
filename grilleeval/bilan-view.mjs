@@ -1,7 +1,7 @@
-import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=D1.72';
-import {format, levelColour, levelFor, validate} from './model.mjs?v=D1.72';
-import {validateGrading} from './analysis.mjs?v=D1.72';
-import {descriptorColumnWidth} from './descriptor-layout.mjs?v=D1.72';
+import {buildBilan, bilanCSV, weightOf} from './bilan.mjs?v=D1.73';
+import {format, levelColour, levelFor, validate} from './model.mjs?v=D1.73';
+import {validateGrading} from './analysis.mjs?v=D1.73';
+import {descriptorColumnWidth} from './descriptor-layout.mjs?v=D1.73';
 
 export function createBilanWorkspace({
   getDocument, getRevision, esc, icon, euroDate, highlightSearch, foldName, displayDescriptor,

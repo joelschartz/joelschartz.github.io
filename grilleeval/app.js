@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.72';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.72';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.72';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.73';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.73';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.73';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.72',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.73',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -1225,13 +1225,50 @@ function paneRect(name){const q=selector=>board.querySelector(selector),lower=q(
  const rect={x:X-EXTEND,y:sheet.y,w:DESCRIPTOR,h:sheet.h};
  if(rect&&!catalogueUsedOnly&&filterPanel){const panel=worldRect([filterPanel]);if(panel){const right=Math.max(rect.x+rect.w,panel.x+panel.w),bottom=Math.max(rect.y+rect.h,panel.y+panel.h);rect.x=Math.min(rect.x,panel.x);rect.y=Math.min(rect.y,panel.y);rect.w=right-rect.x;rect.h=bottom-rect.y;}}return rect;}
 
-function focusPane(name){if(!commitDraft())return;if(needsSetup()&&!['points','results'].includes(name))openSetupCatalogue();if(overview)leaveOverview();finishDescriptorResize();const rect=paneRect(name);if(!rect||!rect.w)return;const margin=32,z=view.zoom,side=paneSide(name,rect,z,Math.max(0,rect.y*z-margin));vp.scrollLeft=Math.max(0,(rect.x-side)*z-(side?0:margin));vp.scrollTop=Math.max(0,rect.y*z-margin);if(!$('[data-map-navigate]').hidden){toggleMap(false);$('[data-action="map"]').focus({preventScroll:true});}rememberCamera();schedule(true);}
-function fitPane(name){if(!commitDraft())return;if(needsSetup()&&!['points','results'].includes(name))openSetupCatalogue();if(overview)leaveOverview();finishDescriptorResize();const rect=paneRect(name);if(!rect||!rect.w)return;const v=dims();
- // Compétences : tout le catalogue ouvert et la colonne tiennent dans la vue, jamais au-delà de 100 %.
- // D1.32 · La colonne des compétences au centre, le catalogue visible à sa gauche ; 100 % si possible, sinon un peu moins. Pas de marge en haut.
- if(name==='competencies'&&!needsSetup()){const m=16,col={x:X-EXTEND,w:DESCRIPTOR},zoom=Math.max(.1,Math.min(1,(v.w-2*m)/rect.w,v.h/rect.h));view.zoom=zoom;updateScale();
-  const centred=(col.x+col.w/2)*zoom-v.w/2,keepLeft=rect.x*zoom-m,keepRight=(rect.x+rect.w)*zoom+m-v.w;
-  vp.scrollLeft=Math.max(0,Math.max(keepRight,Math.min(centred,keepLeft)));vp.scrollTop=Math.max(0,rect.y*zoom);rememberCamera();schedule(true);return;}let zoom=view.zoom;const tall=name==='results'?v.h/rect.h:Infinity;for(let i=0;i<12;i++){const next=Math.max(.02,Math.min(1,tall,(v.w-32)/(rect.w+paneSide(name,rect,zoom,rect.y*zoom))));if(Math.abs(next-zoom)<.00001){zoom=next;break;}zoom=next;}view.zoom=zoom;const side=paneSide(name,rect,zoom,rect.y*zoom);updateScale();vp.scrollLeft=Math.max(0,(rect.x-side)*zoom);vp.scrollTop=Math.max(0,rect.y*zoom);rememberCamera();schedule(true);}
+// ── D1.73 · Une seule caméra pour tous les cadrages (titres de volet, symbole « Cadrer », carte, bilan, démarrage) ──
+// Règles décidées avec Joël (revue avec ChatGPT, rondes 5–6) :
+//  · titre d’un volet = y aller : le zoom reste s’il est entre 70 et 180 %, sinon cadrage de travail ;
+//  · symbole « Cadrer » = cadrage de travail : tout le volet entre 70 et 100 %, sinon la largeur (au moins 70 %) ;
+//  · toujours 24 px d’air (aucun entre une colonne épinglée et son volet) ; vues de travail en haut à gauche :
+//    le titre du volet apparaît toujours au même endroit (ronde 7, après essai dans Chrome) ; seuls le démarrage
+//    et la vue d’ensemble, des compositions d’ensemble, sont centrés ;
+//  · transition de 220 ms (position et zoom ensemble), sans animation au démarrage, avec « réduire les animations »
+//    ou pour un très grand document ; toute action de l’utilisateur l’interrompt.
+const CAM={margin:24,workMin:.7,workMax:1,keepMax:1.8,ms:220};let camAnim=null;
+function camHeavy(){try{if(bilanOrigin)return (bilanLayout?.table?.querySelectorAll('td').length||0)>1500;const c=counts(d);return c[0]*(c[1]+c[2])>1500;}catch{return true;}}
+function camStill(){try{return matchMedia('(prefers-reduced-motion: reduce)').matches||document.hidden||camHeavy();}catch{return true;}}
+function camStop(){if(!camAnim)return;cancelAnimationFrame(camAnim.raf);camAnim=null;rememberCamera();schedule(true);}
+for(const type of ['wheel','pointerdown','touchstart','keydown'])vp.addEventListener(type,camStop,{capture:true,passive:true});
+function moveCamera(zoom,left,top,animate=true){
+ camStop();left=Math.max(0,left);top=Math.max(0,top);
+ const z0=view.zoom,x0=vp.scrollLeft/z0,y0=vp.scrollTop/z0,x1=left/zoom,y1=top/zoom;
+ const apply=(z,x,y)=>{view.zoom=z;updateScale();vp.scrollLeft=x*z;vp.scrollTop=y*z;};
+ if(!animate||camStill()||Math.abs(zoom-z0)<.001&&Math.hypot((x1-x0)*zoom,(y1-y0)*zoom)<2){apply(zoom,x1,y1);rememberCamera();schedule(true);return;}
+ const start=performance.now(),ease=t=>1-Math.pow(1-t,4);
+ const step=now=>{const t=Math.min(1,(now-start)/CAM.ms),e=ease(t);apply(z0*Math.pow(zoom/z0,e),x0+(x1-x0)*e,y0+(y1-y0)*e);schedule();
+  if(t<1)camAnim.raf=requestAnimationFrame(step);else{camAnim=null;rememberCamera();schedule(true);}};
+ camAnim={raf:requestAnimationFrame(step)};
+}
+// side(z) : place à l’écran (px) prise à gauche par une colonne épinglée, pour ce zoom.
+function workZoom(rect,side=()=>0,{widthOnly=false}={}){const v=dims(),m=CAM.margin;let z=Math.min(CAM.workMax,Math.max(CAM.workMin,view.zoom));
+ for(let i=0;i<12;i++){const pin=side(z),zw=(v.w-(pin?m:2*m)-pin)/rect.w,zh=(v.h-2*m)/rect.h,whole=Math.min(CAM.workMax,zw,zh);
+  const next=Math.max(.02,widthOnly?Math.max(CAM.workMin,Math.min(CAM.workMax,zw)):whole>=CAM.workMin?whole:Math.max(CAM.workMin,Math.min(CAM.workMax,zw)));
+  if(Math.abs(next-z)<.00001){z=next;break;}z=next;}
+ return z;}
+function frameRect(rect,{zoom='keep',align='work',side=()=>0,widthOnly=false,animate=true}={}){
+ if(!rect||!rect.w)return;const v=dims(),m=CAM.margin;
+ const z=zoom==='keep'&&view.zoom>=CAM.workMin-.0001&&view.zoom<=CAM.keepMax?view.zoom:workZoom(rect,side,{widthOnly});
+ // Une colonne épinglée à gauche (noms, compétences) touche directement le volet : pas d’air entre l’étiquette et ses cases.
+ const pin=side(z),gap=pin?0:m,room=v.w-gap-m-pin,wide=rect.w*z;
+ const centre=align==='centre',left=rect.x*z-pin-gap-(centre&&wide<=room?(room-wide)/2:0);
+ const tall=rect.h*z,top=centre&&tall<=v.h-2*m?rect.y*z-(v.h-tall)/2:rect.y*z-m;
+ moveCamera(z,left,top,animate);}
+function focusPane(name){if(!commitDraft())return;if(needsSetup()&&!['points','results'].includes(name))openSetupCatalogue();if(overview)leaveOverview();finishDescriptorResize();measure();const rect=paneRect(name);if(!rect||!rect.w)return;
+ frameRect(rect,{zoom:'keep',side:z=>paneSide(name,rect,z)*z});
+ if(!$('[data-map-navigate]').hidden){toggleMap(false);$('[data-action="map"]').focus({preventScroll:true});}}
+function fitPane(name){if(!commitDraft())return;if(needsSetup()&&!['points','results'].includes(name))openSetupCatalogue();if(overview)leaveOverview();finishDescriptorResize();measure();const rect=paneRect(name);if(!rect||!rect.w)return;
+ // Compétences : catalogue + colonne ; le catalogue est très long, on cadre donc la largeur seulement.
+ frameRect(rect,{zoom:'work',side:z=>paneSide(name,rect,z)*z,widthOnly:name==='competencies'&&!needsSetup()});}
 
 function updatePaneTitles(){if(!scrollCache)return;const z=view.zoom,sx=scrollFrame.x;for(const t of scrollCache.titles){const start=t.x*z-sx,end=start+t.w*z,label=(t.lower?X-EXTEND:X)*z-sx,width=(t.lower?descriptorAt(sx,z):upperAt(sx,z)).width*z,edge=Math.max(0,label)+width;const available=Math.max(0,Math.min(scrollCache.v.w,end)-Math.max(edge,start))/z;const showHint=available>=t.full;move(t.hint,showHint?0:-10000);const groupWidth=Math.min(showHint?t.full:t.core,t.w);move(t.run,paneTitleOffset(start,end,edge,groupWidth*z)/z);}}
 let pinch=null;
@@ -1262,7 +1299,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.72'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.73'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1403,11 +1440,11 @@ root.addEventListener('click',e=>{if(e.target.closest('[data-import-csv]')){e.pr
 // D1.62 · Cadre de départ (premier lancement, nouvelle évaluation, test ouvert) : la feuille des points avec ses
 // résultats, entière, au plus 100 % et au moins 70 %, centrée ; trop large, elle s’aligne à gauche (noms visibles) ;
 // trop haute, elle commence en haut. Au retour dans l’app, la vue enregistrée reste inchangée.
-function frameStart(){if(bilanOrigin)return;finishDescriptorResize();measure();const v=dims(),m=28,sheet=worldRect([board.querySelector('.ge-points-sheet'),transposed?board.querySelector('[data-column-chart]'):null]);
+function frameStart(){if(bilanOrigin)return;finishDescriptorResize();measure();const sheet=worldRect([board.querySelector('.ge-points-sheet'),transposed?board.querySelector('[data-column-chart]'):null]);
  if(!sheet){panTo(X,Y);return;}
  sheet.w=Math.min(sheet.w,LABEL+layout().primary*layout().pw+(transposed?0:SUM));
- const z=Math.max(.7,Math.min(1,(v.w-2*m)/sheet.w));view.zoom=z;updateScale();
- vp.scrollLeft=Math.max(0,sheet.w*z<=v.w-2*m?(sheet.x+sheet.w/2)*z-v.w/2:sheet.x*z-m);vp.scrollTop=Math.max(0,sheet.h*z<=v.h-2*m?(sheet.y+sheet.h/2)*z-v.h/2:sheet.y*z-m);rememberCamera();schedule(true);}
+ // D1.73 · Même caméra que partout : cadrage de travail, centré, sans animation.
+ frameRect(sheet,{zoom:'work',align:'centre',animate:false});}
 // Premier lancement : seulement avec une vraie mise en page (pas dans les tests sans rendu).
 if(!hadSavedView)requestAnimationFrame(()=>requestAnimationFrame(()=>{if(board.getBoundingClientRect().height>0)frameStart();}));
 
@@ -1456,7 +1493,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.72').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.73').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1542,22 +1579,10 @@ function fitBilanArea(name) {
   if (bilanOverview) fitBilan();
   measureBilan();
   toggleMap(false);
-  const rect = bilanPaneRect(name), v = dims();
-  if (!rect || !rect.w) return;
-  const tall = name === 'tests' || name === 'chart' ? v.h/rect.h : Infinity;
-  let zoom = view.zoom;
-  for (let i = 0; i < 12; i++) {
-    const next = Math.max(.02, Math.min(1, tall, (v.w-32)/(rect.w+bilanSide(name,zoom))));
-    if (Math.abs(next-zoom) < .00001) { zoom = next; break; }
-    zoom = next;
-  }
-  view.zoom = zoom;
-  updateScale();
-  vp.scrollLeft = Math.max(0, (rect.x-bilanSide(name,zoom))*zoom);
-  vp.scrollTop = Math.max(0, rect.y*zoom);
-  rememberCamera();
-  schedule(true);
+  // D1.73 · Même cadrage de travail que dans le test.
+  frameRect(bilanPaneRect(name), {zoom:'work', side:z=>bilanSide(name,z)*z});
 }
+
 
 function measureBilan() {
   if (!bilanPane?.element.isConnected) return;
@@ -1615,18 +1640,19 @@ function focusBilanArea(name, includeTests = false) {
   if (bilanOverview) fitBilan();
   measureBilan();
   toggleMap(false);
-  const rect = bilanPaneRect(name);
+  let rect = bilanPaneRect(name);
   if (!rect || !rect.w) return;
-  // Comme focusPane() : même zoom, 32 px d’air, colonne épinglée comptée à gauche du volet.
-  const margin = 32, z = view.zoom, side = bilanSide(name, z);
-  let x = rect.x;
+  // Résultats : avec la liste des tests à gauche quand l’ensemble tient à l’écran au zoom de travail.
   const left = bilanLayout.areas.tests;
-  if (includeTests && name === 'results' && left && (rect.x - left.x + Math.min(620, rect.w)) * z + 2*margin <= vp.clientWidth) x = left.x;
-  vp.scrollLeft = Math.max(0, (x-side)*z - (side ? 0 : margin));
-  vp.scrollTop = Math.max(0, rect.y*z - margin);
-  rememberCamera();
-  schedule(true);
+  if (includeTests && name === 'results' && left) {
+    const both = {x:left.x, y:Math.min(left.y,rect.y), w:rect.x+rect.w-left.x, h:Math.max(left.y+left.h,rect.y+rect.h)-Math.min(left.y,rect.y)};
+    const z = view.zoom >= CAM.workMin && view.zoom <= CAM.keepMax ? view.zoom : workZoom(both);
+    if ((rect.x - left.x + Math.min(620, rect.w)) * z + 2*CAM.margin <= vp.clientWidth) rect = {...rect, x:left.x, w:rect.x+rect.w-left.x};
+  }
+  // D1.73 · Comme un titre de volet du test.
+  frameRect(rect, {zoom:'keep', side:z=>bilanSide(name,z)*z});
 }
+
 // D1.63 · Après le choix d’un élève : la vue reste ; si le tableau des résultats est sorti de l’écran (il devient plus étroit), on le ramène juste assez.
 function keepBilanResults(){
   if (!bilanOrigin || !bilanPane?.element.isConnected) return;
