@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.84';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.84';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.84';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.86';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.86';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.86';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.84',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.86',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -1302,7 +1302,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.84'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.86'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1501,7 +1501,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.84').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.86').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1886,6 +1886,9 @@ function enhanceDateField(field){
 let tour=null;
 const tourSheet=()=>board.querySelector('.ge-points-sheet');
 const TOUR_STEPS=[
+ {label:'Plein écran',title:'D’abord : plein écran',fullscreen:true,
+  text:'Cliquez sur ce bouton : GrilleÉval prend tout l’écran et la grille a toute la place. Échap pour en sortir. Ensuite, la visite ne fait que montrer.',
+  target:()=>$('[data-action="fullscreen"]')},
  {label:'Infos',title:'Le test en bref',
   text:'En haut à gauche, le titre du test. Un clic ouvre ses informations : titre, date, matière, cycle, durée. Elles figurent aussi sur les pages de garde.',
   target:()=>$('.ge-document-button')},
@@ -1913,9 +1916,6 @@ const TOUR_STEPS=[
  {label:'Bilan',title:'Le bilan de la période',
   text:'« Bilan des compétences » regroupe vos tests enregistrés : les résultats par élève et par compétence, et les bilans individuels en PDF.',
   target:()=>$('[data-mode-tab="bilan"]')},
- {label:'Plein écran',title:'Astuce : plein écran',
-  text:'Ce bouton affiche GrilleÉval en plein écran : toute la place pour la grille. En bas à droite, le zoom et la « Carte » pour se déplacer.',
-  target:()=>{const b=$('[data-action="fullscreen"]');return b&&!b.hidden?b:$('.ge-zoom');}},
 ];
 function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=document.createElement('div');el.className='ge-tour';
  el.innerHTML=`<div class="ge-tour-spot" aria-hidden="true"></div><section class="ge-tour-card" role="dialog" aria-modal="false" aria-labelledby="ge-tour-title"><header class="ge-tour-head"><p class="ge-tour-count"><span class="ge-tour-name">Tutoriel</span><span class="ge-tour-step"></span></p><p class="ge-tour-sub">Où remplir quoi. Ensuite, procédez dans l’ordre que vous voulez.</p></header><ol class="ge-tour-list">${TOUR_STEPS.map((s,i)=>`<li><button type="button" data-tour-go="${i}"><span class="ge-tour-tick" aria-hidden="true">${i+1}</span>${s.label}</button></li>`).join('')}</ol><h2 id="ge-tour-title"></h2><p class="ge-tour-text"></p><div class="ge-tour-actions"><button type="button" class="ge-button ge-tour-quit" data-tour-quit>Quitter</button><span class="ge-tour-gap"></span><button type="button" class="ge-button" data-tour-prev>← Précédent</button><button type="button" class="ge-button ge-primary" data-tour-next>Suivant →</button></div></section>`;
@@ -1926,14 +1926,24 @@ function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=d
   if(e.target.closest('[data-tour-quit]'))endTour();});return el;}
 function startTour(){if(!commitDraft())return;closeMenus();hideTourInvite();if(tour)return;try{localStorage.setItem(TOUR_KEY,'started');}catch{}
  if(bilanOrigin)$('[data-mode-tab="test"]')?.click();if(overview)leaveOverview();
- tour={i:0,raf:0};track('visite-guidee');tourUI().hidden=false;tourShow(0);}
-function restartTour(){const corner=tour?.corner;document.querySelector('.ge-tour')?.remove();tour={i:0,raf:0,corner};tourUI();tourShow(0);}
+ // D1.85 · La visite part toujours de la vue de départ habituelle, quelle que soit la vue de l’utilisateur ; à la fin, sa vue revient.
+ tour={i:0,raf:0,cam:{zoom:view.zoom,left:vp.scrollLeft,top:vp.scrollTop}};track('visite-guidee');frameStart();tourUI().hidden=false;tourShow(tourFirst());}
+function restartTour(){const corner=tour?.corner,cam=tour?.cam;document.querySelector('.ge-tour')?.remove();tour={i:0,raf:0,corner,cam};frameStart();tourUI();tourShow(tourFirst());}
+// La station « plein écran » est la seule où l’on agit ; inutile si l’on y est déjà ou si le navigateur ne le permet pas.
+const tourFirst=()=>{const b=$('[data-action="fullscreen"]');return document.fullscreenElement||!b||b.hidden?1:0;};
+// En passant en plein écran, la fenêtre change de taille : on reprend la vue de départ, puis on passe à la station suivante.
+document.addEventListener('fullscreenchange',()=>{if(!tour)return;requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!tour)return;frameStart();if(document.fullscreenElement&&TOUR_STEPS[tour.i]?.fullscreen)setTimeout(()=>{if(tour&&TOUR_STEPS[tour.i]?.fullscreen)tourShow(tour.i+1);},500);else tourShow(tour.i);}));});
+// Une zone hors écran : on fait glisser la vue juste assez, sans changer le zoom (pas de recadrage qui saute).
+function tourReveal(r){if(!r)return;const v=vp.getBoundingClientRect(),m=CAM.margin,w=Math.min(r.width,v.width-2*m),h=Math.min(r.height,v.height-2*m);
+ let dx=0,dy=0;if(r.left<v.left+m)dx=r.left-(v.left+m);else if(r.left+w>v.right-m)dx=r.left+w-(v.right-m);
+ if(r.top<v.top+m)dy=r.top-(v.top+m);else if(r.top+h>v.bottom-m)dy=r.top+h-(v.bottom-m);
+ if(Math.abs(dx)>2||Math.abs(dy)>2)moveCamera(view.zoom,vp.scrollLeft+dx,vp.scrollTop+dy,true);}
 // Montre une étape ; la vue ne bouge que si la zone n’est pas déjà à l’écran.
 function tourShow(i){if(!tour)return;tour.i=i;const step=TOUR_STEPS[i],ui=tourUI();
  ui.querySelector('#ge-tour-title').textContent=step.title;ui.querySelector('.ge-tour-text').textContent=step.text;
  ui.querySelectorAll('[data-tour-go]').forEach((b,j)=>{b.classList.toggle('ge-tour-current',j===i);b.classList.toggle('ge-tour-done',j<i);b.setAttribute('aria-current',j===i?'step':'false');});
  ui.querySelector('.ge-tour-step').textContent=`${i+1} / ${TOUR_STEPS.length}`;ui.querySelector('[data-tour-prev]').disabled=i===0;ui.querySelector('[data-tour-next]').textContent=i===TOUR_STEPS.length-1?'Terminer':'Suivant →';
- if(step.pane)requestAnimationFrame(()=>{const r=tourRect(step.target()),v=vp.getBoundingClientRect();if(!r||r.top<v.top||r.left<v.left||r.top+Math.min(r.height,v.height*.6)>v.bottom||r.left+Math.min(r.width,v.width*.6)>v.right)focusPane(step.pane);});
+ if(step.pane)requestAnimationFrame(()=>tourReveal(tourRect(step.target())));
  stopFrame(tour.raf);tour.raf=requestAnimationFrame(tourTick);ui.querySelector('[data-tour-next]').focus({preventScroll:true});}
 function tourRect(target){const list=(Array.isArray(target)?target:[target]).filter(Boolean).map(e=>e.getBoundingClientRect()).filter(r=>r.width||r.height);if(!list.length)return null;
  const l=Math.min(...list.map(r=>r.left)),t=Math.min(...list.map(r=>r.top)),r=Math.max(...list.map(r=>r.right)),b=Math.max(...list.map(r=>r.bottom));return {left:l,top:t,right:r,bottom:b,width:r-l,height:b-t};}
@@ -1942,7 +1952,7 @@ function finishTour(){const ui=tourUI();stopFrame(tour.raf);tour.raf=0;ui.classL
  ui.querySelector('.ge-tour-text').textContent='Commencez par ce qui vous arrange : infos, élèves, exercices ou compétences. Pour un test vide : « Fichier › Nouvelle évaluation ». La visite reste disponible dans le même menu.';
  ui.querySelector('.ge-tour-actions').innerHTML='<button type="button" class="ge-button" data-tour-again>Recommencer la visite</button><button type="button" class="ge-button ge-primary" data-tour-quit>Terminer</button>';
  ui.querySelector('[data-tour-quit]').focus({preventScroll:true});tourPlace(null);}
-function endTour(){if(!tour)return;stopFrame(tour.raf);tour=null;try{localStorage.setItem(TOUR_KEY,'done');}catch{}document.querySelector('.ge-tour')?.remove();}
+function endTour(){if(!tour)return;stopFrame(tour.raf);const cam=tour.cam;tour=null;if(cam&&!bilanOrigin)moveCamera(cam.zoom,cam.left,cam.top,true);try{localStorage.setItem(TOUR_KEY,'done');}catch{}document.querySelector('.ge-tour')?.remove();}
 // Suit la zone mise en lumière pendant que la vue bouge ; masque la visite tant qu’une fenêtre est ouverte.
 function tourTick(){if(!tour)return;const ui=document.querySelector('.ge-tour');if(!ui)return;
  ui.classList.toggle('ge-tour-hidden',dialog.open);
