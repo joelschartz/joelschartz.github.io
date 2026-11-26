@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.92';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.92';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.92';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.93';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.93';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.93';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.92',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.93',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -720,6 +720,9 @@ async function pickTestFile(){
  try{const [handle]=await window.showOpenFilePicker({types:[{description:'Test GrilleÉval',accept:{'application/json':['.json']}}]});openTestFile(await handle.getFile(),handle);}
  catch(error){if(error?.name!=='AbortError')fileInput.click();}
 }
+function guardBilanUnsaved(workspace,next){if(!workspace?.isDirty?.())return next();
+ modal({title:'Enregistrer le bilan actuel ?',note:'Le bilan en cours n’est pas encore enregistré dans un fichier.',submit:'Enregistrer',cancel:'Annuler',after:'<button type="button" class="ge-button ge-quiet ge-skip-save" data-skip-save>Continuer sans enregistrer</button>',onSubmit:()=>{afterDialog=async()=>{await saveBilan(workspace);if(!workspace.isDirty())next();};}});
+ const skip=dialog.querySelector('[data-skip-save]');if(skip){dialog.querySelector('.ge-dialog-actions')?.prepend(skip);skip.addEventListener('click',()=>{afterDialog=next;dialog.dataset.proceed='true';dialog.close();});}}
 function guardUnsaved(next){if(!isUnsaved())return next();
  modal({title:'Enregistrer le test actuel ?',note:`« ${d.title} » n’est pas encore enregistré dans un fichier.`,submit:'Enregistrer',cancel:'Annuler',after:'<button type="button" class="ge-button ge-quiet ge-skip-save" data-skip-save>Continuer sans enregistrer</button>',onSubmit:()=>{afterDialog=()=>exportJSON(next);}});
  const skip=dialog.querySelector('[data-skip-save]');if(skip){dialog.querySelector('.ge-dialog-actions')?.prepend(skip);skip.addEventListener('click',()=>{afterDialog=next;dialog.dataset.proceed='true';dialog.close();});}}
@@ -1326,7 +1329,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.92'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.93'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1525,7 +1528,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.92').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.93').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1577,11 +1580,13 @@ function syncBilanHeader() {
 }
 async function bilanAction(action) {
   if (!bilanOrigin) return;
-  if (action === 'bilan-add' || action === 'bilan-open') { bilanFiles.click(); return; }
+  if (action === 'bilan-add') { bilanFiles.click(); return; }
   const workspace = await loadBilan();
+  // D1.93 · Comme « Nouvelle évaluation » : un bilan pas encore enregistré dans un fichier fait d’abord poser la question.
+  if (action === 'bilan-open') { guardBilanUnsaved(workspace, () => bilanFiles.click()); return; }
+  if (action === 'bilan-new') { guardBilanUnsaved(workspace, () => { if (workspace.newBilan()) { bilanHandle = null; persistBilan(); notice('Nouveau bilan · annulation possible.'); } updateHistory(); syncBilanHeader(); }); return; }
   if (action === 'bilan-save') await saveBilan(workspace);
   if (action === 'bilan-save-as') await saveBilan(workspace, true);
-  if (action === 'bilan-new') { if (workspace.newBilan()) { bilanHandle = null; persistBilan(); notice('Nouveau bilan · annulation possible.'); } }
   if (action === 'bilan-report') await bilanReports(workspace);
   if (action === 'bilan-csv' && !workspace.exportCSV()) notice('Aucune compétence à exporter.');
   updateHistory();
