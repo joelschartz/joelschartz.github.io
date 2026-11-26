@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.86';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.86';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.86';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.87';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.87';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.87';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.86',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.87',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -1302,7 +1302,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.86'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.87'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1501,7 +1501,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.86').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.87').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1920,7 +1920,7 @@ const TOUR_STEPS=[
 function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=document.createElement('div');el.className='ge-tour';
  el.innerHTML=`<div class="ge-tour-spot" aria-hidden="true"></div><section class="ge-tour-card" role="dialog" aria-modal="false" aria-labelledby="ge-tour-title"><header class="ge-tour-head"><p class="ge-tour-count"><span class="ge-tour-name">Tutoriel</span><span class="ge-tour-step"></span></p><p class="ge-tour-sub">Où remplir quoi. Ensuite, procédez dans l’ordre que vous voulez.</p></header><ol class="ge-tour-list">${TOUR_STEPS.map((s,i)=>`<li><button type="button" data-tour-go="${i}"><span class="ge-tour-tick" aria-hidden="true">${i+1}</span>${s.label}</button></li>`).join('')}</ol><h2 id="ge-tour-title"></h2><p class="ge-tour-text"></p><div class="ge-tour-actions"><button type="button" class="ge-button ge-tour-quit" data-tour-quit>Quitter</button><span class="ge-tour-gap"></span><button type="button" class="ge-button" data-tour-prev>← Précédent</button><button type="button" class="ge-button ge-primary" data-tour-next>Suivant →</button></div></section>`;
  root.append(el);el.addEventListener('click',e=>{const go=e.target.closest('[data-tour-go]');if(go)return tourShow(Number(go.dataset.tourGo));
-  if(e.target.closest('[data-tour-next]'))return tour.i>=TOUR_STEPS.length-1?finishTour():tourShow(tour.i+1);
+  if(e.target.closest('[data-tour-next]'))return tour.i>=TOUR_STEPS.length-1?endTour():tourShow(tour.i+1);
   if(e.target.closest('[data-tour-prev]'))return tourShow(Math.max(0,tour.i-1));
   if(e.target.closest('[data-tour-again]'))return restartTour();
   if(e.target.closest('[data-tour-quit]'))endTour();});return el;}
@@ -1942,17 +1942,16 @@ function tourReveal(r){if(!r)return;const v=vp.getBoundingClientRect(),m=CAM.mar
 function tourShow(i){if(!tour)return;tour.i=i;const step=TOUR_STEPS[i],ui=tourUI();
  ui.querySelector('#ge-tour-title').textContent=step.title;ui.querySelector('.ge-tour-text').textContent=step.text;
  ui.querySelectorAll('[data-tour-go]').forEach((b,j)=>{b.classList.toggle('ge-tour-current',j===i);b.classList.toggle('ge-tour-done',j<i);b.setAttribute('aria-current',j===i?'step':'false');});
- ui.querySelector('.ge-tour-step').textContent=`${i+1} / ${TOUR_STEPS.length}`;ui.querySelector('[data-tour-prev]').disabled=i===0;ui.querySelector('[data-tour-next]').textContent=i===TOUR_STEPS.length-1?'Terminer':'Suivant →';
+ ui.querySelector('.ge-tour-step').textContent=`${i+1} / ${TOUR_STEPS.length}`;ui.querySelector('[data-tour-prev]').disabled=i===0;const last=i===TOUR_STEPS.length-1;ui.querySelector('[data-tour-next]').textContent=last?'Terminer':'Suivant →';
+ // D1.87 · Dernière station : « Recommencer » à la place de « Quitter », et « Terminer » ferme directement (plus de carte de fin).
+ const q=ui.querySelector('[data-tour-quit],[data-tour-again]');if(last){q.textContent='Recommencer';q.removeAttribute('data-tour-quit');q.setAttribute('data-tour-again','');}else{q.textContent='Quitter';q.removeAttribute('data-tour-again');q.setAttribute('data-tour-quit','');}
  if(step.pane)requestAnimationFrame(()=>tourReveal(tourRect(step.target())));
  stopFrame(tour.raf);tour.raf=requestAnimationFrame(tourTick);ui.querySelector('[data-tour-next]').focus({preventScroll:true});}
 function tourRect(target){const list=(Array.isArray(target)?target:[target]).filter(Boolean).map(e=>e.getBoundingClientRect()).filter(r=>r.width||r.height);if(!list.length)return null;
  const l=Math.min(...list.map(r=>r.left)),t=Math.min(...list.map(r=>r.top)),r=Math.max(...list.map(r=>r.right)),b=Math.max(...list.map(r=>r.bottom));return {left:l,top:t,right:r,bottom:b,width:r-l,height:b-t};}
-function finishTour(){const ui=tourUI();stopFrame(tour.raf);tour.raf=0;ui.classList.add('ge-tour-end');ui.querySelector('.ge-tour-spot').style.display='none';
- ui.querySelector('.ge-tour-step').textContent='Terminé';ui.querySelector('.ge-tour-sub').textContent='';ui.querySelector('#ge-tour-title').textContent='À vous de jouer.';
- ui.querySelector('.ge-tour-text').textContent='Commencez par ce qui vous arrange : infos, élèves, exercices ou compétences. Pour un test vide : « Fichier › Nouvelle évaluation ». La visite reste disponible dans le même menu.';
- ui.querySelector('.ge-tour-actions').innerHTML='<button type="button" class="ge-button" data-tour-again>Recommencer la visite</button><button type="button" class="ge-button ge-primary" data-tour-quit>Terminer</button>';
- ui.querySelector('[data-tour-quit]').focus({preventScroll:true});tourPlace(null);}
-function endTour(){if(!tour)return;stopFrame(tour.raf);const cam=tour.cam;tour=null;if(cam&&!bilanOrigin)moveCamera(cam.zoom,cam.left,cam.top,true);try{localStorage.setItem(TOUR_KEY,'done');}catch{}document.querySelector('.ge-tour')?.remove();}
+function endTour(){if(!tour)return;stopFrame(tour.raf);tour=null;
+ // D1.87 · Après la visite (Terminer, Quitter, Échap) : la vue de départ, comme pour une nouvelle évaluation.
+ if(!bilanOrigin)requestAnimationFrame(()=>frameStart());try{localStorage.setItem(TOUR_KEY,'done');}catch{}document.querySelector('.ge-tour')?.remove();}
 // Suit la zone mise en lumière pendant que la vue bouge ; masque la visite tant qu’une fenêtre est ouverte.
 function tourTick(){if(!tour)return;const ui=document.querySelector('.ge-tour');if(!ui)return;
  ui.classList.toggle('ge-tour-hidden',dialog.open);
@@ -1971,7 +1970,7 @@ function tourPlace(r){const card=document.querySelector('.ge-tour-card');if(!car
 document.addEventListener('keydown',e=>{if(!tour||dialog.open||document.querySelector('.ge-menu[open]'))return;
  if(e.key==='Escape'){e.preventDefault();endTour();return;}
  if(document.querySelector('.ge-tour-end')||e.target.closest?.('input,textarea,select,[contenteditable="true"]'))return;
- if(e.key==='ArrowRight'){e.preventDefault();tour.i>=TOUR_STEPS.length-1?finishTour():tourShow(tour.i+1);}
+ if(e.key==='ArrowRight'&&tour.i<TOUR_STEPS.length-1){e.preventDefault();tourShow(tour.i+1);}
  else if(e.key==='ArrowLeft'&&tour.i>0){e.preventDefault();tourShow(tour.i-1);}},true);
 // Invitation unique au premier lancement.
 function hideTourInvite(){document.querySelector('.ge-tour-invite')?.remove();}
