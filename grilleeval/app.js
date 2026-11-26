@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.87';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.87';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.87';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.88';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.88';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.88';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.87',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.88',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -1302,7 +1302,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.87'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.88'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1501,7 +1501,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.87').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.88').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1923,7 +1923,13 @@ function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=d
   if(e.target.closest('[data-tour-next]'))return tour.i>=TOUR_STEPS.length-1?endTour():tourShow(tour.i+1);
   if(e.target.closest('[data-tour-prev]'))return tourShow(Math.max(0,tour.i-1));
   if(e.target.closest('[data-tour-again]'))return restartTour();
-  if(e.target.closest('[data-tour-quit]'))endTour();});return el;}
+  if(e.target.closest('[data-tour-quit]'))return endTour();
+  // D1.88 · Visite « à regarder » : le reste de l’app ne réagit pas. Seul le bouton plein écran de la 1re station se clique, à travers le cadre.
+  const r=tour?.spot;if(TOUR_STEPS[tour?.i]?.fullscreen&&r&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)$('[data-action="fullscreen"]')?.click();});
+ // Molette, pincement, glisser : bloqués sur le plan pendant la visite (la vue reste celle que montre la visite).
+ for(const type of ['wheel','pointerdown','mousedown','touchstart','dblclick','contextmenu','gesturestart'])el.addEventListener(type,e=>{if(e.target.closest('.ge-tour-card'))return;e.stopPropagation();if(type==='wheel'||type==='contextmenu'||type==='gesturestart')e.preventDefault();},{passive:false});
+ el.addEventListener('pointermove',e=>{const r=tour?.spot;el.style.cursor=TOUR_STEPS[tour?.i]?.fullscreen&&r&&e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom?'pointer':'';});
+ return el;}
 function startTour(){if(!commitDraft())return;closeMenus();hideTourInvite();if(tour)return;try{localStorage.setItem(TOUR_KEY,'started');}catch{}
  if(bilanOrigin)$('[data-mode-tab="test"]')?.click();if(overview)leaveOverview();
  // D1.85 · La visite part toujours de la vue de départ habituelle, quelle que soit la vue de l’utilisateur ; à la fin, sa vue revient.
@@ -1956,8 +1962,10 @@ function endTour(){if(!tour)return;stopFrame(tour.raf);tour=null;
 function tourTick(){if(!tour)return;const ui=document.querySelector('.ge-tour');if(!ui)return;
  ui.classList.toggle('ge-tour-hidden',dialog.open);
  const step=TOUR_STEPS[tour.i],spot=ui.querySelector('.ge-tour-spot'),card=ui.querySelector('.ge-tour-card'),r=tourRect(step.target());
- if(r&&r.width){const pad=6;Object.assign(spot.style,{display:'block',left:r.left-pad+'px',top:r.top-pad+'px',width:r.width+2*pad+'px',height:r.height+2*pad+'px'});}
- else spot.style.display='none';
+ // Une grande zone (catalogue déplié…) est coupée au bord du plan : le cadre reste entier à l’écran.
+ if(r&&r.width&&step.pane){const v=vp.getBoundingClientRect(),m=8,l=Math.max(r.left,v.left+m),t=Math.max(r.top,v.top+m),rr=Math.min(r.right,v.right-m),b=Math.min(r.bottom,v.bottom-m);Object.assign(r,{left:l,top:t,right:rr,bottom:b,width:Math.max(0,rr-l),height:Math.max(0,b-t)});}
+ if(r&&r.width&&r.height){const pad=6;tour.spot={left:r.left-pad,top:r.top-pad,right:r.right+pad,bottom:r.bottom+pad};Object.assign(spot.style,{display:'block',left:r.left-pad+'px',top:r.top-pad+'px',width:r.width+2*pad+'px',height:r.height+2*pad+'px'});}
+ else{spot.style.display='none';tour.spot=null;}
  tourPlace(r&&r.width?r:null);
  tour.raf=requestAnimationFrame(tourTick);}
 // D1.84 · La carte reste dans son coin tant qu’elle n’y cache pas la zone ; sinon elle passe au premier coin libre
@@ -1969,6 +1977,9 @@ function tourPlace(r){const card=document.querySelector('.ge-tour-card');if(!car
  const [x,y]=spots[tour.corner];card.style.left=x+'px';card.style.top=y+'px';}
 document.addEventListener('keydown',e=>{if(!tour||dialog.open||document.querySelector('.ge-menu[open]'))return;
  if(e.key==='Escape'){e.preventDefault();endTour();return;}
+ // Pendant la visite, le clavier ne sert qu’à la visite (Tab, Entrée, Espace dans la carte ; flèches).
+ const inCard=e.target.closest?.('.ge-tour-card');if(!inCard&&!['ArrowLeft','ArrowRight','Tab'].includes(e.key)){e.preventDefault();e.stopPropagation();return;}
+ if(inCard&&!['ArrowLeft','ArrowRight'].includes(e.key))return;
  if(document.querySelector('.ge-tour-end')||e.target.closest?.('input,textarea,select,[contenteditable="true"]'))return;
  if(e.key==='ArrowRight'&&tour.i<TOUR_STEPS.length-1){e.preventDefault();tourShow(tour.i+1);}
  else if(e.key==='ArrowLeft'&&tour.i>0){e.preventDefault();tourShow(tour.i-1);}},true);

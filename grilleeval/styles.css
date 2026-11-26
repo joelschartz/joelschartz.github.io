@@ -2581,7 +2581,7 @@
 #ge-canvas .ge-bilan-back{flex:none;margin-left:auto;margin-right:6px}
 
 /* ── D1.74 · Visite guidée : un projecteur sur l’élément réel, une petite carte à côté ─────────────────────────── */
-#ge-canvas .ge-tour{position:fixed;inset:0;z-index:60;pointer-events:none}
+#ge-canvas .ge-tour{position:fixed;inset:0;z-index:60;pointer-events:auto}
 #ge-canvas .ge-tour.ge-tour-hidden{display:none}
 #ge-canvas .ge-tour-spot{position:fixed;border-radius:12px;box-shadow:0 0 0 2px var(--accent),0 0 0 9999px color-mix(in srgb,#0b1020 28%,transparent);transition:left .22s cubic-bezier(.22,1,.36,1),top .22s cubic-bezier(.22,1,.36,1),width .22s,height .22s;pointer-events:none}
 #ge-canvas .ge-tour.ge-tour-centre .ge-tour-spot{display:none}
