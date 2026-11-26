@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.73';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.73';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.73';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.74';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.74';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.74';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.73',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.74',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -23,12 +23,14 @@ const STATS=TOP&&!DEV&&(()=>{try{return location.hostname==='joelschartz.github.
 const STATS_SKIP=(()=>{try{if(STATS&&location.hash==='#toggle-goatcounter'){const off=localStorage.getItem('skipgc')==='t';if(off)localStorage.removeItem('skipgc');else localStorage.setItem('skipgc','t');history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>notice(off?'Statistiques : ce navigateur est de nouveau compté.':'Statistiques : ce navigateur n’est plus compté.'),1200);}return localStorage.getItem('skipgc')==='t';}catch{return false;}})();
 function countHit(path,title,event=false){if(!STATS||STATS_SKIP)return;try{const q=new URLSearchParams({p:path,t:title,r:'',s:[screen.width,screen.height,devicePixelRatio||1].join(','),b:'0',rnd:Math.random().toString(36).slice(2,8)});if(event)q.set('e','true');const img=new Image();img.referrerPolicy='no-referrer';img.src='https://grilleeval.goatcounter.com/count?'+q;}catch{}}
 if(STATS)setTimeout(()=>countHit('/grilleeval/','GrilleÉval'),800);
-const STAT_TITLES={'test-enregistre':'Test enregistré','bilan-affiche':'Bilan affiché','bilan-enregistre':'Bilan enregistré','pdf-exporte':'PDF exporté'};
+const STAT_TITLES={'test-enregistre':'Test enregistré','bilan-affiche':'Bilan affiché','bilan-enregistre':'Bilan enregistré','pdf-exporte':'PDF exporté','visite-guidee':'Visite guidée'};
 function track(name){countHit(name,STAT_TITLES[name]||name,true);}
 let bilanTracked=false;
 let restoredSaved=false,fileHandle=null,fileSaveKind='written',otherTabWarned=false;
 const COPY_PREFIX=STORE_NS+'grilleeval-copy:',COPY_LIMIT=12,TAB_ID=Math.random().toString(36).slice(2,10);
 const KEY=STORE_NS+'grilleeval-canvas-v2',PREVIOUS=KEY+'-previous',X=900,Y=700,LABEL=360,COL=100,SUM=390,COMP=130,SHEET_GAP=40,LOWER_HEAD=146,LOWER_NAMES=112;
+// D1.74 · Premier passage sur cet appareil (aucun test gardé, visite jamais proposée) : on propose une fois la visite guidée.
+const TOUR_KEY=STORE_NS+'grilleeval-tour',FIRST_VISIT=(()=>{try{return !localStorage.getItem(KEY)&&!localStorage.getItem(TOUR_KEY);}catch{return false;}})();
 let DESCRIPTOR=360,EXTEND=0,descriptorAnimation=0,descriptorTarget=360;
 let fileSavedHash='',hadSavedView=false,d,view={zoom:1,x:X-28,y:Y-28},active=null,draft=null,geometry={rows:[],groups:[],width:0,height:0},worldSize={w:6000,h:5000};
 let gradeNodes=new Map(),rowNodes=new Map(),columnNodes=new Map(),totalNodes=new Map(),linkNodes=new Map(),linkCountNodes=new Map();
@@ -740,7 +742,7 @@ root.addEventListener('click',event=>{
  if(b.dataset.editCompetency){editCompetency(b.dataset.editCompetency);return;}
  if(b.dataset.jump){jump(b.dataset.jump);return;}
  if(b.dataset.zoom){if(overview&&!bilanOrigin)leaveOverview();if(b.dataset.zoom==='actual'){modal({title:'Zoom',fields:[{name:'zoom',label:'Zoom en %',value:String(Math.round(view.zoom*100)),required:true,numeric:true}],submit:'Appliquer',onSubmit:v=>{const n=Number(v.zoom);if(!Number.isFinite(n)||n<2||n>180)throw new Error('Choisir entre 2 et 180 %.');afterDialog=()=>zoomTo(n/100);}});}else zoomTo(view.zoom*(b.dataset.zoom==='in'?1.25:.8));return;}
- const a=b.dataset.action;if(!a)return;closeMenus();if(a.startsWith('bilan-')){bilanAction(a);return;}if(a==='math-demo'){if(!commitDraft())return;if(overview)leaveOverview();mutation(()=>{d=mathDemo();active=null;resetCatalogueContext();},'Test de mathématiques chargé · données fictives · annulation possible.',{shape:true});jump('students');return;}
+ const a=b.dataset.action;if(!a)return;closeMenus();if(a.startsWith('bilan-')){bilanAction(a);return;}if(a==='tour'){startTour();return;}if(a==='math-demo'){if(!commitDraft())return;if(overview)leaveOverview();mutation(()=>{d=mathDemo();active=null;resetCatalogueContext();},'Test de mathématiques chargé · données fictives · annulation possible.',{shape:true});jump('students');return;}
  if(a==='home')home();if(a==='transpose')transpose();if(a==='undo')undo();if(a==='redo')undo(true);if(a==='fit')fit();if(a==='export'||a==='save')exportJSON();if(a==='save-as')exportJSON(null,true);if(a==='open'&&commitDraft())guardUnsaved(()=>pickTestFile());if(a==='csv'&&commitDraft())download(toCSV(d),'grilleeval-points.csv','text/csv;charset=utf-8');
  
 
@@ -1234,10 +1236,11 @@ function paneRect(name){const q=selector=>board.querySelector(selector),lower=q(
 //    et la vue d’ensemble, des compositions d’ensemble, sont centrés ;
 //  · transition de 220 ms (position et zoom ensemble), sans animation au démarrage, avec « réduire les animations »
 //    ou pour un très grand document ; toute action de l’utilisateur l’interrompt.
+const stopFrame=id=>{try{globalThis.cancelAnimationFrame?.(id);}catch{}};
 const CAM={margin:24,workMin:.7,workMax:1,keepMax:1.8,ms:220};let camAnim=null;
 function camHeavy(){try{if(bilanOrigin)return (bilanLayout?.table?.querySelectorAll('td').length||0)>1500;const c=counts(d);return c[0]*(c[1]+c[2])>1500;}catch{return true;}}
 function camStill(){try{return matchMedia('(prefers-reduced-motion: reduce)').matches||document.hidden||camHeavy();}catch{return true;}}
-function camStop(){if(!camAnim)return;cancelAnimationFrame(camAnim.raf);camAnim=null;rememberCamera();schedule(true);}
+function camStop(){if(!camAnim)return;stopFrame(camAnim.raf);camAnim=null;rememberCamera();schedule(true);}
 for(const type of ['wheel','pointerdown','touchstart','keydown'])vp.addEventListener(type,camStop,{capture:true,passive:true});
 function moveCamera(zoom,left,top,animate=true){
  camStop();left=Math.max(0,left);top=Math.max(0,top);
@@ -1263,10 +1266,10 @@ function frameRect(rect,{zoom='keep',align='work',side=()=>0,widthOnly=false,ani
  const centre=align==='centre',left=rect.x*z-pin-gap-(centre&&wide<=room?(room-wide)/2:0);
  const tall=rect.h*z,top=centre&&tall<=v.h-2*m?rect.y*z-(v.h-tall)/2:rect.y*z-m;
  moveCamera(z,left,top,animate);}
-function focusPane(name){if(!commitDraft())return;if(needsSetup()&&!['points','results'].includes(name))openSetupCatalogue();if(overview)leaveOverview();finishDescriptorResize();measure();const rect=paneRect(name);if(!rect||!rect.w)return;
+function focusPane(name){if(tour)tour.moved=true;if(!commitDraft())return;if(needsSetup()&&!['points','results'].includes(name))openSetupCatalogue();if(overview)leaveOverview();finishDescriptorResize();measure();const rect=paneRect(name);if(!rect||!rect.w)return;
  frameRect(rect,{zoom:'keep',side:z=>paneSide(name,rect,z)*z});
  if(!$('[data-map-navigate]').hidden){toggleMap(false);$('[data-action="map"]').focus({preventScroll:true});}}
-function fitPane(name){if(!commitDraft())return;if(needsSetup()&&!['points','results'].includes(name))openSetupCatalogue();if(overview)leaveOverview();finishDescriptorResize();measure();const rect=paneRect(name);if(!rect||!rect.w)return;
+function fitPane(name){if(tour)tour.moved=true;if(!commitDraft())return;if(needsSetup()&&!['points','results'].includes(name))openSetupCatalogue();if(overview)leaveOverview();finishDescriptorResize();measure();const rect=paneRect(name);if(!rect||!rect.w)return;
  // Compétences : catalogue + colonne ; le catalogue est très long, on cadre donc la largeur seulement.
  frameRect(rect,{zoom:'work',side:z=>paneSide(name,rect,z)*z,widthOnly:name==='competencies'&&!needsSetup()});}
 
@@ -1299,7 +1302,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.73'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.74'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1493,7 +1496,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.73').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.74').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1868,3 +1871,66 @@ function enhanceDateField(field){
   const t=new Date(day.dataset.calDay+'T12:00:00');t.setDate(t.getDate()+step);const iso=isoOf(t.getFullYear(),t.getMonth(),t.getDate());if(t.getMonth()!==shown.m||t.getFullYear()!==shown.y){shown={y:t.getFullYear(),m:t.getMonth()};draw();}pop.querySelector(`[data-cal-day="${iso}"]`)?.focus();});
  native.addEventListener('change',()=>{if(native.value)choose(native.value);});
 }
+
+
+// ── D1.74 · Visite guidée ───────────────────────────────────────────────────────────────────────────────────────────
+// Facultative : proposée une seule fois au tout premier lancement, puis seulement par « Fichier › Visite guidée ».
+// On apprend en faisant : chaque étape met en lumière un vrai élément et avance dès qu’on a fait le geste.
+// Elle se déroule toujours sur l’exemple ; le test de l’enseignant est mis de côté puis rendu tel quel à la fin.
+let tour=null;
+const TOUR_STEPS=[
+ {title:'Saisir des points',text:'Cliquez dans une case et tapez les points obtenus, puis Entrée : on passe à l’élève suivant. Tapez D si l’élève est dispensé de l’exercice.',
+  go:()=>focusPane('points'),target:()=>board.querySelector('input.ge-grade[data-p][data-t]'),mark:()=>JSON.stringify(d.scores),done:m=>JSON.stringify(d.scores)!==m},
+ {title:'Le résultat se calcule tout seul',text:'Total, pourcentage et niveau apparaissent aussitôt. Ouvrez le barème avec ce bouton pour voir les niveaux et leurs seuils.',
+  go:()=>focusPane('results'),target:()=>board.querySelector('[data-edit-grading]'),mark:()=>0,done:()=>dialog.open},
+ {title:'Relier exercices et compétences',text:'Cochez une case : l’exercice compte alors pour cette compétence. Les résultats par compétence se mettent à jour.',
+  go:()=>focusPane('associations'),target:()=>board.querySelector('input[data-c][data-t]:not(:checked)')||board.querySelector('input[data-c][data-t]'),mark:()=>JSON.stringify(d.links),done:m=>JSON.stringify(d.links)!==m},
+ {title:'Se déplacer',text:'Ouvrez la carte : elle montre tout le test et mène d’un clic à chaque partie. Les titres des parties (« Élèves », « Compétences »…) y mènent aussi.',
+  target:()=>$('[data-action="map"]'),mark:()=>0,done:()=>!$('[data-map-navigate]').hidden||tour.moved},
+ {title:'Enregistrer',text:'Ouvrez « Fichier ». « Enregistrer » crée un fichier .json sur votre ordinateur : c’est votre test. Une copie de secours reste aussi dans ce navigateur.',
+  target:()=>$('.ge-header-actions > .ge-menu > summary'),mark:()=>0,done:()=>$('.ge-header-actions > .ge-menu')?.open},
+ {title:'Le bilan des compétences',text:'Pour le bilan de la période, passez à « Bilan des compétences » et ajoutez vos tests enregistrés : les résultats se regroupent par élève et par compétence.',
+  target:()=>$('[data-mode-tab="bilan"]'),mark:()=>0,done:()=>root.dataset.mode==='bilan'||Boolean(bilanOrigin)},
+];
+function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=document.createElement('div');el.className='ge-tour';
+ el.innerHTML=`<div class="ge-tour-spot" aria-hidden="true"></div><section class="ge-tour-card" role="dialog" aria-modal="false" aria-labelledby="ge-tour-title"><p class="ge-tour-count"></p><h2 id="ge-tour-title"></h2><p class="ge-tour-text"></p><div class="ge-tour-actions"><button type="button" class="ge-button ge-tour-quit" data-tour-quit>Quitter</button><button type="button" class="ge-button ge-tour-skip" data-tour-skip>Étape suivante</button></div></section>`;
+ root.append(el);el.addEventListener('click',e=>{if(e.target.closest('[data-tour-quit]'))endTour();else if(e.target.closest('[data-tour-skip]'))nextTourStep();else if(e.target.closest('[data-tour-back]'))endTour(true);});return el;}
+function startTour(){if(!commitDraft())return;closeMenus();hideTourInvite();try{localStorage.setItem(TOUR_KEY,'started');}catch{}
+ if(bilanOrigin)$('[data-mode-tab="test"]')?.click();
+ const keep=d.demoId?null:{doc:encodeDocument(d),fileHandle,fileSavedHash,fileSaveKind};
+ if(keep){fileHandle=null;mutation(()=>{d=mathDemo();active=null;transposed=false;resetCatalogueContext();},'Visite guidée · sur l’exemple, votre test est mis de côté.',{shape:true});}
+ tour={i:-1,keep,mark:null,ok:0,raf:0,moved:false};tourUI().hidden=false;track('visite-guidee');nextTourStep();}
+function nextTourStep(){if(!tour)return;tour.i++;tour.ok=0;tour.moved=false;if(tour.i>=TOUR_STEPS.length)return finishTour();
+ const step=TOUR_STEPS[tour.i];step.before?.();if(step.go)requestAnimationFrame(()=>step.go());tour.mark=step.mark();
+ const ui=tourUI();ui.classList.remove('ge-tour-good');ui.querySelector('.ge-tour-count').textContent=`Étape ${tour.i+1} sur ${TOUR_STEPS.length}`;ui.querySelector('#ge-tour-title').textContent=step.title;ui.querySelector('.ge-tour-text').textContent=step.text;
+ ui.querySelector('[data-tour-skip]').textContent=tour.i===TOUR_STEPS.length-1?'Terminer':'Étape suivante';
+ stopFrame(tour.raf);tour.raf=requestAnimationFrame(tourTick);}
+function finishTour(){const ui=tourUI();ui.querySelector('.ge-tour-spot').style.display='none';ui.classList.add('ge-tour-end');
+ ui.querySelector('.ge-tour-count').textContent='Visite terminée';ui.querySelector('#ge-tour-title').textContent='Vous connaissez l’essentiel.';
+ ui.querySelector('.ge-tour-text').textContent=tour.keep?'Votre propre test vous attend tel que vous l’aviez laissé.':'Pour commencer votre propre test : « Fichier › Nouvelle évaluation ». La visite reste disponible dans le même menu.';
+ ui.querySelector('.ge-tour-actions').innerHTML=tour.keep?'<button type="button" class="ge-button ge-primary" data-tour-back>Revenir à mon test</button>':'<button type="button" class="ge-button ge-primary" data-tour-quit>Terminer</button>';
+ stopFrame(tour.raf);tour.raf=0;ui.querySelector('.ge-tour-actions button').focus({preventScroll:true});}
+function endTour(){if(!tour)return;stopFrame(tour.raf);const keep=tour.keep;tour=null;try{localStorage.setItem(TOUR_KEY,'done');}catch{}
+ document.querySelector('.ge-tour')?.remove();
+ if(keep){if(bilanOrigin)$('[data-mode-tab="test"]')?.click();try{const back=validate(keep.doc);upgradeCatalogue(back);mutation(()=>{d=back;active=null;transposed=false;resetCatalogueContext();},'Votre test est de retour.',{shape:true});fileHandle=keep.fileHandle;fileSavedHash=keep.fileSavedHash;fileSaveKind=keep.fileSaveKind;showSave();requestAnimationFrame(()=>frameStart());}catch{notice('Votre test se trouve dans « Fichier › Copies de secours ».',true);}}}
+// Suit l’élément mis en lumière pendant que la vue bouge ; masque la visite tant qu’une fenêtre est ouverte.
+function tourTick(){if(!tour)return;const ui=document.querySelector('.ge-tour');if(!ui)return;const step=TOUR_STEPS[tour.i],spot=ui.querySelector('.ge-tour-spot'),card=ui.querySelector('.ge-tour-card');
+ ui.classList.toggle('ge-tour-hidden',dialog.open);
+ const target=step.target?.(),r=target?.getBoundingClientRect?.();
+ if(r&&r.width){const pad=6;Object.assign(spot.style,{display:'block',left:r.left-pad+'px',top:r.top-pad+'px',width:r.width+2*pad+'px',height:r.height+2*pad+'px'});
+  // La carte se met dans un coin libre (bas gauche, bas droite, haut droite) : elle ne cache ni l’élément ni ce qui l’entoure.
+  const cw=card.offsetWidth||340,ch=card.offsetHeight||170,W=globalThis.innerWidth||1000,H=globalThis.innerHeight||700,g=24,near=48;
+  const spots=[[g,H-ch-g],[W-cw-g,H-ch-g],[W-cw-g,64+g],[g,64+g]],free=([x,y])=>x>r.right+near||x+cw<r.left-near||y>r.bottom+near||y+ch<r.top-near;
+  const [x,y]=spots.find(free)||spots[0];card.style.left=x+'px';card.style.top=y+'px';}
+ else spot.style.display='none';
+ if(!tour.ok&&step.done(tour.mark)){tour.ok=performance.now();ui.classList.add('ge-tour-good');}
+ // On laisse voir le résultat du geste ; une fenêtre ou un menu ouvert par l’étape est d’abord refermé par l’utilisateur.
+ if(tour.ok&&performance.now()-tour.ok>900&&!dialog.open&&!$('.ge-header-actions > .ge-menu')?.open){nextTourStep();return;}
+ tour.raf=requestAnimationFrame(tourTick);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&tour&&!dialog.open&&!document.querySelector('.ge-menu[open]')){e.preventDefault();endTour();}},true);
+// Invitation unique au premier lancement.
+function hideTourInvite(){document.querySelector('.ge-tour-invite')?.remove();}
+function showTourInvite(){if(document.querySelector('.ge-tour-invite'))return;const el=document.createElement('section');el.className='ge-tour-invite';el.setAttribute('aria-label','Visite guidée');
+ el.innerHTML='<p><b>Découvrir GrilleÉval en 2 minutes</b><span>Une courte visite guidée sur l’exemple, à faire soi-même.</span></p><div><button type="button" class="ge-button" data-invite-later>Plus tard</button><button type="button" class="ge-button ge-primary" data-invite-start>Commencer</button></div>';
+ el.addEventListener('click',e=>{if(e.target.closest('[data-invite-start]'))startTour();else if(e.target.closest('[data-invite-later]')){try{localStorage.setItem(TOUR_KEY,'later');}catch{}hideTourInvite();}});root.append(el);}
+if(FIRST_VISIT&&TOP)setTimeout(()=>{if(!tour&&!dialog.open)showTourInvite();},1400);
