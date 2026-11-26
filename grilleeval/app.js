@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.76';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.76';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.76';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.77';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.77';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.77';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.76',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.77',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -1302,7 +1302,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.76'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.77'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1501,7 +1501,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.76').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.77').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1888,27 +1888,30 @@ const tourHas=()=>d.students.length>0&&d.tasks.length>0;
 const TOUR_STEPS=[
  {key:'eleves',label:'Élèves',title:'Vos élèves',
   text:()=>'Cliquez sur « + Élève » ou sur « Nom élève 1 » et tapez les prénoms. Une liste copiée d’un tableur se colle d’un coup.',
-  pane:'points',target:()=>board.querySelector('.ge-points-sheet .ge-button[data-add="student"]')||board.querySelector('[data-add="student"]'),done:()=>d.students.length>0},
+  pane:'points',target:()=>{const sh=board.querySelector('.ge-points-sheet');if(!sh)return null;return [sh.querySelectorAll('thead tr')[1]?.firstElementChild,...sh.querySelectorAll('tbody tr:not(.ge-class-summary) > th:first-child')];},done:()=>d.students.length>0},
  {key:'exercices',label:'Exercices',title:'Les exercices du test',
   text:()=>'Cliquez sur « + Exercice » : donnez un titre court et le maximum de points de chaque exercice.',
-  pane:'points',target:()=>board.querySelector('.ge-points-sheet .ge-button[data-add="task"]')||board.querySelector('[data-add="task"]'),done:()=>d.tasks.length>0},
+  pane:'points',target:()=>{const sh=board.querySelector('.ge-points-sheet');if(!sh)return null;const rows=sh.querySelectorAll('thead tr');return [rows[0]?.children[1],...(rows[1]?.querySelectorAll(':scope > th[data-column], :scope > th.ge-ghost-col')||[])];},done:()=>d.tasks.length>0},
  {key:'competences',label:'Compétences',title:'Les compétences évaluées',
   text:()=>'Ouvrez un domaine du catalogue et cochez le rond devant chaque compétence évaluée. Une compétence à vous ? « + Compétence ».',
   pane:'competencies',target:()=>[board.querySelector('.ge-competencies-sheet [data-add="competency"]'),...board.querySelectorAll('[data-catalogue-group]')].filter(Boolean),done:()=>d.competencies.length>0},
  {key:'liens',label:'Liens',title:'Relier exercices et compétences',
   text:()=>d.tasks.length&&d.competencies.length?'Cochez la case où un exercice croise une compétence : cet exercice compte alors pour elle.':'Ici, on relie exercices et compétences. Il faut d’abord au moins un exercice et une compétence : faites ces étapes, puis revenez.',
+  ready:()=>d.tasks.length>0&&d.competencies.length>0,lock:'Possible dès qu’il y a au moins un exercice et une compétence.',
   pane:'associations',target:()=>board.querySelector('input[data-c][data-t]'),done:()=>Object.values(d.links||{}).some(l=>l?.length)},
  {key:'points',label:'Points',title:'Les points, après le test',
   text:()=>tourHas()?'Cliquez dans une case, tapez les points, puis Entrée : on passe à l’élève suivant (D = dispensé). Total, pourcentage et niveau se calculent tout seuls.':'Les points se tapent dans la grille élèves × exercices. Il faut d’abord au moins un élève et un exercice.',
+  ready:tourHas,lock:'Possible dès qu’il y a au moins un élève et un exercice.',
   pane:'points',target:()=>tourHas()?[...board.querySelectorAll('input.ge-grade[data-p][data-t]')].find(i=>!i.value)||board.querySelector('input.ge-grade[data-p][data-t]'):null,
   done:()=>d.students.some(p=>d.tasks.some(t=>![undefined,null,''].includes(d.scores[p.id]?.[t.id])))},
  {key:'enregistrer',label:'Enregistrer',title:'Garder votre test',
   text:()=>'Ouvrez « Fichier » › « Enregistrer le test » : vous obtenez un fichier .json, c’est votre test. Le bilan de la période se fera plus tard avec ces fichiers.',
+  ready:()=>d.students.length+d.tasks.length+d.competencies.length>0,lock:'Possible dès que le test contient quelque chose.',
   target:()=>$('.ge-header-actions > .ge-menu > summary'),done:()=>Boolean(tour?.sawFile)||(tourHas()&&!isUnsaved())},
 ];
 function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=document.createElement('div');el.className='ge-tour';
  el.innerHTML=`<div class="ge-tour-spot" aria-hidden="true"></div><section class="ge-tour-card" role="dialog" aria-modal="false" aria-labelledby="ge-tour-title"><p class="ge-tour-count">Votre premier test · dans l’ordre que vous voulez</p><ol class="ge-tour-list">${TOUR_STEPS.map((s,i)=>`<li><button type="button" data-tour-go="${i}"><span class="ge-tour-tick" aria-hidden="true">${i+1}</span>${s.label}</button></li>`).join('')}</ol><h2 id="ge-tour-title"></h2><p class="ge-tour-text"></p><p class="ge-tour-note" aria-live="polite"></p><div class="ge-tour-actions"><button type="button" class="ge-button ge-tour-quit" data-tour-quit>Quitter la visite</button></div></section>`;
- root.append(el);el.addEventListener('click',e=>{const go=e.target.closest('[data-tour-go]');if(go){tourShow(Number(go.dataset.tourGo),true);return;}
+ root.append(el);el.addEventListener('click',e=>{const go=e.target.closest('[data-tour-go]');if(go){const i=Number(go.dataset.tourGo);if(tourReady(i))tourShow(i,true);return;}
   if(e.target.closest('[data-tour-quit]'))endTour();else if(e.target.closest('[data-tour-back]'))endTour('back');else if(e.target.closest('[data-tour-done]'))endTour('keep');});return el;}
 function startTour(){if(!commitDraft())return;closeMenus();hideTourInvite();if(tour)return;
  if(bilanOrigin)$('[data-mode-tab="test"]')?.click();
@@ -1925,7 +1928,10 @@ function tourShow(i,moveView){if(!tour)return;tour.i=i;const step=TOUR_STEPS[i],
  ui.querySelector('#ge-tour-title').textContent=step.title;ui.querySelector('.ge-tour-text').textContent=step.text();tourList();
  if(moveView&&step.pane)requestAnimationFrame(()=>{const r=tourRect(step.target()),v=vp.getBoundingClientRect();if(!r||r.top<v.top||r.bottom>v.bottom||r.left<v.left||r.right>v.right)focusPane(step.pane);});
  stopFrame(tour.raf);tour.raf=requestAnimationFrame(tourTick);}
-function tourList(){const ui=document.querySelector('.ge-tour');if(!ui||!tour)return;ui.querySelectorAll('[data-tour-go]').forEach((b,i)=>{b.classList.toggle('ge-tour-done',tour.done[i]);b.classList.toggle('ge-tour-current',i===tour.i);b.querySelector('.ge-tour-tick').textContent=tour.done[i]?'✓':String(i+1);b.setAttribute('aria-current',i===tour.i?'step':'false');});}
+// Une étape n’est proposée que lorsqu’elle est possible : pas de liens sans exercice ni compétence, pas de points sans élève ni exercice.
+const tourReady=i=>TOUR_STEPS[i].ready?.()??true;
+function tourNext(from){const open=i=>!tour.done[i]&&tourReady(i),after=TOUR_STEPS.findIndex((s,i)=>i>from&&open(i));return after>=0?after:TOUR_STEPS.findIndex((s,i)=>open(i));}
+function tourList(){const ui=document.querySelector('.ge-tour');if(!ui||!tour)return;tour.readyKey=TOUR_STEPS.map((s,i)=>tourReady(i)?1:0).join('');ui.querySelectorAll('[data-tour-go]').forEach((b,i)=>{const ok=tourReady(i)||tour.done[i];b.disabled=!ok;b.classList.toggle('ge-tour-locked',!ok);b.title=ok?'':TOUR_STEPS[i].lock||'';b.classList.toggle('ge-tour-done',tour.done[i]);b.classList.toggle('ge-tour-current',i===tour.i);b.querySelector('.ge-tour-tick').textContent=tour.done[i]?'✓':String(i+1);b.setAttribute('aria-current',i===tour.i?'step':'false');});}
 function tourNote(text){const n=document.querySelector('.ge-tour-note');if(!n)return;n.textContent=text;clearTimeout(tour.noteTimer);tour.noteTimer=setTimeout(()=>{if(n.isConnected)n.textContent='';},5200);}
 function tourRect(target){const list=(Array.isArray(target)?target:[target]).filter(Boolean).map(e=>e.getBoundingClientRect()).filter(r=>r.width||r.height);if(!list.length)return null;
  const l=Math.min(...list.map(r=>r.left)),t=Math.min(...list.map(r=>r.top)),r=Math.max(...list.map(r=>r.right)),b=Math.max(...list.map(r=>r.bottom));return {left:l,top:t,right:r,bottom:b,width:r-l,height:b-t};}
@@ -1949,11 +1955,12 @@ function tourTick(){if(!tour)return;const ui=document.querySelector('.ge-tour');
  let changed=false;TOUR_STEPS.forEach((s,i)=>{if(!tour.done[i]&&s.done()){tour.done[i]=true;changed=true;
   if(i!==tour.i)tourNote(`✓ ${s.label} : fait avant « ${TOUR_STEPS[tour.i].label} ». Très bien, l’ordre ne compte pas.`);else tourNote(`✓ ${s.label} : c’est fait.`);}});
  if(changed){tourList();if(tour.done.every(Boolean)&&!menuOpen&&!dialog.open)return finishTour();
-  if(tour.done[tour.i]){const next=TOUR_STEPS.findIndex((s,i)=>!tour.done[i]&&i>tour.i),first=tour.done.findIndex(x=>!x);tour.pending=next>=0?next:first;}
+  if(tour.done[tour.i]){const next=tourNext(tour.i);if(next>=0)tour.pending=next;}
   else ui.querySelector('.ge-tour-text').textContent=TOUR_STEPS[tour.i].text();}
  // La prochaine étape s’affiche quand la fenêtre ou le menu ouvert est refermé.
  if(tour.pending!=null&&!dialog.open&&!menuOpen){const n=tour.pending;tour.pending=null;if(tour.done.every(Boolean))return finishTour();return tourShow(n,true);}
  if(tour.done.every(Boolean)&&!dialog.open&&!menuOpen)return finishTour();
+ if(TOUR_STEPS.map((s,i)=>tourReady(i)?1:0).join('')!==tour.readyKey)tourList();
  const step=TOUR_STEPS[tour.i],spot=ui.querySelector('.ge-tour-spot'),card=ui.querySelector('.ge-tour-card'),r=tourRect(step.target());
  if(!changed)ui.querySelector('.ge-tour-text').textContent=step.text();
  if(r&&r.width){const pad=6;Object.assign(spot.style,{display:'block',left:r.left-pad+'px',top:r.top-pad+'px',width:r.width+2*pad+'px',height:r.height+2*pad+'px'});

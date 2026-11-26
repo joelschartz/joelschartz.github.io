@@ -2616,3 +2616,6 @@
 #ge-canvas .ge-tour-note{margin:8px 0 0;min-height:0;font-size:12.5px;line-height:1.4;color:var(--good,#2f8f5b);font-weight:500}
 #ge-canvas .ge-tour-note:empty{display:none}
 #ge-canvas .ge-tour.ge-tour-end .ge-tour-list{display:none}
+/* D1.77 · étapes pas encore possibles : visibles mais grisées */
+#ge-canvas .ge-tour-list button.ge-tour-locked{opacity:.45;cursor:default}
+#ge-canvas .ge-tour-list button.ge-tour-locked:hover{color:var(--ink-soft)}
