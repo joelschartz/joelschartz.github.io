@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.74';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.74';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.74';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.75';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.75';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.75';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.74',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.75',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -1302,7 +1302,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.74'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.75'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1446,7 +1446,12 @@ root.addEventListener('click',e=>{if(e.target.closest('[data-import-csv]')){e.pr
 function frameStart(){if(bilanOrigin)return;finishDescriptorResize();measure();const sheet=worldRect([board.querySelector('.ge-points-sheet'),transposed?board.querySelector('[data-column-chart]'):null]);
  if(!sheet){panTo(X,Y);return;}
  sheet.w=Math.min(sheet.w,LABEL+layout().primary*layout().pw+(transposed?0:SUM));
- // D1.73 · Même caméra que partout : cadrage de travail, centré, sans animation.
+ // D1.75 · Un test vide se construit, il ne s’évalue pas encore : on cadre tout le bloc d’installation (points + « Compétences » avec son
+ // catalogue et ses filtres, qui commencent bien plus à gauche) en haut à gauche comme une vue de travail, largeur à 70–100 %. Un test rempli
+ // est cadré et centré (D1.73). Revu avec ChatGPT (ronde 8) : « les tests vides s’ancrent, les tests remplis s’encadrent ».
+ if(!d.students.length||!d.tasks.length){const comp=transposed?null:paneRect('competencies');let block=sheet;
+  if(comp){const l=Math.min(sheet.x,comp.x),r=Math.max(sheet.x+sheet.w,comp.x+comp.w);block={x:l,y:sheet.y,w:r-l,h:sheet.h};}
+  frameRect(block,{zoom:'work',widthOnly:true,animate:false});return;}
  frameRect(sheet,{zoom:'work',align:'centre',animate:false});}
 // Premier lancement : seulement avec une vraie mise en page (pas dans les tests sans rendu).
 if(!hadSavedView)requestAnimationFrame(()=>requestAnimationFrame(()=>{if(board.getBoundingClientRect().height>0)frameStart();}));
@@ -1496,7 +1501,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.74').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.75').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1879,8 +1884,8 @@ function enhanceDateField(field){
 // Elle se déroule toujours sur l’exemple ; le test de l’enseignant est mis de côté puis rendu tel quel à la fin.
 let tour=null;
 const TOUR_STEPS=[
- {title:'Saisir des points',text:'Cliquez dans une case et tapez les points obtenus, puis Entrée : on passe à l’élève suivant. Tapez D si l’élève est dispensé de l’exercice.',
-  go:()=>focusPane('points'),target:()=>board.querySelector('input.ge-grade[data-p][data-t]'),mark:()=>JSON.stringify(d.scores),done:m=>JSON.stringify(d.scores)!==m},
+ {title:'Saisir des points',text:()=>`Il manque encore les points de ${tourCellNames().pupil} à l’exercice ${tourCellNames().task} : la case encadrée est vide. Cliquez dedans, tapez par exemple 3, puis Entrée. (D veut dire « dispensé ».)`,
+  go:()=>focusPane('points'),target:()=>tourCell()||board.querySelector('input.ge-grade[data-p][data-t]'),mark:()=>0,done:()=>{const c=tour?.cell;return Boolean(c)&&![undefined,null,''].includes(d.scores[c.p]?.[c.t]);}},
  {title:'Le résultat se calcule tout seul',text:'Total, pourcentage et niveau apparaissent aussitôt. Ouvrez le barème avec ce bouton pour voir les niveaux et leurs seuils.',
   go:()=>focusPane('results'),target:()=>board.querySelector('[data-edit-grading]'),mark:()=>0,done:()=>dialog.open},
  {title:'Relier exercices et compétences',text:'Cochez une case : l’exercice compte alors pour cette compétence. Les résultats par compétence se mettent à jour.',
@@ -1895,26 +1900,36 @@ const TOUR_STEPS=[
 function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=document.createElement('div');el.className='ge-tour';
  el.innerHTML=`<div class="ge-tour-spot" aria-hidden="true"></div><section class="ge-tour-card" role="dialog" aria-modal="false" aria-labelledby="ge-tour-title"><p class="ge-tour-count"></p><h2 id="ge-tour-title"></h2><p class="ge-tour-text"></p><div class="ge-tour-actions"><button type="button" class="ge-button ge-tour-quit" data-tour-quit>Quitter</button><button type="button" class="ge-button ge-tour-skip" data-tour-skip>Étape suivante</button></div></section>`;
  root.append(el);el.addEventListener('click',e=>{if(e.target.closest('[data-tour-quit]'))endTour();else if(e.target.closest('[data-tour-skip]'))nextTourStep();else if(e.target.closest('[data-tour-back]'))endTour(true);});return el;}
-function startTour(){if(!commitDraft())return;closeMenus();hideTourInvite();try{localStorage.setItem(TOUR_KEY,'started');}catch{}
+// La case vide de la première étape : on l’efface dans la copie de l’exemple pour qu’il y ait vraiment quelque chose à saisir.
+function tourCell(){const c=tour?.cell;return c?[...board.querySelectorAll('input.ge-grade[data-p][data-t]')].find(i=>i.dataset.p===c.p&&i.dataset.t===c.t)||null:null;}
+function tourCellNames(){const c=tour?.cell,i=d.tasks.findIndex(t=>t.id===c?.t);return {pupil:d.students.find(p=>p.id===c?.p)?.name||'cet élève',task:String(i+1).padStart(2,'0')};}
+function startTour(){if(!commitDraft())return;closeMenus();hideTourInvite();if(tour)return;try{localStorage.setItem(TOUR_KEY,'started');}catch{}
  if(bilanOrigin)$('[data-mode-tab="test"]')?.click();
- const keep=d.demoId?null:{doc:encodeDocument(d),fileHandle,fileSavedHash,fileSaveKind};
- if(keep){fileHandle=null;mutation(()=>{d=mathDemo();active=null;transposed=false;resetCatalogueContext();},'Visite guidée · sur l’exemple, votre test est mis de côté.',{shape:true});}
- tour={i:-1,keep,mark:null,ok:0,raf:0,moved:false};tourUI().hidden=false;track('visite-guidee');nextTourStep();}
+ // On travaille toujours sur un exemple neuf ; ce qui était ouvert (votre test ou l’exemple modifié) est rendu tel quel à la fin.
+ const keep={doc:encodeDocument(d),own:!d.demoId,fileHandle,fileSavedHash,fileSaveKind};fileHandle=null;
+ const demo=mathDemo(),p=demo.students[0]?.id,t=demo.tasks[0]?.id;if(p&&t&&demo.scores[p])delete demo.scores[p][t];
+ mutation(()=>{d=demo;active=null;transposed=false;resetCatalogueContext();},null,{shape:true});
+ tour={i:-1,keep,cell:p&&t?{p,t}:null,mark:null,ok:0,raf:0,moved:false};track('visite-guidee');
+ const ui=tourUI();ui.hidden=false;ui.classList.add('ge-tour-centre');ui.querySelector('.ge-tour-spot').style.display='none';
+ ui.querySelector('.ge-tour-count').textContent=`Visite guidée · ${TOUR_STEPS.length} étapes · 2 minutes`;ui.querySelector('#ge-tour-title').textContent='La visite se fait sur un exemple';
+ ui.querySelector('.ge-tour-text').textContent=`Vous voyez maintenant le test d’exemple « ${d.title} » : ${d.students.length} élèves, ${d.tasks.length} exercices, des données fictives. Ce que vous y faites ne compte pas.${keep.own?' Votre propre test est mis de côté et revient à la fin, inchangé.':''} À chaque étape, un cadre montre où agir : faites le geste, la visite passe toute seule à la suite.`;
+ const go=ui.querySelector('[data-tour-skip]');go.textContent='Commencer';go.classList.add('ge-primary');
+ requestAnimationFrame(()=>{frameStart();go.focus({preventScroll:true});});}
 function nextTourStep(){if(!tour)return;tour.i++;tour.ok=0;tour.moved=false;if(tour.i>=TOUR_STEPS.length)return finishTour();
  const step=TOUR_STEPS[tour.i];step.before?.();if(step.go)requestAnimationFrame(()=>step.go());tour.mark=step.mark();
- const ui=tourUI();ui.classList.remove('ge-tour-good');ui.querySelector('.ge-tour-count').textContent=`Étape ${tour.i+1} sur ${TOUR_STEPS.length}`;ui.querySelector('#ge-tour-title').textContent=step.title;ui.querySelector('.ge-tour-text').textContent=step.text;
- ui.querySelector('[data-tour-skip]').textContent=tour.i===TOUR_STEPS.length-1?'Terminer':'Étape suivante';
+ const ui=tourUI();ui.classList.remove('ge-tour-good','ge-tour-centre');ui.querySelector('.ge-tour-count').textContent=`Étape ${tour.i+1} sur ${TOUR_STEPS.length}`;ui.querySelector('#ge-tour-title').textContent=step.title;ui.querySelector('.ge-tour-text').textContent=typeof step.text==='function'?step.text():step.text;
+ const skip=ui.querySelector('[data-tour-skip]');skip.classList.remove('ge-primary');skip.textContent=tour.i===TOUR_STEPS.length-1?'Terminer':'Étape suivante';
  stopFrame(tour.raf);tour.raf=requestAnimationFrame(tourTick);}
-function finishTour(){const ui=tourUI();ui.querySelector('.ge-tour-spot').style.display='none';ui.classList.add('ge-tour-end');
+function finishTour(){const ui=tourUI();ui.querySelector('.ge-tour-spot').style.display='none';ui.classList.add('ge-tour-end','ge-tour-centre');
  ui.querySelector('.ge-tour-count').textContent='Visite terminée';ui.querySelector('#ge-tour-title').textContent='Vous connaissez l’essentiel.';
- ui.querySelector('.ge-tour-text').textContent=tour.keep?'Votre propre test vous attend tel que vous l’aviez laissé.':'Pour commencer votre propre test : « Fichier › Nouvelle évaluation ». La visite reste disponible dans le même menu.';
- ui.querySelector('.ge-tour-actions').innerHTML=tour.keep?'<button type="button" class="ge-button ge-primary" data-tour-back>Revenir à mon test</button>':'<button type="button" class="ge-button ge-primary" data-tour-quit>Terminer</button>';
+ ui.querySelector('.ge-tour-text').textContent=tour.keep.own?'Votre propre test vous attend tel que vous l’aviez laissé.':'Pour commencer votre propre test : « Fichier › Nouvelle évaluation ». La visite reste disponible dans le même menu.';
+ ui.querySelector('.ge-tour-actions').innerHTML=tour.keep.own?'<button type="button" class="ge-button ge-primary" data-tour-back>Revenir à mon test</button>':'<button type="button" class="ge-button ge-primary" data-tour-quit>Terminer</button>';
  stopFrame(tour.raf);tour.raf=0;ui.querySelector('.ge-tour-actions button').focus({preventScroll:true});}
 function endTour(){if(!tour)return;stopFrame(tour.raf);const keep=tour.keep;tour=null;try{localStorage.setItem(TOUR_KEY,'done');}catch{}
  document.querySelector('.ge-tour')?.remove();
- if(keep){if(bilanOrigin)$('[data-mode-tab="test"]')?.click();try{const back=validate(keep.doc);upgradeCatalogue(back);mutation(()=>{d=back;active=null;transposed=false;resetCatalogueContext();},'Votre test est de retour.',{shape:true});fileHandle=keep.fileHandle;fileSavedHash=keep.fileSavedHash;fileSaveKind=keep.fileSaveKind;showSave();requestAnimationFrame(()=>frameStart());}catch{notice('Votre test se trouve dans « Fichier › Copies de secours ».',true);}}}
+ if(keep){if(bilanOrigin)$('[data-mode-tab="test"]')?.click();try{const back=validate(keep.doc);upgradeCatalogue(back);mutation(()=>{d=back;active=null;transposed=false;resetCatalogueContext();},keep.own?'Votre test est de retour.':null,{shape:true});fileHandle=keep.fileHandle;fileSavedHash=keep.fileSavedHash;fileSaveKind=keep.fileSaveKind;showSave();requestAnimationFrame(()=>frameStart());}catch{if(keep.own)notice('Votre test se trouve dans « Fichier › Copies de secours ».',true);}}}
 // Suit l’élément mis en lumière pendant que la vue bouge ; masque la visite tant qu’une fenêtre est ouverte.
-function tourTick(){if(!tour)return;const ui=document.querySelector('.ge-tour');if(!ui)return;const step=TOUR_STEPS[tour.i],spot=ui.querySelector('.ge-tour-spot'),card=ui.querySelector('.ge-tour-card');
+function tourTick(){if(!tour||tour.i<0)return;const ui=document.querySelector('.ge-tour');if(!ui)return;const step=TOUR_STEPS[tour.i],spot=ui.querySelector('.ge-tour-spot'),card=ui.querySelector('.ge-tour-card');
  ui.classList.toggle('ge-tour-hidden',dialog.open);
  const target=step.target?.(),r=target?.getBoundingClientRect?.();
  if(r&&r.width){const pad=6;Object.assign(spot.style,{display:'block',left:r.left-pad+'px',top:r.top-pad+'px',width:r.width+2*pad+'px',height:r.height+2*pad+'px'});
