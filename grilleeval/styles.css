@@ -2641,3 +2641,10 @@
 #ge-canvas .ge-tour-list button.ge-tour-done:not(.ge-tour-current){color:var(--ink-soft)}
 #ge-canvas .ge-tour-actions{justify-content:flex-start}
 #ge-canvas .ge-tour.ge-tour-end .ge-tour-actions{justify-content:flex-end}
+/* D1.84 · en-tête : « Tutoriel » comme titre, numéro d’étape à droite ; la carte de fin reste à sa place */
+#ge-canvas .ge-tour-head .ge-tour-count{justify-content:space-between;align-items:baseline}
+#ge-canvas .ge-tour-name{font-size:16px;font-weight:650}
+#ge-canvas .ge-tour-step{font-size:12.5px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+#ge-canvas .ge-tour-sub{font-size:12.5px;margin-top:3px}
+#ge-canvas .ge-tour-card h2{font-size:15px;margin-top:2px}
+#ge-canvas .ge-tour.ge-tour-end{background:none;pointer-events:none}
