@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.75';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.75';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.75';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.76';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.76';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.76';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.75',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.76',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -1302,7 +1302,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.75'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.76'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1501,7 +1501,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.75').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.76').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1878,74 +1878,95 @@ function enhanceDateField(field){
 }
 
 
-// ── D1.74 · Visite guidée ───────────────────────────────────────────────────────────────────────────────────────────
-// Facultative : proposée une seule fois au tout premier lancement, puis seulement par « Fichier › Visite guidée ».
-// On apprend en faisant : chaque étape met en lumière un vrai élément et avance dès qu’on a fait le geste.
-// Elle se déroule toujours sur l’exemple ; le test de l’enseignant est mis de côté puis rendu tel quel à la fin.
+// ── D1.76 · Visite guidée : « votre premier test » ──────────────────────────────────────────────────────────────────
+// Facultative : proposée une seule fois au tout premier lancement, puis par « Fichier › Visite guidée ».
+// Joël : on n’explique pas un exemple, on fait créer un vrai test — élèves, exercices, compétences, liens, points, enregistrer —
+// et on fait comprendre que l’ordre est libre : une liste à cocher, chaque étape se coche dès qu’elle est faite, dans n’importe
+// quel ordre ; le cadre lumineux propose simplement la prochaine étape encore ouverte.
 let tour=null;
+const tourHas=()=>d.students.length>0&&d.tasks.length>0;
 const TOUR_STEPS=[
- {title:'Saisir des points',text:()=>`Il manque encore les points de ${tourCellNames().pupil} à l’exercice ${tourCellNames().task} : la case encadrée est vide. Cliquez dedans, tapez par exemple 3, puis Entrée. (D veut dire « dispensé ».)`,
-  go:()=>focusPane('points'),target:()=>tourCell()||board.querySelector('input.ge-grade[data-p][data-t]'),mark:()=>0,done:()=>{const c=tour?.cell;return Boolean(c)&&![undefined,null,''].includes(d.scores[c.p]?.[c.t]);}},
- {title:'Le résultat se calcule tout seul',text:'Total, pourcentage et niveau apparaissent aussitôt. Ouvrez le barème avec ce bouton pour voir les niveaux et leurs seuils.',
-  go:()=>focusPane('results'),target:()=>board.querySelector('[data-edit-grading]'),mark:()=>0,done:()=>dialog.open},
- {title:'Relier exercices et compétences',text:'Cochez une case : l’exercice compte alors pour cette compétence. Les résultats par compétence se mettent à jour.',
-  go:()=>focusPane('associations'),target:()=>board.querySelector('input[data-c][data-t]:not(:checked)')||board.querySelector('input[data-c][data-t]'),mark:()=>JSON.stringify(d.links),done:m=>JSON.stringify(d.links)!==m},
- {title:'Se déplacer',text:'Ouvrez la carte : elle montre tout le test et mène d’un clic à chaque partie. Les titres des parties (« Élèves », « Compétences »…) y mènent aussi.',
-  target:()=>$('[data-action="map"]'),mark:()=>0,done:()=>!$('[data-map-navigate]').hidden||tour.moved},
- {title:'Enregistrer',text:'Ouvrez « Fichier ». « Enregistrer » crée un fichier .json sur votre ordinateur : c’est votre test. Une copie de secours reste aussi dans ce navigateur.',
-  target:()=>$('.ge-header-actions > .ge-menu > summary'),mark:()=>0,done:()=>$('.ge-header-actions > .ge-menu')?.open},
- {title:'Le bilan des compétences',text:'Pour le bilan de la période, passez à « Bilan des compétences » et ajoutez vos tests enregistrés : les résultats se regroupent par élève et par compétence.',
-  target:()=>$('[data-mode-tab="bilan"]'),mark:()=>0,done:()=>root.dataset.mode==='bilan'||Boolean(bilanOrigin)},
+ {key:'eleves',label:'Élèves',title:'Vos élèves',
+  text:()=>'Cliquez sur « + Élève » ou sur « Nom élève 1 » et tapez les prénoms. Une liste copiée d’un tableur se colle d’un coup.',
+  pane:'points',target:()=>board.querySelector('.ge-points-sheet .ge-button[data-add="student"]')||board.querySelector('[data-add="student"]'),done:()=>d.students.length>0},
+ {key:'exercices',label:'Exercices',title:'Les exercices du test',
+  text:()=>'Cliquez sur « + Exercice » : donnez un titre court et le maximum de points de chaque exercice.',
+  pane:'points',target:()=>board.querySelector('.ge-points-sheet .ge-button[data-add="task"]')||board.querySelector('[data-add="task"]'),done:()=>d.tasks.length>0},
+ {key:'competences',label:'Compétences',title:'Les compétences évaluées',
+  text:()=>'Ouvrez un domaine du catalogue et cochez le rond devant chaque compétence évaluée. Une compétence à vous ? « + Compétence ».',
+  pane:'competencies',target:()=>[board.querySelector('.ge-competencies-sheet [data-add="competency"]'),...board.querySelectorAll('[data-catalogue-group]')].filter(Boolean),done:()=>d.competencies.length>0},
+ {key:'liens',label:'Liens',title:'Relier exercices et compétences',
+  text:()=>d.tasks.length&&d.competencies.length?'Cochez la case où un exercice croise une compétence : cet exercice compte alors pour elle.':'Ici, on relie exercices et compétences. Il faut d’abord au moins un exercice et une compétence : faites ces étapes, puis revenez.',
+  pane:'associations',target:()=>board.querySelector('input[data-c][data-t]'),done:()=>Object.values(d.links||{}).some(l=>l?.length)},
+ {key:'points',label:'Points',title:'Les points, après le test',
+  text:()=>tourHas()?'Cliquez dans une case, tapez les points, puis Entrée : on passe à l’élève suivant (D = dispensé). Total, pourcentage et niveau se calculent tout seuls.':'Les points se tapent dans la grille élèves × exercices. Il faut d’abord au moins un élève et un exercice.',
+  pane:'points',target:()=>tourHas()?[...board.querySelectorAll('input.ge-grade[data-p][data-t]')].find(i=>!i.value)||board.querySelector('input.ge-grade[data-p][data-t]'):null,
+  done:()=>d.students.some(p=>d.tasks.some(t=>![undefined,null,''].includes(d.scores[p.id]?.[t.id])))},
+ {key:'enregistrer',label:'Enregistrer',title:'Garder votre test',
+  text:()=>'Ouvrez « Fichier » › « Enregistrer le test » : vous obtenez un fichier .json, c’est votre test. Le bilan de la période se fera plus tard avec ces fichiers.',
+  target:()=>$('.ge-header-actions > .ge-menu > summary'),done:()=>Boolean(tour?.sawFile)||(tourHas()&&!isUnsaved())},
 ];
 function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=document.createElement('div');el.className='ge-tour';
- el.innerHTML=`<div class="ge-tour-spot" aria-hidden="true"></div><section class="ge-tour-card" role="dialog" aria-modal="false" aria-labelledby="ge-tour-title"><p class="ge-tour-count"></p><h2 id="ge-tour-title"></h2><p class="ge-tour-text"></p><div class="ge-tour-actions"><button type="button" class="ge-button ge-tour-quit" data-tour-quit>Quitter</button><button type="button" class="ge-button ge-tour-skip" data-tour-skip>Étape suivante</button></div></section>`;
- root.append(el);el.addEventListener('click',e=>{if(e.target.closest('[data-tour-quit]'))endTour();else if(e.target.closest('[data-tour-skip]'))nextTourStep();else if(e.target.closest('[data-tour-back]'))endTour(true);});return el;}
-// La case vide de la première étape : on l’efface dans la copie de l’exemple pour qu’il y ait vraiment quelque chose à saisir.
-function tourCell(){const c=tour?.cell;return c?[...board.querySelectorAll('input.ge-grade[data-p][data-t]')].find(i=>i.dataset.p===c.p&&i.dataset.t===c.t)||null:null;}
-function tourCellNames(){const c=tour?.cell,i=d.tasks.findIndex(t=>t.id===c?.t);return {pupil:d.students.find(p=>p.id===c?.p)?.name||'cet élève',task:String(i+1).padStart(2,'0')};}
-function startTour(){if(!commitDraft())return;closeMenus();hideTourInvite();if(tour)return;try{localStorage.setItem(TOUR_KEY,'started');}catch{}
+ el.innerHTML=`<div class="ge-tour-spot" aria-hidden="true"></div><section class="ge-tour-card" role="dialog" aria-modal="false" aria-labelledby="ge-tour-title"><p class="ge-tour-count">Votre premier test · dans l’ordre que vous voulez</p><ol class="ge-tour-list">${TOUR_STEPS.map((s,i)=>`<li><button type="button" data-tour-go="${i}"><span class="ge-tour-tick" aria-hidden="true">${i+1}</span>${s.label}</button></li>`).join('')}</ol><h2 id="ge-tour-title"></h2><p class="ge-tour-text"></p><p class="ge-tour-note" aria-live="polite"></p><div class="ge-tour-actions"><button type="button" class="ge-button ge-tour-quit" data-tour-quit>Quitter la visite</button></div></section>`;
+ root.append(el);el.addEventListener('click',e=>{const go=e.target.closest('[data-tour-go]');if(go){tourShow(Number(go.dataset.tourGo),true);return;}
+  if(e.target.closest('[data-tour-quit]'))endTour();else if(e.target.closest('[data-tour-back]'))endTour('back');else if(e.target.closest('[data-tour-done]'))endTour('keep');});return el;}
+function startTour(){if(!commitDraft())return;closeMenus();hideTourInvite();if(tour)return;
  if(bilanOrigin)$('[data-mode-tab="test"]')?.click();
- // On travaille toujours sur un exemple neuf ; ce qui était ouvert (votre test ou l’exemple modifié) est rendu tel quel à la fin.
- const keep={doc:encodeDocument(d),own:!d.demoId,fileHandle,fileSavedHash,fileSaveKind};fileHandle=null;
- const demo=mathDemo(),p=demo.students[0]?.id,t=demo.tasks[0]?.id;if(p&&t&&demo.scores[p])delete demo.scores[p][t];
- mutation(()=>{d=demo;active=null;transposed=false;resetCatalogueContext();},null,{shape:true});
- tour={i:-1,keep,cell:p&&t?{p,t}:null,mark:null,ok:0,raf:0,moved:false};track('visite-guidee');
- const ui=tourUI();ui.hidden=false;ui.classList.add('ge-tour-centre');ui.querySelector('.ge-tour-spot').style.display='none';
- ui.querySelector('.ge-tour-count').textContent=`Visite guidée · ${TOUR_STEPS.length} étapes · 2 minutes`;ui.querySelector('#ge-tour-title').textContent='La visite se fait sur un exemple';
- ui.querySelector('.ge-tour-text').textContent=`Vous voyez maintenant le test d’exemple « ${d.title} » : ${d.students.length} élèves, ${d.tasks.length} exercices, des données fictives. Ce que vous y faites ne compte pas.${keep.own?' Votre propre test est mis de côté et revient à la fin, inchangé.':''} À chaque étape, un cadre montre où agir : faites le geste, la visite passe toute seule à la suite.`;
- const go=ui.querySelector('[data-tour-skip]');go.textContent='Commencer';go.classList.add('ge-primary');
- requestAnimationFrame(()=>{frameStart();go.focus({preventScroll:true});});}
-function nextTourStep(){if(!tour)return;tour.i++;tour.ok=0;tour.moved=false;if(tour.i>=TOUR_STEPS.length)return finishTour();
- const step=TOUR_STEPS[tour.i];step.before?.();if(step.go)requestAnimationFrame(()=>step.go());tour.mark=step.mark();
- const ui=tourUI();ui.classList.remove('ge-tour-good','ge-tour-centre');ui.querySelector('.ge-tour-count').textContent=`Étape ${tour.i+1} sur ${TOUR_STEPS.length}`;ui.querySelector('#ge-tour-title').textContent=step.title;ui.querySelector('.ge-tour-text').textContent=typeof step.text==='function'?step.text():step.text;
- const skip=ui.querySelector('[data-tour-skip]');skip.classList.remove('ge-primary');skip.textContent=tour.i===TOUR_STEPS.length-1?'Terminer':'Étape suivante';
+ guardUnsaved(()=>{
+  // Le test ouvert reste dans « Copies de secours » ; on le garde aussi en mémoire pour pouvoir y revenir en fin de visite.
+  const own=!d.demoId&&(d.students.length||d.tasks.length||d.competencies.length);
+  const keep={doc:encodeDocument(d),title:d.title,own:Boolean(own),fileHandle,fileSavedHash,fileSaveKind};
+  try{localStorage.setItem(TOUR_KEY,'started');}catch{}
+  newEvaluation(null);
+  tour={i:0,keep,done:TOUR_STEPS.map(()=>false),raf:0,sawFile:false,noteTimer:0,moved:false};track('visite-guidee');
+  tourUI().hidden=false;tourShow(0,false);});}
+// Montre une étape. moveView : seulement sur un choix explicite, et seulement si l’élément n’est pas déjà à l’écran.
+function tourShow(i,moveView){if(!tour)return;tour.i=i;const step=TOUR_STEPS[i],ui=tourUI();
+ ui.querySelector('#ge-tour-title').textContent=step.title;ui.querySelector('.ge-tour-text').textContent=step.text();tourList();
+ if(moveView&&step.pane)requestAnimationFrame(()=>{const r=tourRect(step.target()),v=vp.getBoundingClientRect();if(!r||r.top<v.top||r.bottom>v.bottom||r.left<v.left||r.right>v.right)focusPane(step.pane);});
  stopFrame(tour.raf);tour.raf=requestAnimationFrame(tourTick);}
-function finishTour(){const ui=tourUI();ui.querySelector('.ge-tour-spot').style.display='none';ui.classList.add('ge-tour-end','ge-tour-centre');
- ui.querySelector('.ge-tour-count').textContent='Visite terminée';ui.querySelector('#ge-tour-title').textContent='Vous connaissez l’essentiel.';
- ui.querySelector('.ge-tour-text').textContent=tour.keep.own?'Votre propre test vous attend tel que vous l’aviez laissé.':'Pour commencer votre propre test : « Fichier › Nouvelle évaluation ». La visite reste disponible dans le même menu.';
- ui.querySelector('.ge-tour-actions').innerHTML=tour.keep.own?'<button type="button" class="ge-button ge-primary" data-tour-back>Revenir à mon test</button>':'<button type="button" class="ge-button ge-primary" data-tour-quit>Terminer</button>';
- stopFrame(tour.raf);tour.raf=0;ui.querySelector('.ge-tour-actions button').focus({preventScroll:true});}
-function endTour(){if(!tour)return;stopFrame(tour.raf);const keep=tour.keep;tour=null;try{localStorage.setItem(TOUR_KEY,'done');}catch{}
+function tourList(){const ui=document.querySelector('.ge-tour');if(!ui||!tour)return;ui.querySelectorAll('[data-tour-go]').forEach((b,i)=>{b.classList.toggle('ge-tour-done',tour.done[i]);b.classList.toggle('ge-tour-current',i===tour.i);b.querySelector('.ge-tour-tick').textContent=tour.done[i]?'✓':String(i+1);b.setAttribute('aria-current',i===tour.i?'step':'false');});}
+function tourNote(text){const n=document.querySelector('.ge-tour-note');if(!n)return;n.textContent=text;clearTimeout(tour.noteTimer);tour.noteTimer=setTimeout(()=>{if(n.isConnected)n.textContent='';},5200);}
+function tourRect(target){const list=(Array.isArray(target)?target:[target]).filter(Boolean).map(e=>e.getBoundingClientRect()).filter(r=>r.width||r.height);if(!list.length)return null;
+ const l=Math.min(...list.map(r=>r.left)),t=Math.min(...list.map(r=>r.top)),r=Math.max(...list.map(r=>r.right)),b=Math.max(...list.map(r=>r.bottom));return {left:l,top:t,right:r,bottom:b,width:r-l,height:b-t};}
+function finishTour(){const ui=tourUI();clearTimeout(tour.noteTimer);stopFrame(tour.raf);tour.raf=0;ui.classList.add('ge-tour-end','ge-tour-centre');ui.querySelector('.ge-tour-spot').style.display='none';
+ ui.querySelector('.ge-tour-count').textContent='Visite terminée';ui.querySelector('#ge-tour-title').textContent='Votre test est prêt.';
+ ui.querySelector('.ge-tour-text').textContent='Vous avez fait chaque étape, dans l’ordre qui vous convenait. Complétez le reste quand vous voulez : élèves, exercices et points s’ajoutent à tout moment. Pour la période, « Bilan des compétences » regroupe vos tests enregistrés.'+(isUnsaved()?' N’oubliez pas « Fichier › Enregistrer le test ».':'');
+ ui.querySelector('.ge-tour-note').textContent='';
+ const back=tour.keep.own?`<button type="button" class="ge-button" data-tour-back>Revenir à « ${esc(tour.keep.title)} »</button>`:'';
+ ui.querySelector('.ge-tour-actions').innerHTML=back+'<button type="button" class="ge-button ge-primary" data-tour-done>Continuer avec ce test</button>';
+ ui.querySelector('[data-tour-done]').focus({preventScroll:true});}
+// how : 'keep' garde le nouveau test ; 'back' rouvre l’ancien ; sans précision (Quitter, Échap), on ne rouvre l’ancien que si rien n’a été créé.
+function endTour(how){if(!tour)return;stopFrame(tour.raf);clearTimeout(tour.noteTimer);const keep=tour.keep;tour=null;try{localStorage.setItem(TOUR_KEY,'done');}catch{}
  document.querySelector('.ge-tour')?.remove();
- if(keep){if(bilanOrigin)$('[data-mode-tab="test"]')?.click();try{const back=validate(keep.doc);upgradeCatalogue(back);mutation(()=>{d=back;active=null;transposed=false;resetCatalogueContext();},keep.own?'Votre test est de retour.':null,{shape:true});fileHandle=keep.fileHandle;fileSavedHash=keep.fileSavedHash;fileSaveKind=keep.fileSaveKind;showSave();requestAnimationFrame(()=>frameStart());}catch{if(keep.own)notice('Votre test se trouve dans « Fichier › Copies de secours ».',true);}}}
-// Suit l’élément mis en lumière pendant que la vue bouge ; masque la visite tant qu’une fenêtre est ouverte.
-function tourTick(){if(!tour||tour.i<0)return;const ui=document.querySelector('.ge-tour');if(!ui)return;const step=TOUR_STEPS[tour.i],spot=ui.querySelector('.ge-tour-spot'),card=ui.querySelector('.ge-tour-card');
+ const empty=!(d.students.length||d.tasks.length||d.competencies.length);
+ if(how==='back'||(!how&&empty)){try{const back=validate(keep.doc);upgradeCatalogue(back);mutation(()=>{d=back;active=null;transposed=false;resetCatalogueContext();},keep.own?`« ${back.title} » est de retour.`:null,{shape:true});fileHandle=keep.fileHandle;fileSavedHash=keep.fileSavedHash;fileSaveKind=keep.fileSaveKind;showSave();requestAnimationFrame(()=>frameStart());}catch{if(keep.own)notice('Votre test précédent se trouve dans « Fichier › Copies de secours ».',true);}}
+ else if(keep.own)notice(`« ${keep.title} » reste dans « Fichier › Copies de secours ».`);}
+// Suit l’élément mis en lumière, coche ce qui est fait (dans n’importe quel ordre) et propose l’étape suivante encore ouverte.
+function tourTick(){if(!tour)return;const ui=document.querySelector('.ge-tour');if(!ui)return;
+ const menuOpen=Boolean($('.ge-header-actions > .ge-menu')?.open);if(menuOpen)tour.sawFile=true;
  ui.classList.toggle('ge-tour-hidden',dialog.open);
- const target=step.target?.(),r=target?.getBoundingClientRect?.();
+ let changed=false;TOUR_STEPS.forEach((s,i)=>{if(!tour.done[i]&&s.done()){tour.done[i]=true;changed=true;
+  if(i!==tour.i)tourNote(`✓ ${s.label} : fait avant « ${TOUR_STEPS[tour.i].label} ». Très bien, l’ordre ne compte pas.`);else tourNote(`✓ ${s.label} : c’est fait.`);}});
+ if(changed){tourList();if(tour.done.every(Boolean)&&!menuOpen&&!dialog.open)return finishTour();
+  if(tour.done[tour.i]){const next=TOUR_STEPS.findIndex((s,i)=>!tour.done[i]&&i>tour.i),first=tour.done.findIndex(x=>!x);tour.pending=next>=0?next:first;}
+  else ui.querySelector('.ge-tour-text').textContent=TOUR_STEPS[tour.i].text();}
+ // La prochaine étape s’affiche quand la fenêtre ou le menu ouvert est refermé.
+ if(tour.pending!=null&&!dialog.open&&!menuOpen){const n=tour.pending;tour.pending=null;if(tour.done.every(Boolean))return finishTour();return tourShow(n,true);}
+ if(tour.done.every(Boolean)&&!dialog.open&&!menuOpen)return finishTour();
+ const step=TOUR_STEPS[tour.i],spot=ui.querySelector('.ge-tour-spot'),card=ui.querySelector('.ge-tour-card'),r=tourRect(step.target());
+ if(!changed)ui.querySelector('.ge-tour-text').textContent=step.text();
  if(r&&r.width){const pad=6;Object.assign(spot.style,{display:'block',left:r.left-pad+'px',top:r.top-pad+'px',width:r.width+2*pad+'px',height:r.height+2*pad+'px'});
-  // La carte se met dans un coin libre (bas gauche, bas droite, haut droite) : elle ne cache ni l’élément ni ce qui l’entoure.
-  const cw=card.offsetWidth||340,ch=card.offsetHeight||170,W=globalThis.innerWidth||1000,H=globalThis.innerHeight||700,g=24,near=48;
+  // La carte se met dans un coin libre (bas gauche, bas droite, haut droite, haut gauche) : elle ne cache pas l’élément.
+  const cw=card.offsetWidth||360,ch=card.offsetHeight||260,W=globalThis.innerWidth||1000,H=globalThis.innerHeight||700,g=24,near=40;
   const spots=[[g,H-ch-g],[W-cw-g,H-ch-g],[W-cw-g,64+g],[g,64+g]],free=([x,y])=>x>r.right+near||x+cw<r.left-near||y>r.bottom+near||y+ch<r.top-near;
   const [x,y]=spots.find(free)||spots[0];card.style.left=x+'px';card.style.top=y+'px';}
  else spot.style.display='none';
- if(!tour.ok&&step.done(tour.mark)){tour.ok=performance.now();ui.classList.add('ge-tour-good');}
- // On laisse voir le résultat du geste ; une fenêtre ou un menu ouvert par l’étape est d’abord refermé par l’utilisateur.
- if(tour.ok&&performance.now()-tour.ok>900&&!dialog.open&&!$('.ge-header-actions > .ge-menu')?.open){nextTourStep();return;}
  tour.raf=requestAnimationFrame(tourTick);}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&tour&&!dialog.open&&!document.querySelector('.ge-menu[open]')){e.preventDefault();endTour();}},true);
 // Invitation unique au premier lancement.
 function hideTourInvite(){document.querySelector('.ge-tour-invite')?.remove();}
 function showTourInvite(){if(document.querySelector('.ge-tour-invite'))return;const el=document.createElement('section');el.className='ge-tour-invite';el.setAttribute('aria-label','Visite guidée');
- el.innerHTML='<p><b>Découvrir GrilleÉval en 2 minutes</b><span>Une courte visite guidée sur l’exemple, à faire soi-même.</span></p><div><button type="button" class="ge-button" data-invite-later>Plus tard</button><button type="button" class="ge-button ge-primary" data-invite-start>Commencer</button></div>';
+ el.innerHTML='<p><b>Créer votre premier test, pas à pas</b><span>Élèves, exercices, compétences, points : une visite guidée, à faire soi-même.</span></p><div><button type="button" class="ge-button" data-invite-later>Plus tard</button><button type="button" class="ge-button ge-primary" data-invite-start>Commencer</button></div>';
  el.addEventListener('click',e=>{if(e.target.closest('[data-invite-start]'))startTour();else if(e.target.closest('[data-invite-later]')){try{localStorage.setItem(TOUR_KEY,'later');}catch{}hideTourInvite();}});root.append(el);}
 if(FIRST_VISIT&&TOP)setTimeout(()=>{if(!tour&&!dialog.open)showTourInvite();},1400);

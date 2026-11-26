@@ -3,8 +3,8 @@
 // Le bilan fait la moyenne pondérée de ces pourcentages, élève par élève et compétence par compétence.
 // Les élèves sont reconnus par leur nom (accents, majuscules et ordre Nom/Prénom ignorés),
 // les compétences du plan par leur identifiant, les compétences libres par leur texte.
-import {competencyResult,levelFor,pupilResult} from './analysis.mjs?v=D1.75';
-import {csvSafe} from './model.mjs?v=D1.75';
+import {competencyResult,levelFor,pupilResult} from './analysis.mjs?v=D1.76';
+import {csvSafe} from './model.mjs?v=D1.76';
 
 // D1.71 · Toutes les écritures (cyrillique, grec, arabe…) : seuls les accents et la ponctuation sont ignorés.
 export function foldName(value){return String(value||'').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();}
