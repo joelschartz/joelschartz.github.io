@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.95';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.95';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.95';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.96';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.96';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.96';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.95',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.96',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -186,7 +186,8 @@ function syncSetup(){
 function openSetupCatalogue(){if(!needsSetup())return;setupCatalogueOpen=true;syncSetup();measure();}
 function closeSetupCatalogue(){setupCatalogueOpen=false;syncSetup();measure();startSetup();}
 function startSetup(){const v=dims(),w=Math.min(920,Math.max(320,v.w-64));view.zoom=1;updateScale();vp.scrollLeft=Math.max(0,X-Math.max(24,(v.w-w)/2));vp.scrollTop=Math.max(0,Y-48);rememberCamera();schedule();}
-function home(){if(bilanOrigin)return revealBilanResults();if(!commitDraft())return;if(overview)leaveOverview();closeMenus();active=null;if(needsSetup())startSetup();else panTo(X,Y);mark();}
+// D1.96 · Le logo « GrilleÉval » ramène à la vue de départ du test (ou du bilan), en glissant, sans rien masquer ni modifier.
+function home(){if(bilanOrigin)return revealBilanResults('open');if(!commitDraft())return;if(overview)leaveOverview();closeMenus();active=null;if(needsSetup())startSetup();else frameStart(true);mark();}
 function transpose(){if(!commitDraft())return;if(overview)leaveOverview();const lower=vp.scrollTop/view.zoom>=(geometry.groups.find(g=>g.kind==='competencies')?.y??Infinity);transposed=!transposed;active=null;draft=null;renderBoard();root.dataset.transposed=String(transposed);$('[data-action="transpose"]').setAttribute('aria-pressed',String(transposed));panTo(X,lower?(geometry.groups.find(g=>g.kind==='competencies')?.y??Y):Y);queueViewSave();notice(transposed?'Élèves en colonnes · exercices en lignes':'Exercices en colonnes · élèves en lignes');}
 function label(kind,id){if(kind==='task'){const t=task(id),i=d.tasks.findIndex(t=>t.id===id);return t?`<button type="button" class="ge-label ge-task-label" data-edit-task="${esc(id)}"><span class="ge-row-index">${num(i)}</span><span class="ge-label-text">${esc(t.title)}<small>/ ${format(t.maxPoints)} pts</small></span><span class="ge-pencil" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M10.9 2.6 13.4 5.1 5.6 12.9l-3.1.6.6-3.1z"/></svg></span></button>`:'';}if(kind==='candidate'){const entry=d.catalogue.find(c=>c.id===id);return entry?catalogueLabel(entry):'';}const p=kind==='student',list=p?d.students:d.competencies,index=list.findIndex(x=>x.id===id),entry=list[index];if(!entry)return '';return `<button type="button" class="ge-label ${p?(entry.absent?'ge-absent':''):'ge-descriptor'}" data-edit-${p?'student':'competency'}="${esc(id)}" aria-label="Modifier ${p?'l’élève':'la compétence'} ${index+1}"><span class="ge-row-index">${p?index+1:'C'+num(index)}</span><span class="ge-label-text">${esc(p?entry.name:entry.text)}</span>${p&&entry.absent?'<small class="ge-absent-tag">absent</small>':''}<span class="ge-pencil" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M10.9 2.6 13.4 5.1 5.6 12.9l-3.1.6.6-3.1z"/></svg></span></button>`;}
 function taskHead(t,index){return `<button type="button" class="ge-task-head" data-edit-task="${esc(t.id)}" title="${esc(t.title+' · / '+format(t.maxPoints)+' pts · modifier cet exercice')}"><span class="ge-task-index">${num(index)}</span><span class="ge-task-name">${esc(t.title)}</span><span class="ge-task-max">/ ${format(t.maxPoints)} pts</span><span class="ge-edit-affordance">${icon('pencil')}</span></button>`;}
@@ -1341,7 +1342,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.95'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.96'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1482,7 +1483,7 @@ root.addEventListener('click',e=>{if(e.target.closest('[data-import-csv]')){e.pr
 // D1.62 · Cadre de départ (premier lancement, nouvelle évaluation, test ouvert) : la feuille des points avec ses
 // résultats, entière, au plus 100 % et au moins 70 %, centrée ; trop large, elle s’aligne à gauche (noms visibles) ;
 // trop haute, elle commence en haut. Au retour dans l’app, la vue enregistrée reste inchangée.
-function frameStart(){if(bilanOrigin)return;finishDescriptorResize();measure();const sheet=worldRect([board.querySelector('.ge-points-sheet'),transposed?board.querySelector('[data-column-chart]'):null]);
+function frameStart(animate=false){if(bilanOrigin)return;finishDescriptorResize();measure();const sheet=worldRect([board.querySelector('.ge-points-sheet'),transposed?board.querySelector('[data-column-chart]'):null]);
  if(!sheet){panTo(X,Y);return;}
  sheet.w=Math.min(sheet.w,LABEL+layout().primary*layout().pw+(transposed?0:SUM));
  // D1.75 · Un test vide se construit, il ne s’évalue pas encore : on cadre tout le bloc d’installation (points + « Compétences » avec son
@@ -1490,8 +1491,8 @@ function frameStart(){if(bilanOrigin)return;finishDescriptorResize();measure();c
  // est cadré et centré (D1.73). Revu avec ChatGPT (ronde 8) : « les tests vides s’ancrent, les tests remplis s’encadrent ».
  if(!d.students.length||!d.tasks.length){const comp=transposed?null:paneRect('competencies');let block=sheet;
   if(comp){const l=Math.min(sheet.x,comp.x),r=Math.max(sheet.x+sheet.w,comp.x+comp.w);block={x:l,y:sheet.y,w:r-l,h:sheet.h};}
-  frameRect(block,{zoom:'work',widthOnly:true,animate:false});return;}
- frameRect(sheet,{zoom:'work',align:'centre',animate:false});}
+  frameRect(block,{zoom:'work',widthOnly:true,animate});return;}
+ frameRect(sheet,{zoom:'work',align:'centre',animate});}
 // Premier lancement : seulement avec une vraie mise en page (pas dans les tests sans rendu).
 if(!hadSavedView)requestAnimationFrame(()=>requestAnimationFrame(()=>{if(board.getBoundingClientRect().height>0)frameStart();}));
 
@@ -1540,7 +1541,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.95').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.96').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1836,6 +1837,8 @@ function closeBilan(restoreFocus = true) {
   }
   rememberCamera();
   schedule();
+  // D1.96 · Retour du bilan = on rouvre le test : même vue de départ que partout (rempli : cadré et centré ; vide : ancré).
+  if (restoreFocus) requestAnimationFrame(() => { if (!bilanOrigin) frameStart(); });
 }
 
 const modeTabs = $('.ge-mode-switch');
