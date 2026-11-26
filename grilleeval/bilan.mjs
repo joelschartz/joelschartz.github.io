@@ -3,13 +3,15 @@
 // Le bilan fait la moyenne pondérée de ces pourcentages, élève par élève et compétence par compétence.
 // Les élèves sont reconnus par leur nom (accents, majuscules et ordre Nom/Prénom ignorés),
 // les compétences du plan par leur identifiant, les compétences libres par leur texte.
-import {competencyResult,levelFor,pupilResult} from './analysis.mjs?v=D1.91';
-import {csvSafe} from './model.mjs?v=D1.91';
+import {competencyResult,levelFor,pupilResult} from './analysis.mjs?v=D1.92';
+import {csvSafe} from './model.mjs?v=D1.92';
 
 // D1.71 · Toutes les écritures (cyrillique, grec, arabe…) : seuls les accents et la ponctuation sont ignorés.
 export function foldName(value){return String(value||'').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();}
 export function pupilKey(name){return foldName(name).split(' ').filter(Boolean).sort().join(' ');}
-export function competencyKey(c){return c.catalogueId?'plan:'+c.catalogueId:'libre:'+foldName(c.text);}
+// D1.92 · Une compétence libre appartient à sa matière : « Lire un tableau » en français et en mathématiques reste en deux lignes.
+// (Fichiers sans matière : comme avant, par le texte seul.)
+export function competencyKey(c,subject=c.subject){const s=foldName(subject||'');return c.catalogueId?'plan:'+c.catalogueId:'libre:'+(s?s+'/':'')+foldName(c.text);}
 export function weightOf(value){const n=Number(String(value??'').replace(',','.'));return Number.isFinite(n)&&n>0?Math.min(n,100):0;}
 
 /**
@@ -53,8 +55,8 @@ export function buildBilan(evaluations,grading,{rank=null}={}){
    });
   }
   for(const c of d.competencies){
-   const ck=competencyKey(c);
-   if(!competencies.has(ck))competencies.set(ck,{key:ck,text:c.text,section:c.section||'Compétences libres',subject:c.subject||d.subject,kind:c.catalogueId?(c.kind||'socle'):'libre',catalogueId:c.catalogueId||null,page:c.page||null,order:competencies.size,evaluations:new Set()});
+   const ck=competencyKey(c,c.subject||d.subject);
+   if(!competencies.has(ck))competencies.set(ck,{key:ck,text:c.text,section:c.section||((c.subject||d.subject)?'Compétences libres · '+(c.subject||d.subject):'Compétences libres'),subject:c.subject||d.subject,kind:c.catalogueId?(c.kind||'socle'):'libre',catalogueId:c.catalogueId||null,page:c.page||null,order:competencies.size,evaluations:new Set()});
    if(!(d.links[c.id]||[]).length)continue;
    competencies.get(ck).evaluations.add(e.id);
    for(const p of d.students){

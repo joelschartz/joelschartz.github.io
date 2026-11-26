@@ -1,7 +1,7 @@
 // D1.57 · Bilan individuel en PDF (A4 portrait) : une page (ou plus) par élève, depuis le bilan des compétences.
 // Pour chaque compétence : nombre de tests, résultat du bilan, niveau, et l’évolution test par test (petits points).
-import {levelColour,levelFor,format} from './model.mjs?v=D1.91';
-import {pdfSafe,useUnicodeFont,frenchDate} from './pages-garde.mjs?v=D1.91';
+import {levelColour,levelFor,format} from './model.mjs?v=D1.92';
+import {pdfSafe,useUnicodeFont,frenchDate} from './pages-garde.mjs?v=D1.92';
 
 const P={w:595.28,h:841.89},M=36;
 const C={ink:'#1d1d1f',muted:'#6b6b73',line:'#d3d3db',head:'#f2f3f7',accent:'#3b49c4'};
@@ -52,7 +52,7 @@ export function buildReportPDF(jsPDF,data,pupils,{fonts=null}={}){
   let section='';
   for(const comp of data.competencies){
    const r=data.cell(person.key,comp.key);
-   font(8.5,false);const lines=doc.splitTextToSize(safe(comp.text),TEXT-12).slice(0,3);const h=Math.max(20,lines.length*10.5+8);
+   font(8.5,false);const lines=doc.splitTextToSize(safe(comp.text),TEXT-12);/* D1.92 · texte complet, plus de coupure après 3 lignes */const h=Math.max(20,lines.length*10.5+8);
    const needSection=comp.section!==section;
    if(y+h+(needSection?16:0)>P.h-40){footer();y=head(true);tableHead();section='';}
    if(comp.section!==section){section=comp.section;doc.setFillColor(...rgb('#fafafc'));doc.rect(M,y,P.w-2*M,16,'F');font(8,true);text(section,M+6,y+11);y+=16;}
@@ -71,7 +71,9 @@ export function buildReportPDF(jsPDF,data,pupils,{fonts=null}={}){
    }else{font(8,false,C.muted);text('non évaluée',M+TEXT+TESTS+TREND+(RES+LEVEL)/2,y+h/2+3,{align:'center'});}
    y+=h;
   }
-  y+=16;if(y<P.h-70){font(7.5,false,C.muted);const used=doc.splitTextToSize(safe('Tests : '+data.tests.map(t=>[t.title,t.date?frenchDate(t.date):''].filter(Boolean).join(' ')).join(' · ')),P.w-2*M);used.slice(0,4).forEach((l,i)=>doc.text(l,M,y+i*10));}
+  // Liste des tests : complète, sur une page de suite si besoin.
+  y+=16;const used=(font(7.5,false,C.muted),doc.splitTextToSize(safe('Tests : '+data.tests.map(t=>[t.title,t.date?frenchDate(t.date):''].filter(Boolean).join(' ')).join(' · ')),P.w-2*M));
+  for(const l of used){if(y>P.h-40){footer();y=head(true);font(7.5,false,C.muted);}doc.text(l,M,y);y+=10;}
   footer();
  }
  doc.setProperties({title:safe(pupils.length===1?`Bilan individuel · ${pupils[0].name}`:'Bilans individuels'),creator:'GrilleÉval'});
