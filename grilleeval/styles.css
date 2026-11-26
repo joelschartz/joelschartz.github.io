@@ -2624,3 +2624,12 @@
 #ge-canvas .ge-tour-hint{margin:8px 0 0;font-size:12.5px;line-height:1.4;color:var(--good,#2f8f5b);font-weight:500}
 #ge-canvas .ge-tour-hint:empty{display:none}
 #ge-canvas .ge-tour-actions [hidden]{display:none}
+/* D1.80 · en-tête du tutoriel plus marqué */
+#ge-canvas .ge-tour-head{margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+#ge-canvas .ge-tour-head .ge-tour-count{display:flex;align-items:center;gap:10px;margin:0;font-size:inherit;color:var(--ink)}
+#ge-canvas .ge-tour-badge{margin-right:0;padding:3px 9px;font-size:12px;letter-spacing:.06em}
+#ge-canvas .ge-tour-name{font-size:17px;font-weight:650;color:var(--ink);letter-spacing:-.01em}
+#ge-canvas .ge-tour-sub{margin:5px 0 0;font-size:13px;color:var(--muted)}
+#ge-canvas .ge-tour-sub:empty{display:none}
+#ge-canvas .ge-tour-card h2{font-size:15px}
+#ge-canvas .ge-tour-list{margin:0 0 12px}
