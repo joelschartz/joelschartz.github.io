@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.90';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.90';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.90';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.91';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.91';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.91';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.90',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.91',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -785,7 +785,22 @@ board.addEventListener('focusout',event=>{if(event.target===draft?.node)commitDr
 board.addEventListener('change',event=>{const e=event.target;if(!e.matches('input[data-c]'))return;const c=e.dataset.c,t=e.dataset.t;active={c,t};mutation(()=>{if(e.checked&&!d.links[c].includes(t))d.links[c].push(t);else if(!e.checked)d.links[c]=d.links[c].filter(id=>id!==t);},null,{render:false});linkCountNodes.get(c).textContent=d.links[c].length;});
 board.addEventListener('paste',event=>{const e=event.target;if(!e.matches('input[data-p]'))return;const raw=event.clipboardData?.getData('text/plain')||'';if(!/[\t\r\n]/.test(raw))return;event.preventDefault();try{const updates=pasteBlock(d,e.dataset.p,e.dataset.t,raw,{transposed});if(!commitDraft())return;mutation(()=>{for(const [p,t,n]of updates)d.scores[p][t]=n;},`${updates.length} valeurs collées.`,{render:false});for(const [p,t,n]of updates){gradeNodes.get(key(p,t)).value=format(n);updateTotal(p);}draft={node:e,p:e.dataset.p,t:e.dataset.t,dirty:false};}catch(error){notice(error.message,true);}});
 board.addEventListener('keydown',event=>{const e=event.target;if(!e.matches('input[data-c],input[data-catalogue-link]')||event.ctrlKey||event.metaKey||event.altKey||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();if(!commitDraft())return;const rows=[...board.querySelectorAll('[data-row-group="competencies"]')].filter(row=>row.querySelector('input[data-c],input[data-catalogue-link]'));let ri=rows.indexOf(e.closest('tr')),ti=d.tasks.findIndex(t=>t.id===e.dataset.t);if(event.key==='ArrowLeft')ti--;if(event.key==='ArrowRight')ti++;if(event.key==='ArrowUp')ri--;if(event.key==='ArrowDown')ri++;if(ri<0||ri>=rows.length||ti<0||ti>=d.tasks.length)return;const next=[...rows[ri].querySelectorAll('input[data-t]')].find(input=>input.dataset.t===d.tasks[ti].id);if(next){next.focus({preventScroll:true});reveal(next);}});
-board.addEventListener('keydown',event=>{const e=event.target;if(!e.matches('input[data-p]'))return;if(event.key==='Escape'){event.preventDefault();cancelDraft();e.blur();return;}if(event.ctrlKey||event.metaKey||event.altKey)return;if(!['Enter','Tab','ArrowUp','ArrowDown'].includes(event.key))return;const p=e.dataset.p,t=e.dataset.t;if(!commitDraft()){event.preventDefault();return;}let pi=d.students.findIndex(x=>x.id===p),ti=d.tasks.findIndex(x=>x.id===t);const step=event.key==='ArrowUp'||event.key==='Enter'&&event.shiftKey||event.key==='Tab'&&event.shiftKey?-1:1;if(transposed){if(event.key==='Tab'){pi+=step;if(pi>=d.students.length){pi=0;ti++;}if(pi<0){pi=d.students.length-1;ti--;}}else ti+=step;}else{if(event.key==='Tab'){ti+=step;if(ti>=d.tasks.length){ti=0;pi++;}if(ti<0){ti=d.tasks.length-1;pi--;}}else pi+=step;}if(pi>=0&&pi<d.students.length&&ti>=0&&ti<d.tasks.length){event.preventDefault();focusGrade(d.students[pi].id,d.tasks[ti].id);}else if(event.key!=='Tab')event.preventDefault();});
+// D1.91 · Saisie des points au clavier, comme un tableur : Entrée descend et, en bas, reprend en haut de la colonne suivante ;
+// après la toute dernière case, la saisie se termine (plus de case active). Maj+Entrée fait l’inverse. Les flèches haut/bas
+// changent de case ; gauche/droite aussi, dès que le curseur est au bord du texte (ou que tout est sélectionné). Tab : ligne par ligne.
+board.addEventListener('keydown',event=>{const e=event.target;if(!e.matches('input[data-p]'))return;if(event.key==='Escape'){event.preventDefault();cancelDraft();e.blur();return;}if(event.ctrlKey||event.metaKey||event.altKey)return;
+ const k=event.key;if(!['Enter','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k))return;
+ if(k==='ArrowLeft'||k==='ArrowRight'){const a=e.selectionStart??0,z=e.selectionEnd??0,all=a===0&&z===e.value.length;if(!all&&(k==='ArrowLeft'?a>0||z>0:a<e.value.length||z<e.value.length))return;}
+ const p=e.dataset.p,t=e.dataset.t;if(!commitDraft()){event.preventDefault();return;}
+ // r = ligne affichée, c = colonne affichée (élèves en lignes, sauf en vue transposée).
+ const pi=d.students.findIndex(x=>x.id===p),ti=d.tasks.findIndex(x=>x.id===t),rows=transposed?d.tasks.length:d.students.length,cols=transposed?d.students.length:d.tasks.length;
+ let r=transposed?ti:pi,c=transposed?pi:ti;const back=event.shiftKey;
+ if(k==='Enter'){r+=back?-1:1;if(r>=rows){r=0;c++;}if(r<0){r=rows-1;c--;}
+  if(c>=cols||c<0){event.preventDefault();e.blur();active=null;mark();return;}}
+ else if(k==='Tab'){c+=back?-1:1;if(c>=cols){c=0;r++;}if(c<0){c=cols-1;r--;}if(r<0||r>=rows)return;}
+ else if(k==='ArrowUp')r--;else if(k==='ArrowDown')r++;else if(k==='ArrowLeft')c--;else c++;
+ event.preventDefault();if(r<0||r>=rows||c<0||c>=cols)return;
+ const P=d.students[transposed?c:r],T=d.tasks[transposed?r:c];if(P&&T)focusGrade(P.id,T.id);});
 board.addEventListener('focusin',()=>schedule());board.addEventListener('focusout',()=>schedule());
 vp.addEventListener('scroll',()=>{if(scrollSettling)deferAutomaticResults();cameraDirty=true;schedule();},{passive:true});
 vp.addEventListener('scrollend',event=>{if(event.target===vp)finishAutomaticResultsScroll();},{passive:true});
@@ -1311,7 +1326,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.90'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.91'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1510,7 +1525,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.90').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.91').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
