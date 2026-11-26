@@ -2604,7 +2604,7 @@
 #ge-canvas .ge-tour-invite .ge-button{height:30px;padding:0 12px;font-size:13px}
 @media (prefers-reduced-motion: reduce){#ge-canvas .ge-tour-spot,#ge-canvas .ge-tour-card{transition:none}}
 /* D1.76 · Visite guidée « votre premier test » : liste à cocher dans n’importe quel ordre */
-#ge-canvas .ge-tour-card{width:min(360px,calc(100vw - 24px))}
+#ge-canvas .ge-tour-card{width:min(392px,calc(100vw - 24px))}
 #ge-canvas .ge-tour-list{list-style:none;margin:6px 0 12px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 #ge-canvas .ge-tour-list button{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px 0 4px;border:0;border-radius:13px;background:var(--soft);color:var(--ink-soft);font:inherit;font-size:12.5px;cursor:pointer}
 #ge-canvas .ge-tour-list button:hover{color:var(--ink)}
@@ -2619,3 +2619,8 @@
 /* D1.77 · étapes pas encore possibles : visibles mais grisées */
 #ge-canvas .ge-tour-list button.ge-tour-locked{opacity:.45;cursor:default}
 #ge-canvas .ge-tour-list button.ge-tour-locked:hover{color:var(--ink-soft)}
+/* D1.78 · « Tutoriel » bien visible ; plus de saut automatique : un bouton « Suivant » */
+#ge-canvas .ge-tour-badge{display:inline-block;margin-right:8px;padding:2px 8px;border-radius:6px;background:var(--accent);color:#fff;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;vertical-align:1px}
+#ge-canvas .ge-tour-hint{margin:8px 0 0;font-size:12.5px;line-height:1.4;color:var(--good,#2f8f5b);font-weight:500}
+#ge-canvas .ge-tour-hint:empty{display:none}
+#ge-canvas .ge-tour-actions [hidden]{display:none}
