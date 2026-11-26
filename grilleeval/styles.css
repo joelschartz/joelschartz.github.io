@@ -2654,3 +2654,5 @@
 /* D1.89 · liste des exercices ajoutés : plus haute, fondu en haut quand elle continue */
 #ge-canvas .ge-task-added{max-height:min(300px,38vh)}
 #ge-canvas .ge-task-added.ge-more-above{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 28px);mask-image:linear-gradient(to bottom,transparent 0,#000 28px)}
+/* D1.90 · le défilement dans une fenêtre ne passe jamais à l’app derrière */
+#ge-canvas .ge-dialog,#ge-canvas .ge-dialog .ge-task-added,#ge-canvas .ge-dialog textarea{overscroll-behavior:contain}

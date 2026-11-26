@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.89';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.89';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.89';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.90';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.90';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.90';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.89',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.90',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -548,7 +548,15 @@ function freeDialog(){
    const stop=ev=>{if(ev.pointerId!==start.id)return;head.removeEventListener('pointermove',moveCard);head.removeEventListener('pointerup',stop);head.removeEventListener('pointercancel',stop);};
    head.addEventListener('pointermove',moveCard);head.addEventListener('pointerup',stop);head.addEventListener('pointercancel',stop);});}
  const form=dialog.querySelector('form');
- on(dialog,'wheel',e=>{if(form?.contains(e.target)&&dialog.scrollHeight>dialog.clientHeight+1&&!(e.ctrlKey||e.metaKey))return;e.preventDefault();e.stopPropagation();dialogMoved=true;
+ // D1.90 · Molette sur la fenêtre elle-même : seul son contenu défile (liste des exercices, texte…), jamais l’app derrière ;
+ // pas de zoom non plus. Hors de la fenêtre, la molette continue de déplacer le plan comme avant.
+ const scrolls=(n,dy,dx)=>{const st=getComputedStyle(n),y=/(auto|scroll)/.test(st.overflowY)&&n.scrollHeight>n.clientHeight+1,x=/(auto|scroll)/.test(st.overflowX)&&n.scrollWidth>n.clientWidth+1;
+  return (y&&(dy<0?n.scrollTop>0:dy>0&&n.scrollTop+n.clientHeight<n.scrollHeight-1))||(x&&(dx<0?n.scrollLeft>0:dx>0&&n.scrollLeft+n.clientWidth<n.scrollWidth-1));};
+ on(dialog,'wheel',e=>{const box=dialog.getBoundingClientRect();
+  if(e.clientX>=box.left&&e.clientX<=box.right&&e.clientY>=box.top&&e.clientY<=box.bottom){e.stopPropagation();if(e.ctrlKey||e.metaKey){e.preventDefault();return;}
+   for(let n=e.target;n&&n.nodeType===1;n=n===dialog?null:n.parentElement)if(scrolls(n,e.deltaY,e.deltaX))return;
+   e.preventDefault();return;}
+  e.preventDefault();e.stopPropagation();dialogMoved=true;
   if(e.ctrlKey||e.metaKey){const r=vp.getBoundingClientRect();zoomTo(view.zoom*Math.exp(-e.deltaY*.006),{x:e.clientX-r.left,y:e.clientY-r.top});}
   else{const sideways=e.shiftKey&&Math.abs(e.deltaX)<1;vp.scrollLeft+=sideways?e.deltaY:e.deltaX;vp.scrollTop+=sideways?0:e.deltaY;scrollFrame.x=vp.scrollLeft;scrollFrame.y=vp.scrollTop;schedule();}},{passive:false});
  on(dialog,'pointerdown',e=>{if(e.target!==dialog||e.button!==0)return;const r=dialog.getBoundingClientRect();if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)return;e.preventDefault();const start={x:e.clientX,y:e.clientY,sx:vp.scrollLeft,sy:vp.scrollTop,id:e.pointerId};dialog.classList.add('ge-panning');try{dialog.setPointerCapture(e.pointerId);}catch{}
@@ -1303,7 +1311,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.89'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.90'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1502,7 +1510,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.89').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.90').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
