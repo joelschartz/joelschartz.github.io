@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.78';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.78';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.78';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.79';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.79';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.79';
 
 const root=document.getElementById('ge-canvas');
 const $=s=>root.querySelector(s);
@@ -8,7 +8,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.78',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.79',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -1302,7 +1302,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.78'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.79'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1501,7 +1501,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.78').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.79').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1890,22 +1890,22 @@ const TOUR_STEPS=[
   text:()=>'Cliquez sur « + Élève » ou sur « Nom élève 1 » et tapez les prénoms. Une liste copiée d’un tableur se colle d’un coup.',
   pane:'points',target:()=>{const sh=board.querySelector('.ge-points-sheet');if(!sh)return null;return [sh.querySelectorAll('thead tr')[1]?.firstElementChild,...sh.querySelectorAll('tbody tr:not(.ge-class-summary) > th:first-child')];},done:()=>d.students.length>0},
  {key:'exercices',more:'Ajoutez d’autres exercices si vous voulez, puis « Suivant ».',label:'Exercices',title:'Les exercices du test',
-  text:()=>'Cliquez sur « + Exercice » : donnez un titre court et le maximum de points de chaque exercice.',
+  text:()=>'Cliquez sur « + Exercice » : donnez un titre court et le maximum de points de chaque exercice.',
   pane:'points',target:()=>{const sh=board.querySelector('.ge-points-sheet');if(!sh)return null;const rows=sh.querySelectorAll('thead tr');return [rows[0]?.children[1],...(rows[1]?.querySelectorAll(':scope > th[data-column], :scope > th.ge-ghost-col')||[])];},done:()=>d.tasks.length>0},
  {key:'competences',more:'Cochez-en d’autres si vous voulez, puis « Suivant ».',label:'Compétences',title:'Les compétences évaluées',
-  text:()=>'Ouvrez un domaine du catalogue et cochez le rond devant chaque compétence évaluée. Une compétence à vous ? « + Compétence ».',
+  text:()=>'Ouvrez un domaine du catalogue et cochez le rond devant chaque compétence évaluée. Une compétence à vous ? « + Compétence ».',
   pane:'competencies',target:()=>[board.querySelector('.ge-competencies-sheet [data-add="competency"]'),...board.querySelectorAll('[data-catalogue-group]')].filter(Boolean),done:()=>d.competencies.length>0},
  {key:'liens',more:'Cochez d’autres liens si vous voulez, puis « Suivant ».',label:'Liens',title:'Relier exercices et compétences',
-  text:()=>d.tasks.length&&d.competencies.length?'Cochez la case où un exercice croise une compétence : cet exercice compte alors pour elle.':'Ici, on relie exercices et compétences. Il faut d’abord au moins un exercice et une compétence : faites ces étapes, puis revenez.',
+  text:()=>d.tasks.length&&d.competencies.length?'Cochez la case où un exercice croise une compétence : cet exercice compte alors pour elle.':'Ici, on relie exercices et compétences. Il faut d’abord au moins un exercice et une compétence : faites ces étapes, puis revenez.',
   ready:()=>d.tasks.length>0&&d.competencies.length>0,lock:'Possible dès qu’il y a au moins un exercice et une compétence.',
-  pane:'associations',target:()=>board.querySelector('input[data-c][data-t]'),done:()=>Object.values(d.links||{}).some(l=>l?.length)},
+  pane:'associations',target:()=>[...board.querySelectorAll('input[data-c][data-t], input[data-catalogue-link][data-t]')].map(i=>i.closest('td')||i),done:()=>Object.values(d.links||{}).some(l=>l?.length)},
  {key:'points',more:'Les autres points viendront après le test. « Suivant » quand vous voulez.',label:'Points',title:'Les points, après le test',
-  text:()=>tourHas()?'Cliquez dans une case, tapez les points, puis Entrée : on passe à l’élève suivant (D = dispensé). Total, pourcentage et niveau se calculent tout seuls.':'Les points se tapent dans la grille élèves × exercices. Il faut d’abord au moins un élève et un exercice.',
+  text:()=>tourHas()?'Cliquez dans une case, tapez les points, puis Entrée : on passe à l’élève suivant (D = dispensé). Total, pourcentage et niveau se calculent tout seuls.':'Les points se tapent dans la grille élèves × exercices. Il faut d’abord au moins un élève et un exercice.',
   ready:tourHas,lock:'Possible dès qu’il y a au moins un élève et un exercice.',
-  pane:'points',target:()=>tourHas()?[...board.querySelectorAll('input.ge-grade[data-p][data-t]')].find(i=>!i.value)||board.querySelector('input.ge-grade[data-p][data-t]'):null,
+  pane:'points',target:()=>tourHas()?[...board.querySelectorAll('.ge-points-sheet td[data-grade-cell]')]:null,
   done:()=>d.students.some(p=>d.tasks.some(t=>![undefined,null,''].includes(d.scores[p.id]?.[t.id])))},
  {key:'enregistrer',more:'Enregistrez maintenant ou plus tard, comme vous voulez.',label:'Enregistrer',title:'Garder votre test',
-  text:()=>'Ouvrez « Fichier » › « Enregistrer le test » : vous obtenez un fichier .json, c’est votre test. Le bilan de la période se fera plus tard avec ces fichiers.',
+  text:()=>'Ouvrez « Fichier » › « Enregistrer le test » : vous obtenez un fichier .json, c’est votre test. Le bilan de la période se fera plus tard avec ces fichiers.',
   ready:()=>d.students.length+d.tasks.length+d.competencies.length>0,lock:'Possible dès que le test contient quelque chose.',
   target:()=>$('.ge-header-actions > .ge-menu > summary'),done:()=>Boolean(tour?.sawFile)||(tourHas()&&!isUnsaved())},
 ];
