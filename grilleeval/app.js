@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.101';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.101';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.101';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.103';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.103';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.103';
 
 const root=document.getElementById('ge-canvas');
 // D1.97 · Pavé numérique tactile (voir plus bas).
@@ -11,7 +11,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.101',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.103',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -108,7 +108,7 @@ window.addEventListener('storage',e=>{if(!d||otherTabWarned||e.key!==COPY_PREFIX
 const BILAN_KEY=STORE_NS+'grilleeval-bilan-v2';let bilanAutosaveTimer=null,bilanHandle=null;
 function readBilanAutosave(){try{const raw=localStorage.getItem(BILAN_KEY);return raw?JSON.parse(raw):null;}catch{return null;}}
 function queueBilanAutosave(){clearTimeout(bilanAutosaveTimer);bilanAutosaveTimer=setTimeout(persistBilan,500);}
-function persistBilan(){clearTimeout(bilanAutosaveTimer);if(!bilanPane)return;try{if(!bilanPane.testCount()){localStorage.removeItem(BILAN_KEY);return;}localStorage.setItem(BILAN_KEY,JSON.stringify({data:bilanPane.exportBilan(),saved:!bilanPane.isDirty()}));}catch{}}
+let bilanStored=true;function persistBilan(){clearTimeout(bilanAutosaveTimer);if(!bilanPane)return;try{if(!bilanPane.testCount()){localStorage.removeItem(BILAN_KEY);bilanStored=true;return;}localStorage.setItem(BILAN_KEY,JSON.stringify({data:bilanPane.exportBilan(),saved:!bilanPane.isDirty()}));bilanStored=true;}catch{bilanStored=false;}}
 // D1.57 · Bilans individuels (PDF) : l’élève choisi dans le bilan, sinon toute la classe.
 async function bilanReports(workspace){
  const data=workspace.reportData();if(!data?.pupils.length){notice('Ajoutez d’abord des tests au bilan.',true);return;}
@@ -145,6 +145,13 @@ function queueViewSave(){clearTimeout(viewTimer);viewTimer=setTimeout(persistCam
 function normalizeActive(){if(!active)return;if(active.p&&!pupil(active.p)||active.t&&!task(active.t)||active.c&&!competency(active.c))active=null;}
 function saveHistory(){history.push(encodeDocument(d));if(history.length>60)history.shift();future=[];}
 function mutation(fn,message,{render=true,shape=false,scoreChange=null}={}){saveHistory();fn();revision++;normalizeActive();if(render)renderBoard();else{syncCounts();updateHistory();updateResults(scoreChange);mark();}if(shape)codeInput.value=d.title;queueSave();if(message)notice(message);}
+// D1.102 · Menu Fichier d’un test encore vide : rien à enregistrer ni à imprimer → ces entrées sont grisées, avec la raison au survol.
+// Enregistrer redevient possible dès qu’il y a un élève, un exercice, une compétence ou un titre ; pages de garde dès qu’il y a
+// des élèves ; vue d’ensemble dès qu’il y a des élèves et des exercices.
+function syncTestMenu(){if(bilanOrigin)return;const any=d.students.length||d.tasks.length||d.competencies.length||(d.title&&d.title!=='Nouvelle évaluation');
+ const set=(a,on,why)=>{const b=$(`[data-action="${a}"]`);if(!b)return;b.disabled=!on;if(on)b.removeAttribute('title');else b.title=why;};
+ set('save',any,'Le test est encore vide.');set('save-as',any,'Le test est encore vide.');
+ set('pages-garde',d.students.length>0,'Ajoutez d’abord des élèves.');set('overview',d.students.length>0&&d.tasks.length>0,'Ajoutez d’abord des élèves et des exercices.');}
 function updateHistory(){const report=bilanOrigin?bilanPane:null;$('[data-action="undo"]').disabled=bilanOrigin?!report?.canUndo():!history.length;$('[data-action="redo"]').disabled=bilanOrigin?!report?.canRedo():!future.length;}
 function undo(redo=false){if(bilanOrigin){if(bilanPane&&(redo?bilanPane.redo():bilanPane.undo()))updateHistory();return;}if(!commitDraft())return;const from=redo?future:history,to=redo?history:future;if(!from.length)return;to.push(encodeDocument(d));d=validate(from.pop());revision++;active=null;draft=null;codeInput.value=d.title;renderBoard();queueSave();notice(redo?'Modification rétablie.':'Dernière modification annulée.');}
 // D1.57 · Identifiant durable d’un élève : il suit l’élève d’un test à l’autre (copie d’un test, liste de classe).
@@ -1369,7 +1376,11 @@ storageRead();mountWorkspace();
 // D1.53 · Quitter la page : la copie de secours est écrite tout de suite, et le navigateur avertit s’il reste des modifications hors fichier.
 // La saisie en cours (valeur valide) est validée avant la copie de secours.
 function flushDraft(){if(draft?.node?.isConnected){try{points(draft.node.value,task(draft.t).maxPoints);commitDraft();}catch{}}try{persist();}catch{}}
-window.addEventListener('beforeunload',e=>{flushDraft();persistBilan();if(d&&(draft?.dirty||isUnsaved())||bilanPane?.isDirty()){e.preventDefault();e.returnValue='';}});
+// D1.103 · Plus de « Quitter la page ? » du navigateur : tout est déjà gardé dans ce navigateur (test, bilan et copie de secours)
+// et revient au prochain lancement. La question ne reste que si cette sauvegarde a échoué (stockage plein ou bloqué).
+window.addEventListener('beforeunload',e=>{flushDraft();if(d&&storageState!=='ok')persist();persistBilan();
+ const testAtRisk=d&&(draft?.dirty||isUnsaved())&&storageState!=='ok',bilanAtRisk=bilanPane?.isDirty()&&!bilanStored;
+ if(testAtRisk||bilanAtRisk){e.preventDefault();e.returnValue='';}});
 window.addEventListener('pagehide',flushDraft);
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&!e.altKey&&e.key.toLowerCase()==='s'){e.preventDefault();if(dialog.open)return;if(bilanOrigin){if(bilanPane)saveBilan(bilanPane,e.shiftKey);}else exportJSON(null,e.shiftKey);}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushDraft();});
@@ -1380,7 +1391,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.101'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.103'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1579,7 +1590,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.101').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.103').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1893,6 +1904,7 @@ function closeBilan(restoreFocus = true) {
   if (restoreFocus) requestAnimationFrame(() => { if (!bilanOrigin) frameStart(); });
 }
 
+$('.ge-header-actions > .ge-menu')?.addEventListener('toggle',e=>{if(e.currentTarget.open)syncTestMenu();});
 const modeTabs = $('.ge-mode-switch');
 modeTabs.addEventListener('click', e=>{
   const tab = e.target.closest('[data-mode-tab]');
