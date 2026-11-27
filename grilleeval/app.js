@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.99';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.99';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.99';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.101';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.101';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.101';
 
 const root=document.getElementById('ge-canvas');
 // D1.97 · Pavé numérique tactile (voir plus bas).
@@ -11,7 +11,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.99',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.101',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -26,7 +26,7 @@ const STATS=TOP&&!DEV&&(()=>{try{return location.hostname==='joelschartz.github.
 const STATS_SKIP=(()=>{try{if(STATS&&location.hash==='#toggle-goatcounter'){const off=localStorage.getItem('skipgc')==='t';if(off)localStorage.removeItem('skipgc');else localStorage.setItem('skipgc','t');history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>notice(off?'Statistiques : ce navigateur est de nouveau compté.':'Statistiques : ce navigateur n’est plus compté.'),1200);}return localStorage.getItem('skipgc')==='t';}catch{return false;}})();
 function countHit(path,title,event=false){if(!STATS||STATS_SKIP)return;try{const q=new URLSearchParams({p:path,t:title,r:'',s:[screen.width,screen.height,devicePixelRatio||1].join(','),b:'0',rnd:Math.random().toString(36).slice(2,8)});if(event)q.set('e','true');const img=new Image();img.referrerPolicy='no-referrer';img.src='https://grilleeval.goatcounter.com/count?'+q;}catch{}}
 if(STATS)setTimeout(()=>countHit('/grilleeval/','GrilleÉval'),800);
-const STAT_TITLES={'test-enregistre':'Test enregistré','bilan-affiche':'Bilan affiché','bilan-enregistre':'Bilan enregistré','pdf-exporte':'PDF exporté','visite-guidee':'Visite guidée'};
+const STAT_TITLES={'test-enregistre':'Test enregistré','bilan-affiche':'Bilan affiché','bilan-enregistre':'Bilan enregistré','pdf-exporte':'PDF exporté','visite-guidee':'Tutoriel'};
 function track(name){countHit(name,STAT_TITLES[name]||name,true);}
 // D1.94 · Combien de personnes ? GoatCounter ne reconnaît un visiteur que 8 heures (empreinte IP + navigateur, sans cookie).
 // Pour compter des personnes différentes sans rien identifier : chaque navigateur envoie une seule fois « Nouvel appareil »,
@@ -1380,7 +1380,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.99'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.101'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1579,7 +1579,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.99').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.101').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
@@ -1669,6 +1669,7 @@ function fitBilanArea(name) {
   toggleMap(false);
   // D1.73 · Même cadrage de travail que dans le test.
   frameRect(bilanPaneRect(name), {zoom:'work', side:z=>bilanSide(name,z)*z});
+  settleBilan(() => { const r = bilanPaneRect(name); if (r) frameRect(r, {zoom:'keep', side:z=>bilanSide(name,z)*z, animate:false}); });
 }
 
 
@@ -1723,23 +1724,36 @@ function pinBilanHeadings() {
   if (bilanLayout.pinY !== y) { table.style.setProperty('--pin-y',y+'px'); bilanLayout.pinY = y; }
 }
 
-function focusBilanArea(name, includeTests = false, zoom = 'keep') {
+function focusBilanArea(name, includeTests = false, zoom = 'keep', align = 'work') {
   if (!bilanPane?.element.isConnected) return;
   if (bilanOverview) fitBilan();
   measureBilan();
   toggleMap(false);
-  let rect = bilanPaneRect(name);
-  if (!rect || !rect.w) return;
   // Résultats : avec la liste des tests à gauche quand l’ensemble tient à l’écran au zoom de travail.
-  const left = bilanLayout.areas.tests;
-  if (includeTests && name === 'results' && left) {
-    const both = {x:left.x, y:Math.min(left.y,rect.y), w:rect.x+rect.w-left.x, h:Math.max(left.y+left.h,rect.y+rect.h)-Math.min(left.y,rect.y)};
-    const z = view.zoom >= CAM.workMin && view.zoom <= CAM.keepMax ? view.zoom : workZoom(both);
-    if ((rect.x - left.x + Math.min(620, rect.w)) * z + 2*CAM.margin <= vp.clientWidth) rect = {...rect, x:left.x, w:rect.x+rect.w-left.x};
-  }
+  const area = () => {
+    let rect = bilanPaneRect(name);
+    if (!rect || !rect.w) return null;
+    const left = bilanLayout.areas.tests;
+    if (includeTests && name === 'results' && left) {
+      const both = {x:left.x, y:Math.min(left.y,rect.y), w:rect.x+rect.w-left.x, h:Math.max(left.y+left.h,rect.y+rect.h)-Math.min(left.y,rect.y)};
+      const z = zoom === 'work' ? workZoom(both) : view.zoom >= CAM.workMin && view.zoom <= CAM.keepMax ? view.zoom : workZoom(both);
+      if ((rect.x - left.x + Math.min(620, rect.w)) * z + 2*CAM.margin <= vp.clientWidth) rect = align === 'centre' ? both : {...rect, x:left.x, w:rect.x+rect.w-left.x};
+    }
+    return rect;
+  };
+  const rect = area();
+  if (!rect) return;
   // D1.73 · Comme un titre de volet du test.
-  frameRect(rect, {zoom, side:z=>bilanSide(name,z)*z});
+  frameRect(rect, {zoom, align, side:z=>bilanSide(name,z)*z});
+  settleBilan(() => { const r = area(); if (r) frameRect(r, {zoom:'keep', align, side:z=>bilanSide(name,z)*z, animate:false}); });
 }
+// D1.100 · Dans le bilan, quelques éléments gardent une taille fixe à l’écran : après un changement de zoom, la mise en page
+// bouge de quelques pixels. Une fois l’animation finie, on remesure et on corrige (sans animation) pour tomber pile sur la marge.
+let settleTimer = 0;
+function settleBilan(again) { clearTimeout(settleTimer); settleTimer = setTimeout(() => { if (!bilanOrigin || !bilanPane?.element.isConnected) return; measureBilan(); again(); }, CAM.ms + 60); }
+// D1.100 · Vue de départ du bilan, comme celle du test : liste des tests + résultats, zoom de travail (70–100 %), centrée si
+// l’ensemble tient à l’écran. Sert à l’ouverture, au premier chargement, à « Ouvrir un bilan » et au logo.
+function bilanStartView() { focusBilanArea('results', true, 'work', 'centre'); }
 
 // D1.63 · Après le choix d’un élève : la vue reste ; si le tableau des résultats est sorti de l’écran (il devient plus étroit), on le ramène juste assez.
 function keepBilanResults(){
@@ -1769,8 +1783,8 @@ function revealBilanResults(reason) {
     schedule(true);
     return;
   }
-  if (bilanWasEmpty) { bilanWasEmpty = false; return focusBilanArea('results', true, 'work'); }
-  if (reason === 'open' || reason === 'opened') focusBilanArea('results', true);
+  if (bilanWasEmpty) { bilanWasEmpty = false; return bilanStartView(); }
+  if (reason === 'open' || reason === 'opened') bilanStartView();
 }
 
 function fitBilan() {
@@ -1907,7 +1921,7 @@ root.addEventListener('click', e=>{
   const frame = e.target.closest('[data-bilan-frame]');
   if (frame) return fitBilanArea(frame.dataset.bilanFrame);
   const target = e.target.closest('[data-bilan-target]');
-  if (target) focusBilanArea(target.dataset.bilanTarget === 'chart' ? 'results' : target.dataset.bilanTarget);
+  if (target) focusBilanArea(target.dataset.bilanTarget);// D1.100 · « chart » va au graphique lui-même, comme son icône de cadrage
 });
 // D1.52 · Un clic hors d’un champ du bilan (coefficient, recherche) quitte le champ, comme la saisie des points.
 vp.addEventListener('pointerdown', e=>{
@@ -1977,34 +1991,34 @@ let tour=null;
 const tourSheet=()=>board.querySelector('.ge-points-sheet');
 const TOUR_STEPS=[
  {label:'Plein écran',title:'D’abord : plein écran',fullscreen:true,
-  text:'Cliquez sur ce bouton : GrilleÉval prend tout l’écran et la grille a toute la place. Échap pour en sortir. Ensuite, la visite ne fait que montrer.',
+  text:'Touchez ou cliquez sur ce bouton : GrilleÉval occupe tout l’écran et la grille dispose de toute la place. Le même bouton, ou Échap, permet d’en sortir. Ensuite, le tutoriel vous montre simplement où se trouve chaque chose.',
   target:()=>$('[data-action="fullscreen"]')},
  {label:'Infos',title:'Le test en bref',
-  text:'En haut à gauche, le titre du test. Un clic ouvre ses informations : titre, date, matière, cycle, durée. Elles figurent aussi sur les pages de garde.',
+  text:'En haut à gauche, le titre du test. Un clic ouvre ses informations : titre, date, matière, cycle et durée, ainsi que l’enseignant, l’école et les observations. Ces informations figurent sur les pages de garde.',
   target:()=>$('.ge-document-button')},
  {label:'Élèves',title:'Les élèves',pane:'points',
-  text:'La colonne des élèves. « + Élève » ou un clic sur une ligne : un nom par ligne, ou toute une liste collée depuis un tableur.',
+  text:'La colonne des élèves. « + Élève » ouvre la saisie : un nom par ligne, ou toute une liste copiée depuis un tableur. « Depuis un fichier… » importe une liste.',
   target:()=>{const sh=tourSheet();return sh?[sh.querySelectorAll('thead tr')[1]?.firstElementChild,...sh.querySelectorAll('tbody tr:not(.ge-class-summary) > th:first-child')]:null;}},
  {label:'Exercices',title:'Les exercices',pane:'points',
-  text:'Les exercices du test, en colonnes. « + Exercice » : un titre court et le maximum de points. Un clic sur un exercice le modifie.',
+  text:'Les exercices du test, en colonnes. « + Exercice » : un intitulé court et le nombre de points maximum. Un clic sur un exercice permet de le modifier.',
   target:()=>{const sh=tourSheet();if(!sh)return null;const rows=sh.querySelectorAll('thead tr');return [rows[0]?.children[1],...(rows[1]?.querySelectorAll(':scope > th[data-column], :scope > th.ge-ghost-col')||[])];}},
  {label:'Compétences',title:'Les compétences',pane:'competencies',
-  text:'Les compétences évaluées. Le catalogue du plan d’études se filtre à gauche par matière, cycle ou mot-clé ; cochez le rond devant une compétence pour la retenir. « + Compétence » pour en écrire une à vous.',
+  text:'Les compétences évaluées, tirées du plan d’études. À gauche, le catalogue se filtre par matière, cycle ou mot-clé ; cochez le rond devant une compétence pour la retenir. « + Compétence » permet d’en formuler une vous-même.',
   target:()=>[catalogueUsedOnly?null:filterPanel,board.querySelector('.ge-competencies-sheet [data-group-header="competencies"] > th'),...board.querySelectorAll('[data-catalogue-group], [data-edit-competency]')].filter(Boolean)},
  {label:'Liens',title:'Relier exercices et compétences',pane:'associations',
-  text:'Ici se croisent exercices et compétences. Une case cochée : l’exercice compte pour cette compétence. Les résultats par compétence et par élève suivent à droite.',
+  text:'Ici se croisent exercices et compétences. Cochez une case : l’exercice compte alors pour cette compétence. À droite, les résultats par compétence et par élève.',
   target:()=>{const head=board.querySelector('[data-association-heading]'),cells=[...board.querySelectorAll('input[data-c][data-t], input[data-catalogue-link][data-t]')].map(i=>i.closest('td')||i);
    // Test encore vide : pas de cases, on montre quand même tout le champ, jusqu’au bas du volet.
    const sheet=board.querySelector('.ge-competencies-sheet'),foot=head&&sheet&&!cells.length?{getBoundingClientRect:()=>{const h=head.getBoundingClientRect(),b=sheet.getBoundingClientRect();return {left:h.left,right:h.right,top:b.bottom-1,bottom:b.bottom,width:h.width,height:1};}}:null;
    return [head,...cells,foot].filter(Boolean);}},
  {label:'Points',title:'Les points',pane:'points',
-  text:'Après le test, tapez les points dans la grille puis Entrée : on passe à l’élève suivant. D = dispensé. Total, pourcentage et niveau se calculent à droite, selon le barème.',
+  text:'Après le test, saisissez les points dans la grille ; Entrée passe à l’élève suivant, D signifie « dispensé ». Le total, le pourcentage et le niveau se calculent à droite, selon le barème.',
   target:()=>{const sh=tourSheet();return sh?[...sh.querySelectorAll('td[data-grade-cell], td.ge-ghost-cell')]:null;}},
  {label:'Enregistrer',title:'Enregistrer',
-  text:'« Fichier › Enregistrer le test » crée un fichier .json sur votre ordinateur : c’est votre test. Une copie de secours reste aussi dans ce navigateur.',
+  text:'« Fichier › Enregistrer le test » crée un fichier .json sur votre appareil : c’est votre test. Une copie de secours reste aussi dans ce navigateur.',
   target:()=>$('.ge-header-actions > .ge-menu > summary')},
  {label:'Bilan',title:'Le bilan de la période',
-  text:'« Bilan des compétences » regroupe vos tests enregistrés : les résultats par élève et par compétence, et les bilans individuels en PDF.',
+  text:'Le « Bilan des compétences » regroupe les tests enregistrés d’une période : résultats par élève et par compétence, et bilans individuels en PDF.',
   target:()=>$('[data-mode-tab="bilan"]')},
 ];
 function tourUI(){let el=document.querySelector('.ge-tour');if(el)return el;el=document.createElement('div');el.className='ge-tour';
@@ -2035,7 +2049,7 @@ document.addEventListener('fullscreenchange',()=>{if(!tour)return;requestAnimati
 function tourTip(e,delay){const ui=document.querySelector('.ge-tour');if(!ui||!tour)return;let tip=ui.querySelector('.ge-tour-tip');clearTimeout(tour.tipTimer);
  if(tip)tip.classList.remove('ge-on');if(!e)return;const x=e.clientX,y=e.clientY;
  tour.tipTimer=setTimeout(()=>{if(!tour)return;if(!tip){tip=document.createElement('div');tip.className='ge-tour-tip';tip.setAttribute('role','status');ui.append(tip);}
-  tip.textContent=tour.i>=TOUR_STEPS.length-1?'Visite guidée : « Terminer » pour revenir à l’application.':'Visite guidée : cliquez sur « Suivant » pour continuer.';
+  tip.textContent=tour.i>=TOUR_STEPS.length-1?'Tutoriel : « Terminer » pour revenir à l’application.':'Tutoriel : cliquez sur « Suivant » pour continuer.';
   const W=globalThis.innerWidth||1000,H=globalThis.innerHeight||700,w=tip.offsetWidth||260,h=tip.offsetHeight||30;
   tip.style.left=Math.min(x+16,W-w-8)+'px';tip.style.top=(y+h+22>H?y-h-12:y+20)+'px';tip.classList.add('ge-on');},delay);}
 // Une zone hors écran : on fait glisser la vue juste assez, sans changer le zoom (pas de recadrage qui saute).
@@ -2084,7 +2098,7 @@ document.addEventListener('keydown',e=>{if(!tour||dialog.open||document.querySel
  else if(e.key==='ArrowLeft'&&tour.i>0){e.preventDefault();tourShow(tour.i-1);}},true);
 // Invitation unique au premier lancement.
 function hideTourInvite(){document.querySelector('.ge-tour-invite')?.remove();}
-function showTourInvite(){if(document.querySelector('.ge-tour-invite'))return;const el=document.createElement('section');el.className='ge-tour-invite';el.setAttribute('aria-label','Visite guidée');
- el.innerHTML='<p><b>Découvrir GrilleÉval en 1 minute</b><span>Une courte visite : où remplir quoi.</span></p><div><button type="button" class="ge-button" data-invite-later>Plus tard</button><button type="button" class="ge-button ge-primary" data-invite-start>Commencer</button></div>';
+function showTourInvite(){if(document.querySelector('.ge-tour-invite'))return;const el=document.createElement('section');el.className='ge-tour-invite';el.setAttribute('aria-label','Tutoriel');
+ el.innerHTML='<p><b>Découvrir GrilleÉval en 1 minute</b><span>Un court tutoriel : où saisir chaque information.</span></p><div><button type="button" class="ge-button" data-invite-later>Plus tard</button><button type="button" class="ge-button ge-primary" data-invite-start>Commencer</button></div>';
  el.addEventListener('click',e=>{if(e.target.closest('[data-invite-start]'))startTour();else if(e.target.closest('[data-invite-later]')){try{localStorage.setItem(TOUR_KEY,'later');}catch{}hideTourInvite();}});root.append(el);}
 if(FIRST_VISIT&&TOP)setTimeout(()=>{if(!tour&&!dialog.open)showTourInvite();},1400);
