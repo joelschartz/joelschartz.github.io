@@ -4,7 +4,7 @@
 // points (A4 = 595,28 × 841,89), `drawPDF` la dessine avec jsPDF et `toSVG` l'affiche
 // dans l'aperçu. L'aperçu montre donc exactement la page qui sort de l'imprimante.
 // Les mesures de texte viennent toujours de jsPDF (Helvetica), jamais du navigateur.
-import {pupilResult,competencyResult,competencyMeta,LEVEL_COLOURS,levelColour} from './model.mjs?v=D1.97';
+import {pupilResult,competencyResult,competencyMeta,LEVEL_COLOURS,levelColour} from './model.mjs?v=D1.98';
 
 export const A4={w:595.28,h:841.89};
 const RAND=36,STUFE=38,KOPF=64,KOPF_PLATZ=KOPF-10;
