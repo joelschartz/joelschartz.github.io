@@ -1,14 +1,17 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.96';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.96';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.96';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.97';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.97';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.97';
 
 const root=document.getElementById('ge-canvas');
+// D1.97 · Pavé numérique tactile (voir plus bas).
+const TOUCH_PAD=Boolean(globalThis.matchMedia?.('(pointer: coarse)')?.matches);let numpadOff=false;
+function numpadOn(){return TOUCH_PAD&&!numpadOff;}
 const $=s=>root.querySelector(s);
 const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),stage=$('[data-stage]'),board=$('[data-board]');
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.96',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.97',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -166,7 +169,7 @@ function primaryHeads(){return transposed?d.students.map((p,i)=>pupilHead(p,i)).
 function associationHeaders(){const cols=transposed?layout().secondary:layout().primary;return `<div class="ge-association-head-group ge-lower-head-group" data-task-head-group style="width:${cols*COL}px"><div class="ge-assessment-title">${paneHeading('associations','Exercices associés',null,d.tasks.length<3?'Liens':'Exercices associés')}<button type="button" class="ge-link-button ge-pane-link" data-jump="assessment" aria-label="Voir les compétences par élève" title="Rejoindre les compétences par élève sans changer le zoom">Voir par élève</button></div><div class="ge-association-names">${d.tasks.map((t,i)=>taskHead(t,i)).join('')||(transposed?'<span class="ge-no-tasks">Aucun exercice</span>':Array.from({length:GHOST_TASKS},(_,i)=>ghostTaskHead(i)).join(''))}</div></div>`;}
 function lowerHeads(){return transposed?assessmentHeaders()+associationHeaders():associationHeaders()+assessmentHeaders();}
 
-function scoreCell(p,t){return `<td data-column="${esc(t.id)}" data-pupil-column="${esc(p.id)}" data-grade-cell="${esc(key(p.id,t.id))}"><input class="ge-grade${d.scores[p.id]?.[t.id]==='D'?' ge-dispensed':''}" type="text" inputmode="decimal" data-p="${esc(p.id)}" data-t="${esc(t.id)}" value="${format(d.scores[p.id]?.[t.id])}" placeholder="·" autocomplete="off" aria-label="${esc(p.name+' · '+t.title+' / '+format(t.maxPoints))}"></td>`;}
+function scoreCell(p,t){return `<td data-column="${esc(t.id)}" data-pupil-column="${esc(p.id)}" data-grade-cell="${esc(key(p.id,t.id))}"><input class="ge-grade${d.scores[p.id]?.[t.id]==='D'?' ge-dispensed':''}" type="text" inputmode="${numpadOn()?'none':'decimal'}" data-p="${esc(p.id)}" data-t="${esc(t.id)}" value="${format(d.scores[p.id]?.[t.id])}" placeholder="·" autocomplete="off" aria-label="${esc(p.name+' · '+t.title+' / '+format(t.maxPoints))}"></td>`;}
 // Before both axes exist, the canvas shows a useful preparation sheet instead
 // of squeezed, empty matrices. The established grid takes over automatically.
 function needsSetup(){return false;}
@@ -539,7 +542,7 @@ root.addEventListener('focusin',event=>{if(!bilanOrigin&&active&&!event.target.m
 document.addEventListener('click',event=>{if(!bilanOrigin&&!root.contains(event.target)&&!event.composedPath().includes(root))clearGridFocus();});
 function updateContext(){}
 // D1.40 · Dans la feuille des points, seule la colonne des élèves épinglée compte (pas celle des compétences) : sinon chaque Entrée décalait la vue.
-function reveal(node){if(bilanOrigin||!node||!node.isConnected)return;updatePins();const r=node.getBoundingClientRect(),v=vp.getBoundingClientRect(),lower=Boolean(node.closest('.ge-competencies-sheet'));const left=v.left+((lower?lastPinned.showLabels:lastPinned.upperLabels)?(lastPinned.edge||pinnedWidth()*view.zoom):0)+10,top=v.top+(lastPinned.showHeader?(lastPinned.group?.kind==='students'?geometry.studentHeaderHeight+34:LOWER_HEAD)*view.zoom:0)+10;let dx=0,dy=0;if(r.left<left)dx=r.left-left;else{const right=v.left+vp.clientWidth-0-15;if(r.right>right)dx=r.right-right;}if(r.top<top)dy=r.top-top;else if(r.bottom>v.top+vp.clientHeight-15)dy=r.bottom-(v.top+vp.clientHeight-15);for(const overlay of [$('[data-map]'),$('.ge-zoom')]){if(!overlay||overlay.hasAttribute('data-map')&&$('[data-map-navigate]').hidden)continue;const q=overlay.getBoundingClientRect();if(q.width>0&&q.height>0&&r.right>q.left&&r.bottom>q.top&&r.left<q.right&&r.top<q.bottom)dy=Math.max(dy,r.bottom-q.top+14);}vp.scrollLeft+=dx;vp.scrollTop+=dy;rememberCamera();schedule();}
+function reveal(node){if(bilanOrigin||!node||!node.isConnected)return;updatePins();const r=node.getBoundingClientRect(),v=vp.getBoundingClientRect(),lower=Boolean(node.closest('.ge-competencies-sheet'));const left=v.left+((lower?lastPinned.showLabels:lastPinned.upperLabels)?(lastPinned.edge||pinnedWidth()*view.zoom):0)+10,top=v.top+(lastPinned.showHeader?(lastPinned.group?.kind==='students'?geometry.studentHeaderHeight+34:LOWER_HEAD)*view.zoom:0)+10;let dx=0,dy=0;if(r.left<left)dx=r.left-left;else{const right=v.left+vp.clientWidth-0-15;if(r.right>right)dx=r.right-right;}if(r.top<top)dy=r.top-top;else if(r.bottom>v.top+vp.clientHeight-15)dy=r.bottom-(v.top+vp.clientHeight-15);for(const overlay of [$('[data-map]'),$('.ge-zoom'),$('.ge-numpad')]){if(!overlay||overlay.hidden||overlay.hasAttribute('data-map')&&$('[data-map-navigate]').hidden)continue;const q=overlay.getBoundingClientRect();if(q.width>0&&q.height>0&&r.right>q.left&&r.bottom>q.top&&r.left<q.right&&r.top<q.bottom)dy=Math.max(dy,r.bottom-q.top+14);}vp.scrollLeft+=dx;vp.scrollTop+=dy;rememberCamera();schedule();}
 function focusGrade(p,t){const e=gradeNodes.get(key(p,t));if(!e)return;if(draft?.node!==e&&!commitDraft())return;if(view.zoom<.55)zoomTo(1);e.focus({preventScroll:true});if(!draft||draft.node!==e)beginGrade(e);e.select();schedule();requestAnimationFrame(()=>{updatePins();reveal(e);});}
 function beginGrade(e){if(draft?.node!==e&&!commitDraft())return false;active={p:e.dataset.p,t:e.dataset.t};if(draft?.node!==e)draft={node:e,p:e.dataset.p,t:e.dataset.t,dirty:false};e.classList.add('ge-editing');selectAllNode=e;e.select();if(view.zoom<.55&&!restoringGridCell){zoomTo(1);requestAnimationFrame(()=>reveal(e));}mark();return true;}
 function updateTotal(pid,preview){const node=totalNodes.get(pid);if(!node)return;let n=total(d,pid),complete=filled(d,pid)===d.tasks.length;if(preview){const num=v=>typeof v==='number'?v:0;n=n-num(d.scores[pid]?.[preview.t])+num(preview.value);complete=d.tasks.every(t=>t.id===preview.t?preview.value!==null:d.scores[pid]?.[t.id]!=null);}node.textContent=format(n)+(complete?'':'*');}
@@ -818,6 +821,29 @@ board.addEventListener('keydown',event=>{const e=event.target;if(!e.matches('inp
  event.preventDefault();if(r<0||r>=rows||c<0||c>=cols)return;
  const P=d.students[transposed?c:r],T=d.tasks[transposed?r:c];if(P&&T)focusGrade(P.id,T.id);});
 board.addEventListener('focusin',()=>schedule());board.addEventListener('focusout',()=>schedule());
+// ── D1.97 · Pavé numérique compact sur iPad et écrans tactiles ─────────────────────────────────────────────────────
+// Le grand clavier du système cachait la moitié de la grille. Comme dans l’ancienne app iPad : un petit pavé en bas à droite,
+// chiffres, virgule, D (dispensé), effacer, Tab (exercice suivant) et Entrée (élève suivant). Le clavier du système ne s’ouvre
+// plus pour les cases de points. Dès qu’un vrai clavier sert (touche physique), le pavé disparaît pour la séance.
+const numpad=document.createElement('div');numpad.className='ge-numpad';numpad.hidden=true;numpad.setAttribute('role','group');numpad.setAttribute('aria-label','Pavé numérique');
+numpad.innerHTML=[['7','7'],['8','8'],['9','9'],['back','⌫','Effacer'],['4','4'],['5','5'],['6','6'],['D','D','Dispensé'],['1','1'],['2','2'],['3','3'],['tab','⇥','Exercice suivant (Tab)'],['close','✕','Terminer la saisie'],['0','0'],[',',','],['enter','⏎','Élève suivant (Entrée)']]
+ .map(([k,label,title])=>`<button type="button" tabindex="-1" data-k="${k}"${title?` aria-label="${title}" title="${title}"`:''} class="${k==='enter'?'ge-numpad-enter':/^[0-9,]$/.test(k)?'':'ge-numpad-fn'}">${label}</button>`).join('');
+root.append(numpad);
+// La case garde le focus : les touches agissent dès l’appui (pointerdown) et ne prennent jamais le focus.
+for(const type of ['mousedown','touchstart','click'])numpad.addEventListener(type,e=>e.preventDefault(),{passive:false});
+numpad.addEventListener('pointerdown',e=>{e.preventDefault();const b=e.target.closest('[data-k]'),i=document.activeElement;if(!b||!i?.matches?.('input.ge-grade'))return;const k=b.dataset.k;
+ if(k==='enter'||k==='tab'){i.dispatchEvent(new KeyboardEvent('keydown',{key:k==='enter'?'Enter':'Tab',bubbles:true,cancelable:true}));return;}
+ if(k==='close'){if(commitDraft()){i.blur();hideNumpad();}return;}
+ const a=i.selectionStart??i.value.length,z=i.selectionEnd??a;
+ if(k==='back'){if(a!==z)i.setRangeText('',a,z,'end');else if(a>0)i.setRangeText('',a-1,a,'end');}
+ else i.setRangeText(k,a,z,'end');
+ i.dispatchEvent(new Event('input',{bubbles:true}));});
+function hideNumpad(){numpad.hidden=true;root.classList.remove('ge-numpad-on');}
+board.addEventListener('focusin',e=>{if(numpadOn()&&e.target.matches?.('input.ge-grade')){numpad.hidden=false;root.classList.add('ge-numpad-on');}});
+board.addEventListener('focusout',()=>setTimeout(()=>{if(!document.activeElement?.matches?.('input.ge-grade'))hideNumpad();},0));
+board.addEventListener('keydown',e=>{if(!numpadOn()||!e.isTrusted||!e.target.matches?.('input.ge-grade'))return;
+ // Une vraie touche : clavier externe branché → retour au clavier normal.
+ numpadOff=true;hideNumpad();board.querySelectorAll('input.ge-grade').forEach(n=>n.inputMode='decimal');},true);
 vp.addEventListener('scroll',()=>{if(scrollSettling)deferAutomaticResults();cameraDirty=true;schedule();},{passive:true});
 vp.addEventListener('scrollend',event=>{if(event.target===vp)finishAutomaticResultsScroll();},{passive:true});
 surface.addEventListener('wheel',event=>{if(event.target.closest('.ge-menu-panel,.ge-descriptor-tooltip'))return;if(event.ctrlKey||event.metaKey){wheelZooming=true;clearTimeout(wheelZoomTimer);wheelZoomTimer=setTimeout(()=>{wheelZooming=false;schedule();},180);event.preventDefault();const r=vp.getBoundingClientRect();zoomTo(view.zoom*Math.exp(-event.deltaY*.006),{x:event.clientX-r.left,y:event.clientY-r.top});}else{if(!bilanOrigin)deferAutomaticResults();if(event.shiftKey&&Math.abs(event.deltaX)<1){event.preventDefault();vp.scrollLeft+=event.deltaY;schedule();}}},{passive:false});
@@ -1342,7 +1368,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.96'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.97'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1541,7 +1567,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.96').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.97').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),

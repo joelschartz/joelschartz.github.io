@@ -2669,3 +2669,11 @@
 #ge-canvas .ge-bilan-start .ge-bilan-drop{margin-top:12px}
 #ge-canvas .ge-bilan-open-saved{display:block;margin:10px auto 0;padding:0;font-size:12.5px}
 #ge-canvas .ge-bilan-head [data-bilan-pick][hidden]{display:none}
+/* D1.97 · pavé numérique compact (iPad / tactile) */
+#ge-canvas .ge-numpad{position:fixed;right:16px;bottom:76px;z-index:40;display:grid;grid-template-columns:repeat(4,58px);gap:6px;padding:8px;border-radius:18px;background:color-mix(in srgb,var(--paper) 88%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 10px 34px rgba(15,20,35,.22),0 0 0 1px var(--line);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#ge-canvas .ge-numpad[hidden]{display:none}
+#ge-canvas .ge-numpad button{height:50px;border:0;border-radius:12px;background:var(--soft);color:var(--ink);font:inherit;font-size:21px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#ge-canvas .ge-numpad button:active{background:color-mix(in srgb,var(--accent) 18%,var(--soft))}
+#ge-canvas .ge-numpad .ge-numpad-fn{font-size:17px;color:var(--ink-soft);background:color-mix(in srgb,var(--soft) 60%,var(--line))}
+#ge-canvas .ge-numpad .ge-numpad-enter{background:var(--accent);color:#fff}
+#ge-canvas .ge-numpad .ge-numpad-enter:active{background:color-mix(in srgb,var(--accent) 80%,#000)}

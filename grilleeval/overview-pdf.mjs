@@ -1,8 +1,8 @@
 // D1.57 · Vue d’ensemble du test en PDF (A4 paysage) : points de la classe, puis compétences par élève.
 // Une seule fonction, sans état : buildOverviewPDF(jsPDF, d, {fonts}) → Blob.
 // Les noms et titres passent par la police Unicode quand elle est fournie (sinon Helvetica, texte simplifié).
-import {pupilResult,competencyResult,resultStats,levelColour,format} from './model.mjs?v=D1.96';
-import {pdfSafe,useUnicodeFont,frenchDate} from './pages-garde.mjs?v=D1.96';
+import {pupilResult,competencyResult,resultStats,levelColour,format} from './model.mjs?v=D1.97';
+import {pdfSafe,useUnicodeFont,frenchDate} from './pages-garde.mjs?v=D1.97';
 
 const P={w:841.89,h:595.28},M=28;
 const C={ink:'#1d1d1f',muted:'#6b6b73',line:'#c9c9d2',head:'#f2f3f7',zebra:'#fafafc',accent:'#3b49c4'};
