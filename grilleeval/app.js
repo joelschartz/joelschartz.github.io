@@ -1,6 +1,6 @@
-import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.98';
-import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.98';
-import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.98';
+import {autoResultsState,paneTitleOffset,descriptorColumnWidth,stickyDescriptor,LIMIT,format,text,points,capacity,parseCode,counts,countText,makeCode,seed,mathDemo,emptyDocument,clone,validate,total,possible,filled,linked,removeTask,toCSV,pasteBlock,pinState,DEMO_CATALOGUE,DEFAULT_GRADING,LEVEL_SCALE_GRADING,LEVEL_COLOURS,LEVEL_SWATCHES,MAX_GRADING_LEVELS,levelColour,addGradingInterval,appendGradingLevel,moveGradingLevel,removeGradingInterval,validateGrading,validateCatalogue,levelFor,pupilResult,competencyResult,resultStats,catalogueSelection,thresholdAt,PLAN_CATALOGUE,PLAN_INFO,cycleRoot,subjectName,matchesCompetency,competencyMeta,encodeDocument,upgradeCatalogue,refreshDefaultDemo} from './model.mjs?v=D1.99';
+import {layoutPage as layoutGarde,toSVG as gardeSVG,buildPDF as buildGardePDF,fileName as gardeFileName,proposal as gardeProposal,needsUnicode,useUnicodeFont} from './pages-garde.mjs?v=D1.99';
+import {PLAN_ONLINE,PLAN_LINKS} from './plan-links.mjs?v=D1.99';
 
 const root=document.getElementById('ge-canvas');
 // D1.97 · Pavé numérique tactile (voir plus bas).
@@ -11,7 +11,7 @@ const vp=$('[data-viewport]'),surface=$('.ge-surface'),world=$('[data-world]'),s
 const headPin=$('[data-pin-head]'),headInner=$('[data-pin-head-inner]'),labelsPin=$('[data-pin-labels]'),cornerPin=$('[data-pin-corner]');
 const dialog=$('[data-dialog]'),codeInput=$('[data-document-title]'),fileInput=$('[data-file]');
 // D1.53 · Version web : mêmes fichiers sur claude.ai (dans un cadre) et sur un hébergement propre (GitHub Pages).
-const APP_VERSION='D1.98',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+const APP_VERSION='D1.99',PLAN_PDF='https://www.script.lu/sites/default/files/2026-02/Plan%20d%27etudes%20-%20Enseignement%20fondamental%20%282026%29.pdf',JSPDF_CDN='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
 const TOP=(()=>{try{return window.top===window;}catch{return false;}})();
 // D1.59 · Version de développement sur GitHub (/grilleeval-dev/) : même adresse que la version des collègues, donc stockage séparé.
 const DEV=(()=>{try{return /\/grilleeval-dev\//.test(location.pathname);}catch{return false;}})(),STORE_NS=DEV?'dev:':'';
@@ -543,8 +543,8 @@ document.addEventListener('click',event=>{if(!bilanOrigin&&!root.contains(event.
 function updateContext(){}
 // D1.40 · Dans la feuille des points, seule la colonne des élèves épinglée compte (pas celle des compétences) : sinon chaque Entrée décalait la vue.
 function reveal(node){if(bilanOrigin||!node||!node.isConnected)return;updatePins();const r=node.getBoundingClientRect(),v=vp.getBoundingClientRect(),lower=Boolean(node.closest('.ge-competencies-sheet'));const left=v.left+((lower?lastPinned.showLabels:lastPinned.upperLabels)?(lastPinned.edge||pinnedWidth()*view.zoom):0)+10,top=v.top+(lastPinned.showHeader?(lastPinned.group?.kind==='students'?geometry.studentHeaderHeight+34:LOWER_HEAD)*view.zoom:0)+10;let dx=0,dy=0;if(r.left<left)dx=r.left-left;else{const right=v.left+vp.clientWidth-0-15;if(r.right>right)dx=r.right-right;}if(r.top<top)dy=r.top-top;else if(r.bottom>v.top+vp.clientHeight-15)dy=r.bottom-(v.top+vp.clientHeight-15);for(const overlay of [$('[data-map]'),$('.ge-zoom'),$('.ge-numpad')]){if(!overlay||overlay.hidden||overlay.hasAttribute('data-map')&&$('[data-map-navigate]').hidden)continue;const q=overlay.getBoundingClientRect();if(q.width>0&&q.height>0&&r.right>q.left&&r.bottom>q.top&&r.left<q.right&&r.top<q.bottom)dy=Math.max(dy,r.bottom-q.top+14);}vp.scrollLeft+=dx;vp.scrollTop+=dy;rememberCamera();schedule();}
-function focusGrade(p,t){const e=gradeNodes.get(key(p,t));if(!e)return;if(draft?.node!==e&&!commitDraft())return;if(view.zoom<.55)zoomTo(1);e.focus({preventScroll:true});if(!draft||draft.node!==e)beginGrade(e);e.select();schedule();requestAnimationFrame(()=>{updatePins();reveal(e);});}
-function beginGrade(e){if(draft?.node!==e&&!commitDraft())return false;active={p:e.dataset.p,t:e.dataset.t};if(draft?.node!==e)draft={node:e,p:e.dataset.p,t:e.dataset.t,dirty:false};e.classList.add('ge-editing');selectAllNode=e;e.select();if(view.zoom<.55&&!restoringGridCell){zoomTo(1);requestAnimationFrame(()=>reveal(e));}mark();return true;}
+function focusGrade(p,t){const e=gradeNodes.get(key(p,t));if(!e)return;if(draft?.node!==e&&!commitDraft())return;if(view.zoom<.55)zoomTo(1);if(numpadOn())return padSelect(e);e.focus({preventScroll:true});if(!draft||draft.node!==e)beginGrade(e);e.select();schedule();requestAnimationFrame(()=>{updatePins();reveal(e);});}
+function beginGrade(e){if(draft?.node!==e&&!commitDraft())return false;active={p:e.dataset.p,t:e.dataset.t};if(draft?.node!==e)draft={node:e,p:e.dataset.p,t:e.dataset.t,dirty:false};e.classList.add('ge-editing');selectAllNode=e;if(!numpadOn())e.select();if(view.zoom<.55&&!restoringGridCell){zoomTo(1);requestAnimationFrame(()=>reveal(e));}mark();return true;}
 function updateTotal(pid,preview){const node=totalNodes.get(pid);if(!node)return;let n=total(d,pid),complete=filled(d,pid)===d.tasks.length;if(preview){const num=v=>typeof v==='number'?v:0;n=n-num(d.scores[pid]?.[preview.t])+num(preview.value);complete=d.tasks.every(t=>t.id===preview.t?preview.value!==null:d.scores[pid]?.[t.id]!=null);}node.textContent=format(n)+(complete?'':'*');}
 function commitDraft(){
  if(!draft)return true;const edit=draft,node=edit.node;if(!node.isConnected){draft=null;return true;}
@@ -831,24 +831,31 @@ const numpad=document.createElement('div');numpad.className='ge-numpad';numpad.h
 numpad.innerHTML=[['7','7'],['8','8'],['9','9'],['back','⌫','Effacer'],['4','4'],['5','5'],['6','6'],['D','D','Dispensé'],['1','1'],['2','2'],['3','3'],['tab','⇥','Exercice suivant (Tab)'],['close','✕','Terminer la saisie'],['0','0'],[',',','],['enter','⏎','Élève suivant (Entrée)']]
  .map(([k,label,title])=>`<button type="button" tabindex="-1" data-k="${k}"${title?` aria-label="${title}" title="${title}"`:''} class="${k==='enter'?'ge-numpad-enter':/^[0-9,]$/.test(k)?'':'ge-numpad-fn'}">${label}</button>`).join('');
 root.append(numpad);
-// La case garde le focus : les touches agissent dès l’appui (pointerdown) et ne prennent jamais le focus.
+// D1.99 · Sur iPad, Safari quitte le plein écran dès qu’un champ de saisie prend le focus — même en lecture seule. Sur tablette,
+// une case de points n’est donc jamais « focalisée » : elle est seulement choisie (cadre bleu) et le pavé écrit dedans.
+// Rien de tout cela ne s’applique à l’ordinateur (numpadOn() est faux avec souris/trackpad).
+let padKey=null,padFresh=false;
+const padCell=()=>padKey?gradeNodes.get(key(padKey.p,padKey.t))||null:null;
+function padSelect(e){const old=padCell();if(old&&old!==e){old.classList.remove('ge-pad-cell');}
+ if(draft?.node!==e&&!commitDraft())return;padKey={p:e.dataset.p,t:e.dataset.t};padFresh=true;
+ if(!draft||draft.node!==e)beginGrade(e);e.classList.add('ge-pad-cell');lastGridCell={p:e.dataset.p,t:e.dataset.t};
+ numpad.hidden=false;root.classList.add('ge-numpad-on');schedule();requestAnimationFrame(()=>{updatePins();reveal(e);});}
+function padRelease(){const c=padCell();c?.classList.remove('ge-pad-cell','ge-editing');padKey=null;hideNumpad();}
 for(const type of ['mousedown','touchstart','click'])numpad.addEventListener(type,e=>e.preventDefault(),{passive:false});
-numpad.addEventListener('pointerdown',e=>{e.preventDefault();const b=e.target.closest('[data-k]'),i=document.activeElement;if(!b||!i?.matches?.('input.ge-grade'))return;const k=b.dataset.k;
- if(k==='enter'||k==='tab'){i.dispatchEvent(new KeyboardEvent('keydown',{key:k==='enter'?'Enter':'Tab',bubbles:true,cancelable:true}));return;}
- if(k==='close'){if(commitDraft()){i.blur();hideNumpad();}return;}
- // Les cases sont en lecture seule sur tablette (D1.98 : sinon Safari iPad quitte le plein écran dès qu’un champ prend le focus) :
- // le pavé écrit donc lui-même la valeur.
- const v=i.value,a=i.selectionStart??v.length,z=i.selectionEnd??a;let nv=v,pos=a;
- if(k==='back'){if(a!==z)nv=v.slice(0,a)+v.slice(z);else if(a>0){nv=v.slice(0,a-1)+v.slice(a);pos=a-1;}}
- else{nv=v.slice(0,a)+k+v.slice(z);pos=a+1;}
- i.value=nv;try{i.setSelectionRange(pos,pos);}catch{}
- i.dispatchEvent(new Event('input',{bubbles:true}));});
+numpad.addEventListener('pointerdown',e=>{e.preventDefault();const b=e.target.closest('[data-k]'),i=padCell();if(!b||!i)return;const k=b.dataset.k;
+ if(k==='enter'||k==='tab'){i.dispatchEvent(new KeyboardEvent('keydown',{key:k==='enter'?'Enter':'Tab',bubbles:true,cancelable:true}));if(active==null)padRelease();return;}
+ if(k==='close'){if(commitDraft())padRelease();active=null;mark();return;}
+ const v=padFresh?'':i.value;let nv=k==='back'?v.slice(0,-1):v+k;padFresh=false;
+ i.value=nv;i.dispatchEvent(new Event('input',{bubbles:true}));});
 function hideNumpad(){numpad.hidden=true;root.classList.remove('ge-numpad-on');}
-board.addEventListener('focusin',e=>{if(numpadOn()&&e.target.matches?.('input.ge-grade')){numpad.hidden=false;root.classList.add('ge-numpad-on');}});
-board.addEventListener('focusout',()=>setTimeout(()=>{if(!document.activeElement?.matches?.('input.ge-grade'))hideNumpad();},0));
-board.addEventListener('keydown',e=>{if(!numpadOn()||!e.isTrusted||!e.target.matches?.('input.ge-grade'))return;
- // Une vraie touche : clavier externe branché → retour au clavier normal.
- numpadOff=true;hideNumpad();board.querySelectorAll('input.ge-grade').forEach(n=>{n.inputMode='decimal';n.readOnly=false;});},true);
+// Toucher une case : choisir sans focaliser (sinon Safari sort du plein écran).
+board.addEventListener('touchend',e=>{if(!numpadOn())return;const i=e.target.closest?.('input.ge-grade');if(!i)return;if(e.cancelable)e.preventDefault();padSelect(i);},{capture:true,passive:false});
+board.addEventListener('mousedown',e=>{if(!numpadOn())return;const i=e.target.closest?.('input.ge-grade');if(!i)return;e.preventDefault();padSelect(i);},true);
+// Toucher ailleurs : la saisie se termine.
+document.addEventListener('pointerdown',e=>{if(!padKey||e.target.closest?.('.ge-numpad')||e.target.closest?.('input.ge-grade'))return;if(commitDraft())padRelease();active=null;mark();},true);
+// Une vraie touche (clavier externe) : retour au fonctionnement normal, la case choisie prend le vrai focus.
+document.addEventListener('keydown',e=>{if(!numpadOn()||!e.isTrusted||e.target.closest?.('.ge-numpad'))return;if(!padKey&&!e.target.matches?.('input.ge-grade'))return;
+ const c=padCell();numpadOff=true;board.querySelectorAll('input.ge-grade').forEach(n=>{n.inputMode='decimal';n.readOnly=false;});if(c){c.classList.remove('ge-pad-cell');padKey=null;hideNumpad();c.focus({preventScroll:true});c.select();}},true);
 vp.addEventListener('scroll',()=>{if(scrollSettling)deferAutomaticResults();cameraDirty=true;schedule();},{passive:true});
 vp.addEventListener('scrollend',event=>{if(event.target===vp)finishAutomaticResultsScroll();},{passive:true});
 surface.addEventListener('wheel',event=>{if(event.target.closest('.ge-menu-panel,.ge-descriptor-tooltip'))return;if(event.ctrlKey||event.metaKey){wheelZooming=true;clearTimeout(wheelZoomTimer);wheelZoomTimer=setTimeout(()=>{wheelZooming=false;schedule();},180);event.preventDefault();const r=vp.getBoundingClientRect();zoomTo(view.zoom*Math.exp(-event.deltaY*.006),{x:event.clientX-r.left,y:event.clientY-r.top});}else{if(!bilanOrigin)deferAutomaticResults();if(event.shiftKey&&Math.abs(event.deltaX)<1){event.preventDefault();vp.scrollLeft+=event.deltaY;schedule();}}},{passive:false});
@@ -1373,7 +1380,7 @@ if(TOP&&window.isSecureContext&&!/^(localhost|127\.0\.0\.1)$/.test(location.host
  try{navigator.serviceWorker?.register('sw.js?v='+encodeURIComponent(APP_VERSION)).catch(()=>{});}catch{}
  // D1.71 · Charger tout de suite les modules utilisés plus tard (bilan, PDF) : une mise à jour publiée pendant
  // la séance ne peut plus mélanger une ancienne et une nouvelle partie de l’application.
- if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.98'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
+ if('serviceWorker' in navigator)setTimeout(()=>{for(const load of [()=>import('./bilan-view.mjs?v=D1.99'),()=>import('./report-pdf.mjs?v='+encodeURIComponent(APP_VERSION)),()=>import('./overview-pdf.mjs?v='+encodeURIComponent(APP_VERSION))])load().catch(()=>{});},1500);
  // Stockage durable seulement pour l’application installée (aucune question de Firefox au premier passage).
  try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)navigator.storage?.persist?.().catch(()=>{});}catch{}
 }
@@ -1572,7 +1579,7 @@ function currentCamera() {
 
 function loadBilan() {
   if (!bilanLoading) {
-    bilanLoading = import('./bilan-view.mjs?v=D1.98').then(({createBilanWorkspace}) => {
+    bilanLoading = import('./bilan-view.mjs?v=D1.99').then(({createBilanWorkspace}) => {
       bilanPane = createBilanWorkspace({
         getDocument:()=>d, getRevision:()=>revision, esc, icon, euroDate, highlightSearch, foldName,
         displayDescriptor, gradingLevelInk, gradingMenu, verticalGradingAxis, updateGradingAxis, download, notice, chooseFiles:()=>bilanFiles.click(),
